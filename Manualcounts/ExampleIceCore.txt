@@ -1,0 +1,6 @@
+% Manual layer counts
+
+% Provide table of initial manual layer counts in the following format: 
+% Column 1: Depth, Column 2: Age, Column 3: Uncertainty of layer (0 = certain, 1: uncertain), Column 4: Accumulated uncertainty (measured from start of interval)
+
+% Depth 	 Age 	 Uncertainty per layer 	 Accumulated uncertainty 

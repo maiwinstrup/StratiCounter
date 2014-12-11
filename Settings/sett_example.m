@@ -1,0 +1,121 @@
+%% Example of settings for an ice core record
+% Mai Winstrup, 2014
+
+%% Data files:
+Model.icecore = 'ExampleIceCore';
+% Data existing for core:
+Model.species = {'Isotopes'};
+Model.nSpecies = length(Model.species);
+
+% Weighting of various species:
+Model.wSpecies = ones(Model.nSpecies,1);
+
+% Path to data file:
+Model.pathData = './Data/exampledata.mat';
+
+%% Depth interval [m]:
+Model.dstart = 100;
+Model.dend = 200; 
+
+%% Marker horizons to be used as tiepoints?
+% No tiepoints:
+Model.tiepoints = [];
+% With tiepoints:
+% Model.tiepoints(:,1) = []; % Depth [m]
+% Model.tiepoints(:,2) = []; % Corresponding age
+% Model.ageUnitTiepoints = ''; % Age unit of tiepoints
+% Options: AD, BP, b2k, layers
+
+%% Data treatment:
+% Resolution of data series to be used:
+Model.dx = 10^-3; % [m/px]
+Model.dx_center = 0;
+% If using e.g. midpoints of dx intervals, the value of dx_center should
+% be set as 0.5*Model.dx. 
+
+% Preprocessing of each data series:
+for j = 1:Model.nSpecies
+    Model.preprocess{j} = {'zscore',0.5};
+end
+% Possible preprocessing steps:
+% - No preprocessing ('none',[])
+% - Linear interpolation over NaNs in data ('interpNaNs',[]);
+% - Log-transformation ('log',[])
+% - Box-Cox transformation ('boxcox', [lambda, (alpha)])
+% - Normalization using quantiles ('quantile', Lwindow)
+% - Normalization using min-max ('minmax', Lwindow)
+% - Normalization using standard deviation ('zscore',Lwindow)
+% - Using CDF-transform ('cdftransform',Lwindow)
+% - Subtract constant ('minusconst',const)
+% - Subtract mean ('minusmean')
+% - Subtract baseline ('minusbaseline',[Lwindow, quantile])
+% - Subtract smooth curve calculated using running average ('minussmooth', Lwindow)
+% - Smooth using running average ('smooth',Lwindow)
+% Window lengths are given in m. Inset [] if no window is required.
+
+%% Length of each data batch (in approximate number of layers):
+Model.nLayerBatch = 50; 
+% If tiepoints are given, the length of each data batch corresponds to the
+% interval between these. 
+
+%% Provide path to manual layer counts to be used for initialization:
+Model.manCountsName = 'Manual layer counts';
+Model.pathManualCounts = './Manualcounts/ExampleIceCore.txt';
+Model.ageUnitManual = 'AD';
+% Format of file with manual layer counts:
+% counts(:,1): Depth
+% counts(:,2): Age
+% counts(:,3): Uncertainty of layer (0: certain, 1: uncertain)
+% counts(:,4): Accumulated uncertainty from start of interval
+
+%% The annual layer model: 
+% Depth interval used for determining layer shapes based on preliminary 
+% manual layer counts: 
+Model.manualtemplates = [Model.dstart Model.dend];
+
+% Calculation of the emission probabilities (b).
+Model.type = 'PCA';
+Model.order = 1;
+% Normalizing each layer individually before calculating probabilities? 
+Model.normalizelayer = 'minusmean'; 
+% Options: 
+% 'none', 'minmax', 'zscore' or 'minusmean'
+
+%% Initial model parameters and variation allowed:
+% The initial set of layer parameters will be based on manual layer counts.
+% Depth interval used to estimate these:
+Model.initialpar = [Model.dstart, Model.dstart+0.5*(Model.dend-Model.dstart)];
+% Using the first half of data.
+
+%% Iterations and convergence:
+% Maximum number of iterations per batch:
+Model.nIter = 4;
+
+% Limit for convergence of EM-algorithm: 
+Model.eps = -1; 
+% If value negative, the model will run exactly nIter iterations
+
+% Parameters allowed to be updated at each iteration.
+% The ordering is: 
+% 1: my, 2: sigma (mode and variace of layer thickness distribution)
+% 3: par, 4: cov, 5: nvar (layer shape mean parameters, inter-annual 
+% covariance and white noise component)
+Model.update = {'ML', 'ML', 'ML', 'ML', 'ML'}; 
+% Options:
+% 'none': No updates (i.e. maintained as layerpar0)
+% 'ML': Maximum-Likelihood updates
+
+%% Output of algorithm:
+% Length of interval(s) for determining average layer thicknesses:
+Model.dxLambda = [0.5 1 5]; % [m]
+% If empty, lambda values are not determined.
+
+% Specific depth sections for mean layer thickness calculations:
+Model.dMarker = [];
+% Several sections can be included as follows:
+% Model.dMarker{1} = [101, 152.5, 204];
+% Model.dMarker{2} = [121, 142, 201];
+
+% Which timescale terminology to be used for output? 
+Model.ageUnitOut = 'layers';
+% Options: AD, BP, b2k, layers
