@@ -67,7 +67,7 @@ Model.nLayerBatch = 50;
 % interval between these. 
 
 %% If using manual counts for initialization:
-Model.manCountsName = '';
+Model.manCountsName = 'Manual layer counts';
 Model.pathManualCounts = '';
 Model.ageUnitManual = '';
 

@@ -11,7 +11,7 @@ Model.nSpecies = length(Model.species);
 Model.wSpecies = ones(Model.nSpecies,1);
 
 % Path to data file:
-Model.pathData = './Data/exampledata.mat';
+Model.pathData = './Data/data_empty.mat';
 
 %% Depth interval [m]:
 Model.dstart = 100;
@@ -59,7 +59,6 @@ Model.nLayerBatch = 50;
 % interval between these. 
 
 %% Provide path to manual layer counts to be used for initialization:
-Model.manCountsName = 'Manual layer counts';
 Model.pathManualCounts = './Manualcounts/ExampleIceCore.txt';
 Model.ageUnitManual = 'AD';
 % Format of file with manual layer counts:
@@ -73,14 +72,6 @@ Model.ageUnitManual = 'AD';
 % manual layer counts: 
 Model.manualtemplates = [Model.dstart Model.dend];
 
-% Calculation of the emission probabilities (b).
-Model.type = 'PCA';
-Model.order = 1;
-% Normalizing each layer individually before calculating probabilities? 
-Model.normalizelayer = 'minusmean'; 
-% Options: 
-% 'none', 'minmax', 'zscore' or 'minusmean'
-
 %% Initial model parameters and variation allowed:
 % The initial set of layer parameters will be based on manual layer counts.
 % Depth interval used to estimate these:
@@ -88,12 +79,8 @@ Model.initialpar = [Model.dstart, Model.dstart+0.5*(Model.dend-Model.dstart)];
 % Using the first half of data.
 
 %% Iterations and convergence:
-% Maximum number of iterations per batch:
+% Number of iterations per batch:
 Model.nIter = 4;
-
-% Limit for convergence of EM-algorithm: 
-Model.eps = -1; 
-% If value negative, the model will run exactly nIter iterations
 
 % Parameters allowed to be updated at each iteration.
 % The ordering is: 
@@ -107,7 +94,7 @@ Model.update = {'ML', 'ML', 'ML', 'ML', 'ML'};
 
 %% Output of algorithm:
 % Length of interval(s) for determining average layer thicknesses:
-Model.dxLambda = [0.5 1 5]; % [m]
+Model.dxLambda = [1 5]; % [m]
 % If empty, lambda values are not determined.
 
 % Specific depth sections for mean layer thickness calculations:

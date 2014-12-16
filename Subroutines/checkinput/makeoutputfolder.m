@@ -22,13 +22,18 @@ end
 
 if (strcmp(Model.icecore, 'SyntheticData'))
         outputdir0 = [outputdir0 '/SyntheticData/' Model.info];
-else       
-        all_species = Model.species{1};
-        for j = 2:Model.nSpecies
-            all_species = [all_species '_' Model.species{j}];
-        end
+else 
+    all_species = Model.species{1};
+    for j = 2:Model.nSpecies
+        all_species = [all_species '_' Model.species{j}];
+    end
+    if strcmp(Runtype.folders,'simple')
+        outputdir0 = [outputdir0 '/' Model.icecore '/Timescale/' ...
+            num2str(Model.dstart) '-' num2str(Model.dend) 'm'];
+    else
         outputdir0 = [outputdir0 '/' Model.icecore '/Timescale/' ...
             num2str(Model.dstart) '-' num2str(Model.dend) 'm/' all_species];
+    end
 end
 
 %% Retrieve runID:

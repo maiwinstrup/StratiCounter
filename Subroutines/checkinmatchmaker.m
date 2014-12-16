@@ -56,8 +56,8 @@ for iCore = 2:nCore
     clear mp data species depth depth_no colours
 
     %% Load timescale and model:
-    load([dir{iCore} '\Model.mat'])
-    timescale = importdata([dir{iCore} '\' Model.icecore '_timescale1yr.txt']);
+    load([dir{iCore} '/Model.mat'])
+    timescale = importdata([dir{iCore} '/' Model.icecore '_timescale1yr.txt']);
     timescale1yr = timescale.data;
    
     % Convert layer counts to format used in matchmaker:
@@ -83,22 +83,36 @@ for iCore = 2:nCore
     mp = sortrows(mp);
 
     % Save layer counts and tiepoints:
-    filename = ['./matchfiles/' Model.icecore 'layers_' num2str(iCore) '.mat']; % We may compare two results from the same ice core
+    if iCore == 2
+        filename = ['./matchfiles/' Model.icecore 'layers_auto_adj.mat']; % We may compare two results from the same ice core
+    else
+        filename = ['./matchfiles/' Model.icecore 'layers_auto' num2str(iCore-1) '_adj.mat']; % We may compare two results from the same ice core
+    end
     save(filename,'mp')
     
     %% Make matchmaker datafile (unprocessed data):
     % Add additional data series, if so desired:
     Model.species=[Model.species additionaldata{iCore}];
     Model.nSpecies = length(Model.species);
-    matchmakerdata(Model.species,Model,num2str(iCore))
-        
+    if iCore == 2
+        matchmakerdata(Model.species,Model,'auto')
+    else
+        matchmakerdata(Model.species,Model,['auto' num2str(iCore-1)])
+    end
+    
     %% Create files_main file:
     fid = fopen('files_main.m','a'); % append to file
 
     % Convert to text:
-    textinfile = ['\r\nfiles.core{' num2str(iCore) '}=''' Model.icecore '''; \r\n'...
-        'files.datafile{' num2str(iCore) '}=''' Model.icecore 'data_' num2str(iCore) '.mat''; \r\n'...
-        'files.matchfile{' num2str(iCore) '}=''' Model.icecore 'layers_' num2str(iCore) '.mat'';'];
+    if iCore == 2
+        textinfile = ['\r\nfiles.core{' num2str(iCore) '}=''' Model.icecore '''; \r\n'...
+            'files.datafile{' num2str(iCore) '}=''' Model.icecore 'data_auto.mat''; \r\n'...
+            'files.matchfile{' num2str(iCore) '}=''' Model.icecore 'layers_auto_adj.mat'';'];
+    else
+        textinfile = ['\r\nfiles.core{' num2str(iCore) '}=''' Model.icecore '''; \r\n'...
+            'files.datafile{' num2str(iCore) '}=''' Model.icecore 'data_auto' num2str(iCore-1) '.mat''; \r\n'...
+            'files.matchfile{' num2str(iCore) '}=''' Model.icecore 'layers_auto' num2str(iCore-1) '_adj.mat'';'];
+    end
     fprintf(fid,textinfile);
     fclose(fid);
     

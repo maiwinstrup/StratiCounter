@@ -45,6 +45,7 @@ addpath(genpath('./Settings'))
 Runtype.develop = 'no';
 Runtype.reuse = 'yes';
 Runtype.plotlevel = 1;
+Runtype.folders = 'simple'; 
 
 % Runtype.develop = 'yes'; 
 % In development mode; will run as normal, but output will be put in 
@@ -184,13 +185,14 @@ save([outputdir '/Layerpar0'],'Layerpar0')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% BATCHWISE DETECTION OF ANNUAL LAYERS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+disp('Algorithm is running, please be patient...')
 logPobs_alldata = 0; 
 iBatch = 0;
     
 while iBatch < nBatch
     %% Batch number:
     iBatch = iBatch+1;
-    if mod(iBatch,5)==0
+    if mod(iBatch,1)==0
         disp(['Batch ' num2str(iBatch) ': ' num2str(Data.depth(batchStart(iBatch))) 'm'])
     end
     
@@ -219,7 +221,7 @@ while iBatch < nBatch
 
             % Do not use any overlap section for the last data batch:
             Model.batchOverlap = 0;
-            disp(['Stopped at batch ' num2str(iBatch) ', ' num2str(Data.depth(batchEnd)) 'm'])
+            disp(['Stopping at batch ' num2str(iBatch) ', ' num2str(Data.depth(batchEnd)) 'm'])
         end
         
     else
@@ -285,7 +287,8 @@ while iBatch < nBatch
         % Iterations over layer parameters:
         iIter = 1;
         while iIter <= Model.nIter
-   
+            if nBatch < 5; disp(['Iteration #' num2str(iIter)]); end
+
             %% 2a: Select model parameters
             if iIter == 1
                 % Initial estimate of the selected model parameters is 

@@ -135,6 +135,10 @@ if Model.initialpar(1) >= Model.initialpar(2)
 end
 
 %% Sections for mean layer thickness calculations:
+if ~iscell(Model.dMarker)||~isempty(Model.dMarker)
+    Model.dMarker = {Model.dMarker};
+end
+
 % Remove sections from outside depth interval:
 for i = 1:length(Model.dMarker)
     mask = Model.dMarker{i}>=Model.dstart & Model.dMarker{i}<=Model.dend;

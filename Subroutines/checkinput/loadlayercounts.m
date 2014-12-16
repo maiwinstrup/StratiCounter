@@ -16,7 +16,7 @@ function [manualcounts, meanLambda, newinterval] = loadlayercounts(Model,interva
 
 %% Import manual layer counts:
 manualcounts = importdata(Model.pathManualCounts);
-manualcounts = manualcounts.data;
+if isstruct(manualcounts); manualcounts = manualcounts.data; end
 % Ensure that they are sorted according to increasing depth: 
 manualcounts = sortrows(manualcounts,1);
 
