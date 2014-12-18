@@ -424,7 +424,6 @@ while iBatch < nBatch
                 hfig_lambda(idx) = showlambda(lambda_prelim{idx},...
                    Layerpos_prelim,timescale1yr_prelim,manualcounts,Model,filename); % 2014-08-15 11:12               
             end
-            clear hfig_lambda;
         end
     end
  
@@ -516,7 +515,6 @@ if Runtype.plotlevel>0
         hfig_lambda(idx) = showlambda(lambdaResults{idx},Layerpos,...
             timescale1yr,manualcounts,Model,filename); % 2014-08-15 11:12
     end
-    clear hfig_lambda;
 end
    
 %% Calculate new layer templates:

@@ -15,7 +15,6 @@ Model.dend = ceil((Model.dend-Model.dx_center)/Model.dx)*Model.dx;
 %% Same for manual templates:
 Model.manualtemplates = ceil((Model.manualtemplates-Model.dx_center)/Model.dx)*Model.dx; 
 
-
 %% Ensure that Model.dstart and Model.dend corresponds to a data point: nej
 %Model.manualtemplates = checkdepth(Model.manualtemplates,Model.dx,Model.dx_center);
 Model.initialpar = checkdepth(Model.initialpar,Model.dx,Model.dx_center);
@@ -135,7 +134,7 @@ if Model.initialpar(1) >= Model.initialpar(2)
 end
 
 %% Sections for mean layer thickness calculations:
-if ~iscell(Model.dMarker)||~isempty(Model.dMarker)
+if ~iscell(Model.dMarker)&&~isempty(Model.dMarker)
     Model.dMarker = {Model.dMarker};
 end
 
