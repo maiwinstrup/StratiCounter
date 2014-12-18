@@ -41,7 +41,7 @@ if plotlevel > 0
 else
     dstart_fig = nan; 
     dend_fig = nan;
-    hfig = nan;
+    hfig = [];
 end
 
 %% Perform preprocessing af data in the desired order:

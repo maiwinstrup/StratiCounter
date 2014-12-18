@@ -12,8 +12,8 @@ function hfig = showlambda(lambda,Layerpos,timescale1yr,manualcounts,Model,filen
 % 2014-08-15 11:12: Removed .jpeg from filename
 
 %% If lambda is empty (or very small)
-% hfig is given a value of NaN, and return to main. 
-if size(lambda,1)<=2; hfig = nan; return; end
+% hfig is empty, and return to main. 
+if size(lambda,1)<=2; hfig = []; return; end
 
 %% Initialize figure: 
 hfig = figure;

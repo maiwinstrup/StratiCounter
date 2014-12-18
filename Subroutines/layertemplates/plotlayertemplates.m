@@ -12,7 +12,7 @@ function hfig = plotlayertemplates(Template,TemplateInfo,Model,hfig,color,filena
 
 %% Figure initialization: 
 % Only done if figure doesn't exist from previously.
-if isempty(hfig)
+if ~isgraphics(hfig)
     hfig = figure; 
     set(hfig,'paperunits','centimeters','papertype','A4','paperorientation',...
         'portrait','paperposition',[1 1 Model.nSpecies*7 10]);

@@ -342,7 +342,7 @@ while iBatch < nBatch
            
        %% 2e: Check that log(Pobs) is always growing (as it should)
        if Runtype.plotlevel>1
-           if ~exist('hfig_logPobs','var'); hfig_logPobs = figure; end
+           if ~isgraphics('hfig_logPobs'); hfig_logPobs = figure; end
            if iTemplateBatch == 1; clf(hfig_logPobs); end
            figure(hfig_logPobs)
            plot(squeeze(logPobs(iBatch,iTemplateBatch,2:end,1)),'.-k'); 
@@ -407,21 +407,20 @@ while iBatch < nBatch
         % Plot preliminary timescale and mean layer thicknesses:
         if Runtype.plotlevel>0
             % Timescale:
-            if exist('hfig_timescale','var'); close(hfig_timescale); end
+            if isgraphics('hfig_timescale'); close(hfig_timescale); end
             filename = [outputdir '/timescale_prelim.jpeg'];
             hfig_timescale = showtimescale(timescale_prelim,...
                 timescale1yr_prelim,Layerpos_prelim,manualcounts,...
                 Data.depth(batchStart(1:iBatch)),Model,filename); % 2014-08-21 23:32
             % Mean layer thicknesses:
-            if exist('hfig_lambda','var'); 
-                % Figures may not exist for all dxLambda intervals:
-                hfig_lambda = hfig_lambda(isfinite(hfig_lambda));
-                for idx = 1:length(hfig_lambda); close(hfig_lambda(idx)); end
-            end
             for idx = 1:length(Model.dxLambda)
                 filename = [outputdir '/lambda_' num2str(Model.dxLambda(idx)) 'm_prelim.jpeg'];
-                hfig_lambda(idx) = showlambda(lambda_prelim{idx},...
-                   Layerpos_prelim,timescale1yr_prelim,manualcounts,Model,filename); % 2014-08-15 11:12             
+                hfig = showlambda(lambda_prelim{idx},...
+                   Layerpos_prelim,timescale1yr_prelim,manualcounts,Model,filename); % 2014-08-15 11:12
+                if isgraphics(hfig)
+                    if isgraphics(hfig_lambda(idx)); close(hfig_lambda(idx)); end
+                    hfig_lambda(idx)=hfig;
+                end
             end
         end
     end
@@ -497,23 +496,22 @@ save([outputdir0 '/runID.mat'],'runID')
 %% Plot timescale and mean layer thicknesses:
 if Runtype.plotlevel>0 
     % Timescale:
-    if exist('hfig_timescale','var'); close(hfig_timescale); end
+    if isgraphics('hfig_timescale'); close(hfig_timescale); end
     filename = [outputdir '/timescale.jpeg'];
     hfig_timescale = showtimescale(timescale,timescale1yr,Layerpos,...
         manualcounts,Data.depth(batchStart),Model,filename); % 2014-08-21 23:32
     % Mean layer thicknesses:
-    if exist('hfig_lambda','var')
-        % Figures may not exist for all dxLambda intervals:
-        hfig_lambda = hfig_lambda(isfinite(hfig_lambda));
-        for idx = 1:length(hfig_lambda); close(hfig_lambda(idx)); end
-    end
     for idx = 1:length(Model.dxLambda)
         filename = [outputdir '/lambda_' num2str(Model.dxLambda(idx)) 'm.jpeg'];
-        hfig_lambda(idx) = showlambda(lambdaResults{idx},Layerpos,...
+        hfig = showlambda(lambdaResults{idx},Layerpos,...
             timescale1yr,manualcounts,Model,filename); % 2014-08-15 11:12
+        if isgraphics(hfig)
+            if isgraphics(hfig_lambda(idx)); close(hfig_lambda(idx)); end
+            hfig_lambda(idx)=hfig;
+        end
     end
 end
-    
+   
 %% Calculate new layer templates:
 % Based on data in complete interval.
 [TemplateNew,TemplateInfoNew]=layerstructure(data_batch,depth_batch,...
