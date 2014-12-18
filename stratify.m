@@ -21,10 +21,9 @@
 % Developed by Mai Winstrup. 
 % Contact: mai@gfy.ku.dk
 
-% When using this script please cite: 
+% When using this script please provide release date of the algorithm and cite: 
 % Winstrup et al., An automated approach for annual layer counting in
 % ice cores, Clim. Past. 8, 1881-1895, 2012.
-% And provide release date of the algorithm:
 clear all; 
 releasedate = '08-12-2014';
         
@@ -130,7 +129,7 @@ if Runtype.plotlevel > 0
     color = [0.5 0.5 0.5; 0 0 1; 0 1 0; 1 0 0];
     filename = [outputdir '/layertemplates.jpeg'];        
     hfig_basis = plotlayertemplates(Template0,...
-            Template0Info,Model,[],color,filename); % 2014-08-21 12:56 
+            Template0Info,Model,nan,color,filename); % 2014-08-21 12:56 
     % Close figure?
     if Runtype.plotlevel==1; close(hfig_basis); end
 end
@@ -342,7 +341,7 @@ while iBatch < nBatch
            
        %% 2e: Check that log(Pobs) is always growing (as it should)
        if Runtype.plotlevel>1
-           if ~isgraphics('hfig_logPobs'); hfig_logPobs = figure; end
+           if ~exist('hfig_logPobs','var'); hfig_logPobs = figure; end
            if iTemplateBatch == 1; clf(hfig_logPobs); end
            figure(hfig_logPobs)
            plot(squeeze(logPobs(iBatch,iTemplateBatch,2:end,1)),'.-k'); 
@@ -407,21 +406,25 @@ while iBatch < nBatch
         % Plot preliminary timescale and mean layer thicknesses:
         if Runtype.plotlevel>0
             % Timescale:
-            if isgraphics('hfig_timescale'); close(hfig_timescale); end
+            if exist('hfig_timescale','var'); close(hfig_timescale); end
             filename = [outputdir '/timescale_prelim.jpeg'];
             hfig_timescale = showtimescale(timescale_prelim,...
                 timescale1yr_prelim,Layerpos_prelim,manualcounts,...
                 Data.depth(batchStart(1:iBatch)),Model,filename); % 2014-08-21 23:32
+            
             % Mean layer thicknesses:
-            for idx = 1:length(Model.dxLambda)
-                filename = [outputdir '/lambda_' num2str(Model.dxLambda(idx)) 'm_prelim.jpeg'];
-                hfig = showlambda(lambda_prelim{idx},...
-                   Layerpos_prelim,timescale1yr_prelim,manualcounts,Model,filename); % 2014-08-15 11:12
-                if isgraphics(hfig)
-                    if isgraphics(hfig_lambda(idx)); close(hfig_lambda(idx)); end
-                    hfig_lambda(idx)=hfig;
+            if exist('hfig_lambda','var');
+                for i = 1:length(Model.dxLambda)
+                    if ~isempty(hfig_lambda(i)); close(hfig_lambda(i)); end
                 end
             end
+            hfig_lambda = gobjects(length(Model.dxLambda),1); % Initialize handles
+            for idx = 1:length(Model.dxLambda)                
+                filename = [outputdir '/lambda_' num2str(Model.dxLambda(idx)) 'm_prelim.jpeg'];
+                hfig_lambda(idx) = showlambda(lambda_prelim{idx},...
+                   Layerpos_prelim,timescale1yr_prelim,manualcounts,Model,filename); % 2014-08-15 11:12               
+            end
+            clear hfig_lambda;
         end
     end
  
@@ -496,20 +499,24 @@ save([outputdir0 '/runID.mat'],'runID')
 %% Plot timescale and mean layer thicknesses:
 if Runtype.plotlevel>0 
     % Timescale:
-    if isgraphics('hfig_timescale'); close(hfig_timescale); end
+    if exist('hfig_timescale','var'); close(hfig_timescale); end
     filename = [outputdir '/timescale.jpeg'];
     hfig_timescale = showtimescale(timescale,timescale1yr,Layerpos,...
         manualcounts,Data.depth(batchStart),Model,filename); % 2014-08-21 23:32
+    
     % Mean layer thicknesses:
-    for idx = 1:length(Model.dxLambda)
-        filename = [outputdir '/lambda_' num2str(Model.dxLambda(idx)) 'm.jpeg'];
-        hfig = showlambda(lambdaResults{idx},Layerpos,...
-            timescale1yr,manualcounts,Model,filename); % 2014-08-15 11:12
-        if isgraphics(hfig)
-            if isgraphics(hfig_lambda(idx)); close(hfig_lambda(idx)); end
-            hfig_lambda(idx)=hfig;
+    if exist('hfig_lambda','var');
+        for i = 1:length(Model.dxLambda)
+            if ~isempty(hfig_lambda(i)); close(hfig_lambda(i)); end
         end
     end
+    hfig_lambda = gobjects(length(Model.dxLambda),1); % Initialize handles
+    for idx = 1:length(Model.dxLambda)
+        filename = [outputdir '/lambda_' num2str(Model.dxLambda(idx)) 'm.jpeg'];
+        hfig_lambda(idx) = showlambda(lambdaResults{idx},Layerpos,...
+            timescale1yr,manualcounts,Model,filename); % 2014-08-15 11:12
+    end
+    clear hfig_lambda;
 end
    
 %% Calculate new layer templates:
