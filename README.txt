@@ -1,4 +1,4 @@
-Stratify: An annual layer counting algorithm
+Stratifier: A layer counting algorithm
 
 The algorithm is based on the principles of statistical inference of hidden states in semi-Markov processes. States, and their associated confidence intervals, are inferred by the Forward-Backward algorithm and the Viterbi algorithm (optional). The EM (Expectation-Maximization) algorithm is used to find the optimal set of layer parameters for each data batch. Confidence intervals do not account for the uncertainty in estimation of layer parameters. If (absolute) tiepoints are given, the algorithm is run between these, while assuming constant annual layer signals between each pair. If no tiepoints, the algorithm is run batch-wise down the core, with a slight overlap between consecutive batches.
 See Winstrup (2011) and Winstrup et al. (2012) for further documentation. 
