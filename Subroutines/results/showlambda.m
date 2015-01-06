@@ -13,7 +13,7 @@ function hfig = showlambda(lambda,Layerpos,timescale1yr,manualcounts,Model,filen
 
 %% If lambda is empty (or very small)
 % hfig is empty, and return to main. 
-if size(lambda,1)<=2; hfig = []; return; end
+if size(lambda,1)<=2; hfig = nan; return; end
 
 %% Initialize figure: 
 hfig = figure;

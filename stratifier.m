@@ -1,4 +1,4 @@
-%% Stratify: An annual layer counting algorithm
+%% Stratifier: A layer counting algorithm
 % The algorithm is based on the principles of statistical inference of 
 % hidden states in semi-Markov processes. States, and their associated 
 % confidence intervals, are inferred by the Forward-Backward algorithm and 

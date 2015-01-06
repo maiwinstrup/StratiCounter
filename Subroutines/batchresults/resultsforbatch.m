@@ -80,8 +80,8 @@ for ix = 1:length(Model.dxLambda)
         dDxLambda{ix},Layer0.noDx{ix},tau,ntau,d,pd,logb,Runtype.plotlevel);
    
     % Save: 
-    Result.Lambda(idx).d=[];
-    Result.Lambda(idx).ndist=[];
+    Result.Lambda(ix).d=[];
+    Result.Lambda(ix).ndist=[];
     if ~isempty(distSections)
         Result.Lambda(ix).d = dSectionBounds; 
         Result.Lambda(ix).ndist = distSections;
