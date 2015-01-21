@@ -126,6 +126,15 @@ nSubfig = sum(nSp);
 if nSubfig > 10
     nSp = round(min(nSp,10/nCore)); 
 end
+
+% Set x-limits:
+load matchmaker_sett
+sett.xlim(1:2,1)=Model.dstart;
+meanlambda = mean(diff(manualcounts(:,1)));
+sett.xlim(1:2,2)=Model.dstart+round(20*meanlambda);
+save matchmaker_sett
+
+% Open matchmaker:
 matchmaker('files_main',1:nCore,nSp)
 
 end

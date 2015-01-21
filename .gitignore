@@ -8,3 +8,4 @@ files_main.m
 preparedata.m
 StratifierUserGuide.docx
 startfunction.m
+*.mat

@@ -43,7 +43,7 @@ addpath(genpath('./Subroutines'))
 addpath(genpath('./Settings'))
 
 %% Select how to run the script:
-Runtype.develop = 'yes';
+Runtype.develop = 'no';
 % In development mode; will run as normal, but output will be put in the
 % ./Output/develop folder. Option to run for fewer batches. 
 Runtype.reuse = 'yes';
