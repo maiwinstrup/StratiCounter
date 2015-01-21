@@ -1,4 +1,6 @@
-%% Stratifier: A layer counting algorithm
+function stratify(sett_icecore)
+
+%% Stratify: A layer counting algorithm
 % The algorithm is based on the principles of statistical inference of 
 % hidden states in semi-Markov processes. States, and their associated 
 % confidence intervals, are inferred by the Forward-Backward algorithm and 
@@ -6,30 +8,31 @@
 % algorithm is used to find the optimal set of layer parameters for each 
 % data batch. Confidence intervals do not account for the uncertainty in 
 % estimation of layer parameters.
-% The algorithm was developed for visual stratigraphy data from the NGRIP
-% ice core (Winstrup, 2011, Winstrup et al., 2012). It has later been 
-% applied to other cores, and extended to parallel analysis of multi-
-% parameter data sets (e.g. Vallelonga et al., 2014, Sigl et al. (in prep.), 
-% Sigl et al. (in prep)). For testing purposes, it can also be run on 
-% synthetic data sets. 
+%
 % If (absolute) tiepoints are given, the algorithm is run between these,
 % while assuming constant annual layer signals between each pair. If no
 % tiepoints, the algorithm is run batch-wise down the core, with a slight 
 % overlap between consecutive batches.
+%
 % See Winstrup (2011) and Winstrup et al. (2012) for further documentation. 
-
+%
+% The algorithm was developed for visual stratigraphy data from the NGRIP
+% ice core (Winstrup, 2011, Winstrup et al., 2012). It has later been 
+% applied to other cores, and extended to parallel analysis of multi-
+% parameter data sets (e.g. Vallelonga et al., 2014, Sigl et al. (in prep, 
+% 2015)). For testing purposes, it can also be run on synthetic data. 
+%
 % Developed by Mai Winstrup. 
 % Contact: mai@gfy.ku.dk
-
-% When using this script please provide release date of the algorithm and cite: 
+%
+% When using this script, please provide release date of the algorithm, 
+% and cite: 
 % Winstrup et al., An automated approach for annual layer counting in
 % ice cores, Clim. Past. 8, 1881-1895, 2012.
-clear all; 
-releasedate = '08-12-2014';
-        
-%% Does settings exist?
 clc; close all;
-sett_icecore = input('Settings-file: ','s');
+releasedate = '20-01-2015';
+
+%% Check that settings file exist:
 if ~exist(['./Settings/' sett_icecore '.m'],'file')
     disp('Settings file unknown, please correct')
     return
@@ -40,69 +43,64 @@ addpath(genpath('./Subroutines'))
 addpath(genpath('./Settings'))
 
 %% Select how to run the script:
-% Use standard settings:
-Runtype.develop = 'no';
+Runtype.develop = 'yes';
+% In development mode; will run as normal, but output will be put in the
+% ./Output/develop folder. Option to run for fewer batches. 
 Runtype.reuse = 'yes';
+% If yes; use previously processed data and calculated layer templates.
+% If no, these are re-calculated. 
 Runtype.plotlevel = 1;
-Runtype.folders = 'simple'; 
-
-% Runtype.develop = 'yes'; 
-% In development mode; will run as normal, but output will be put in 
-% develop folder. Option to run for fewer batches. 
-
-% Runtype.reuse = yesnoinputwdefault('Re-use previously processed data and calculated layer templates?','yes'); 
-% Default is 'yes'.
-
-% Runtype.plotlevel = input('Plot level: ');
 % Options: 0: 'none' (no plots), 1: 'info' (few plots), 2: 'debug' (all plots)
-% if isempty(Runtype.plotlevel); Runtype.plotlevel = 1; disp(Runtype.plotlevel); end
-% Rinse:
-% clc
-% disp(['Settings: ' sett_icecore]);
- 
-% Display info messages if different from standard:
-if strcmp(Runtype.reuse,'no'); 
-    disp('Will reprocess data and recalculate layer templates'); end
-if strcmp(Runtype.develop,'yes'); 
-    disp('Running in development mode...'); end
-if Runtype.plotlevel>1; 
-    disp('Plots will be generated'); end
 
-%% Select model settings for run:
+% Display info messages if different from standard settings:
+if strcmp(Runtype.develop,'yes'); 
+    disp('Running in development mode...'); 
+end
+if strcmp(Runtype.reuse,'no'); 
+    disp('Will reprocess data and recalculate layer templates'); 
+end
+if Runtype.plotlevel>1; 
+    disp('Plots will be generated'); 
+end
+
+%% Select model settings:
 % Import default settings:
-Model = defaultsettings; % 2014-12-08 14:03
-% Include core-specific settings:
+Model = defaultsettings; % 2015-01-20
+
+% Use core-specific settings:
 run(sett_icecore)
 
-%% Ensure that the content in Model array has the correct format:
-Model = adjustmodel(Model); % 2014-06-16 12:09
+% Add release date:
 Model.releasedate = releasedate;
 
+%% Ensure correct format of content in Model:
+Model = adjustmodel(Model); % 2015-01-21
+
 %% Make output folders:
-[outputdir, outputdir0, runID] = makeoutputfolder(Model, Runtype); % 2014-10-07 14:57
+[outputdir, outputdir0, runID] = makeoutputfolder(Model, Runtype); % 2015-01-21
 
 %% Load data and manual layer counts:
 if strcmp(Model.icecore,'SyntheticData')
     % Check Model.SynthData, and convert mean signal etc. to polynomial 
     % approximations:
-    Model.SynthData = checksyntheticmodel(Model,outputdir,Runtype.plotlevel); % 2014-08-23 12:54
+    Model.SynthData = checksyntheticmodel(Model,outputdir,Runtype.plotlevel); % 2014-08-23
 
     % Construct synthetic data: 
-    [Data, manualcounts, Model] = makesyntheticdata(Model,Runtype,outputdir); % 2014-08-21 20:09
+    [Data, manualcounts, Model] = makesyntheticdata(Model,Runtype,outputdir); % 2014-08-21
     
 else
     % Load manually counted annual layers:
-    [manualcounts, meanLambda] = loadlayercounts(Model,[Model.dstart Model.dend]); % 2014-10-08 09:58
+    [manualcounts, meanLambda] = loadlayercounts(Model,[Model.dstart Model.dend]); % 2015-01-21
     
     % Check format, and convert ages to ageUnitOut:
-    [manualcounts, Model] = adjustmanualcounts(manualcounts,Model); % 2014-08-23 13:33
+    [manualcounts, Model] = adjustmanualcounts(manualcounts,Model); % 2014-08-23
     
     % Check preprocessing distances (Model.preprocess, Model.dx) relative 
     % to manual layer thicknesses over interval:
-    checkpreprocessdist(Model,manualcounts); % 2014-10-01 12:52
+    checkpreprocessdist(Model,manualcounts); % 2014-10-01
     
     % Load and preprocess data files:
-    [Data, Model] = constructdatafile(Model,manualcounts,Runtype); % 2014-10-01 13:06
+    [Data, Model] = constructdatafile(Model,manualcounts,Runtype); % 2014-10-01
 end
 
 % If no manual counts are known, an empty array should be provided.
@@ -184,10 +182,15 @@ save([outputdir '/Layerpar0'],'Layerpar0')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% BATCHWISE DETECTION OF ANNUAL LAYERS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(Runtype.develop,'yes')
+    nBatch0 = input('nBatch? (inf: all)');
+    if isfinite(nBatch0); nBatch=nBatch0; end
+end
+
 disp('Algorithm is running, please be patient...')
 logPobs_alldata = 0; 
 iBatch = 0;
-    
+   
 while iBatch < nBatch
     %% Batch number:
     iBatch = iBatch+1;

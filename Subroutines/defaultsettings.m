@@ -1,8 +1,10 @@
 function Model = defaultsettings()
 
-%% defaultsettings():
-% Provide default settings for HMM layer detection algorithm.
-% Mai Winstrup, 2014
+%% Model = defaultsettings()
+% Provide default settings for layer detection algorithm.
+
+% Mai Winstrup
+% 2015-01-20: Small adjustments; definition of dx_center changed
 
 %% Data files:
 Model.icecore = '';
@@ -12,6 +14,9 @@ Model.nSpecies = 0;
 
 % Weighting of various species:
 Model.wSpecies = ones(Model.nSpecies,1);
+
+% Path to data file:
+Model.pathData = '';
 
 %% Depth interval [m]:
 Model.dstart = [];
@@ -27,13 +32,13 @@ Model.tiepoints = [];
 % Options: AD, BP, b2k, layers
 
 %% Data treatment:
-% Resolution of data series to be used in HMM Model:
-mpx = 10^-3;
-Model.dx = mpx; % [m/px]
+% Resolution of data series to be used:
+Model.dx = 10^-3; % [m/px]
 % If Model.dx is empty: No interpolation to equidistant depthscale. 
 % The resolution is allowed to (slowly) change with depth. 
-% If using e.g. the midpoints of dx intervals:
-Model.dx_center = 0*mpx;
+Model.dx_center = 0;
+% If using e.g. midpoints of dx intervals, the value of dx_center should
+% be set as 0.5 (to avoid unnecessary interpolation). 
 
 % Preprocessing of each data series:
 Model.preprocess{1:Model.nSpecies} = {'none',[]};
@@ -55,11 +60,9 @@ Model.preprocess{1:Model.nSpecies} = {'none',[]};
 
 % Using data series itself and (possibly) its derivatives: 
 Model.deriv = [0 1];
-% Calculation of slope and curvature by Savitsky-Golay:
-%if sum(Model.deriv)>0
-    Model.slopeorder = [1 2]; % 0 corresponds to ordinary differencing
-    Model.slopedist = [3 5]; % Window size (in number of observations)
-%end
+% Calculation of slope and curvature using Savitsky-Golay:
+Model.slopeorder = [1 2]; % 0 corresponds to ordinary differencing
+Model.slopedist = [3 5]; % Window size (in number of observations)
 
 %% Length of each data batch (in approximate number of layers):
 Model.nLayerBatch = 50; 
@@ -70,16 +73,23 @@ Model.nLayerBatch = 50;
 Model.manCountsName = 'Manual layer counts';
 Model.pathManualCounts = '';
 Model.ageUnitManual = '';
-
-% depth interval used for determining these:
-Model.manualtemplates = []; %[Model.dstart Model.dend];
-% Perhaps set "[]" if using a sinusoidal shape instead (not implemented).
+% Format of file with manual layer counts:
+% counts(:,1): Depth
+% counts(:,2): Age
+% counts(:,3): Uncertainty of layer (0: certain, 1: uncertain)
+% counts(:,4): Accumulated uncertainty from start of interval
 
 %% The annual layer model: 
+% Depth interval used for determining the annual layer model based on 
+% preliminary manual layer counts:
+Model.manualtemplates = [];
+% Perhaps set "[]" if using a sinusoidal shape instead (not implemented).
+
 % Calculation of the emission probabilities (b).
 Model.type = 'PCA';
 Model.order = 1;
-% Normalizing each layer individually before calculating probabilities? (and shapes)
+% Normalizing each layer individually before calculating probabilities? 
+% (and shapes)
 Model.normalizelayer = 'minusmean'; 
 % Options: 
 % 'none', 'minmax', 'zscore', 'minusmean'
@@ -119,7 +129,7 @@ Model.bweight = 1;
 %% Initial model parameters and variation allowed:
 % The initial set of layer parameters will be based on manual layer counts.
 % Depth interval used to estimate these:
-Model.initialpar = []; %[Model.dstart, Model.dstart+0.5*(Model.dend-Model.dstart)];
+Model.initialpar = []; 
 % Using the first half of data.
 
 % Using the entire parameter covariance matrix?
@@ -155,11 +165,12 @@ Model.update = {'ML', 'ML', 'ML', 'ML', 'ML'};
 % Options:
 % 'none': No updates (i.e. maintained as initialpar)
 % 'ML': Maximum-Likelihood updates
+% 'QB': Quasi-Bayes updates
 
 % Forgetting parameter in QB updates:
-%if sum(Model.update==2)>0
-%    Model.rho = 0.8;
-%end
+if sum(ismember(Model.update,'QB')>0)
+    Model.rho = 0.8;
+end
 
 %% Combining batches: 
 % Interval before end of batch in which the last layer boundary is found:
@@ -174,7 +185,7 @@ Model.viterbi = 'no';
 
 % Interval(s) for determining average layer thicknesses:
 % Regular length intervals:
-Model.dxLambda = [0.5 1 5]; % [m]
+Model.dxLambda = [1 5]; % [m]
 % If empty, lambda values are not determined.
 
 % Specific depth sections for mean layer thickness calculations:

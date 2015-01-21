@@ -13,6 +13,7 @@ function [outputdir,outputdir0,runID] = makeoutputfolder(Model,Runtype)
 % 2014-08-23 12:48: Removed changes to Model for synthetic data
 % 2014-09-29 19:00: runnumber -> runID, outputdir0 for syn data changed.
 % 2014-10-07 14:57: Nolonger saving runID=0
+% 2015-01-21 11:08: Simplified name of output folders
 
 %% Find/generate output folder:
 % Running in development mode?
@@ -20,20 +21,11 @@ if strcmp(Runtype.develop,'yes'); outputdir0 = './Output/develop';
 else outputdir0 = './Output';
 end
 
-if (strcmp(Model.icecore, 'SyntheticData'))
-        outputdir0 = [outputdir0 '/SyntheticData/' Model.info];
+if strcmp(Model.icecore, 'SyntheticData')
+    outputdir0 = [outputdir0 '/SyntheticData/' Model.info];
 else 
-    all_species = Model.species{1};
-    for j = 2:Model.nSpecies
-        all_species = [all_species '_' Model.species{j}];
-    end
-    if strcmp(Runtype.folders,'simple')
-        outputdir0 = [outputdir0 '/' Model.icecore '/Timescale/' ...
-            num2str(Model.dstart) '-' num2str(Model.dend) 'm'];
-    else
-        outputdir0 = [outputdir0 '/' Model.icecore '/Timescale/' ...
-            num2str(Model.dstart) '-' num2str(Model.dend) 'm/' all_species];
-    end
+    outputdir0 = [outputdir0 '/' Model.icecore '/Timescale/' ...
+        num2str(Model.dstart) '-' num2str(Model.dend) 'm'];
 end
 
 %% Retrieve runID:

@@ -31,7 +31,7 @@ Model.tiepoints = [];
 Model.dx = 10^-3; % [m/px]
 Model.dx_center = 0;
 % If using e.g. midpoints of dx intervals, the value of dx_center should
-% be set as 0.5*Model.dx. 
+% be set as 0.5 (to avoid unnecessary interpolation). 
 
 % Preprocessing of each data series:
 for j = 1:Model.nSpecies

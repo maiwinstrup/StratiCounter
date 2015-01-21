@@ -28,12 +28,14 @@ function [Data_final, Model] = constructdatafile(Model,counts,Runtype)
 % 2014-09-08 14:02: removed +dx_center in line 72
 % 2014-10-01 13:06: solved problem when not all data series cover the
 %                   entire interval
+% 2015-01-21 12:17: Changes due to new definition of dx_center, new
+%                   datafile structure
 
 %% Provide indicator of missing impurity records:
 flag = nan(1,Model.nSpecies);
 
 % Final depth scale for data:
-Data_final.depth(:,1) = Model.dstart+Model.dx_center:Model.dx:Model.dend+Model.dx_center;
+Data_final.depth(:,1) = Model.dstart+Model.dx_center*Model.dx:Model.dx:Model.dend+Model.dx_center*Model.dx;
 Data_final.data = nan(length(Data_final.depth),3,Model.nSpecies);
 
 %% Load/process the individual data records:
@@ -70,13 +72,13 @@ for j = 1:Model.nSpecies
                 load([outputdir '/' filename]);
         
                 % Remove excess data from outside interval:
-                mask = depth>=Model.dstart+Model.dx_center & depth<=Model.dend+Model.dx_center;
+                mask = depth>=Model.dstart+Model.dx_center*Model.dx & depth<=Model.dend+Model.dx_center*Model.dx;
                 
                 % Check that depth scale is correct, which can be seen from 
                 % the initial depth entry. If not, the data will be 
                 % re-processed to correct depth scale.
                 depth = depth(mask);
-                if depth(1)==Model.dstart+Model.dx_center
+                if depth(1)==Model.dstart+Model.dx_center*Model.dx
                     % Add to output data file:
                     Data_final.data(:,:,j) = data(mask,:);
                 
@@ -105,7 +107,7 @@ for j = 1:Model.nSpecies
     end
 
     %% Otherwise, load and preprocess the raw data for current interval.
-    rawdata = loadrawdata(Model.species{j},Model);
+    rawdata = loadrawdata(Model.species{j},Model); % 2015-01-21
 
     %% If data record does not exist:
     % Set flag and go to next impurity species.
@@ -116,7 +118,7 @@ for j = 1:Model.nSpecies
     
     % Does data exist in at least part of data interval?   
     % If not, set flag, and continue to next impurity species.
-    mask = rawdata(:,1)>=Model.dstart & rawdata(:,1)<=Model.dend;
+    mask = rawdata(:,1)>=Model.dstart+Model.dx_center*Model.dx & rawdata(:,1)<=Model.dend+Model.dx_center*Model.dx;
     if sum(isfinite(rawdata(mask,2)))==0; 
         % Data is nan in all of current interval 
         flag(j) = 1; disp([Model.species{j} ' not available in interval']); 
@@ -154,14 +156,14 @@ for j = 1:Model.nSpecies
         Model.preprocess_init{j},Model,depth,counts,Runtype.plotlevel); % 2014-08-23 13:55
     
     %% Remove extra data from edges: 
-    mask = depth>=Model.dstart+Model.dx_center & depth<=Model.dend+Model.dx_center;
+    mask = depth>=Model.dstart+Model.dx_center*Model.dx & depth<=Model.dend+Model.dx_center*Model.dx;
     depth = depth(mask);
     data0 = data0(mask,:);
     
     %% Downsample to resolution in Model.dx:
     % If Model.dx is empty, the original resolution is kept.
     if ~isempty(Model.dx)
-        [depth,data0] = downsampling(depth,data0,Model.dx,Model.dx_center,Model.dstart,Model.dend); % % 2014-08-21 22:33
+        [depth,data0] = downsampling(depth,data0,Model.dx,Model.dx_center*Model.dx,Model.dstart,Model.dend); % % 2014-08-21 22:33
     end
     
     %% Calculating derivatives of data series:

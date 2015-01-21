@@ -10,5 +10,5 @@ function newinterval = checkdepth(interval,dx,dx_center)
 % 2014-08-22 15:14
 
 %% Calculate new depths:
-newinterval(1) = ceil((interval(1)-dx_center)/dx)*dx+dx_center;
-newinterval(2) = floor((interval(2)-dx_center)/dx)*dx+dx_center;
+newinterval(1) = ceil((interval(1)-dx_center*dx)/dx)*dx+dx_center;
+newinterval(2) = floor((interval(2)-dx_center*dx)/dx)*dx+dx_center;
