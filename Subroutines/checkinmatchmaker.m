@@ -128,11 +128,12 @@ if nSubfig > 10
 end
 
 % Set x-limits:
-load matchmaker_sett
 sett.xlim(1:2,1)=Model.dstart;
 meanlambda = mean(diff(manualcounts(:,1)));
 sett.xlim(1:2,2)=Model.dstart+round(20*meanlambda);
-save matchmaker_sett
+sett.specs{1} = [1];
+sett.specs{2} = [1];
+save('matchmaker_sett.mat', 'sett', '-v6');
 
 % Open matchmaker:
 matchmaker('files_main',1:nCore,nSp)

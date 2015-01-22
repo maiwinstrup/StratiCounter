@@ -6,5 +6,6 @@ matchfiles/
 files_main.m
 preparedata.m
 StratifierUserGuide.docx
-startfunction.m
 *.mat
+*.asv
+checkcorrelations.m
