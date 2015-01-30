@@ -24,7 +24,7 @@ load(Model.pathData)
 allspecies = data.name; % All species are to be included.
 
 % Save data file in matchmaker format:
-matchmakerdata(allspecies,Model,'manual');
+matchmakerdata(allspecies,Model,'_manual');
 clear data
 
 %% 1c: Start matchmaker's files_main:
@@ -33,7 +33,7 @@ fid = fopen('files_main.m','w'); % open new file, discard any content
 
 % Convert to text:
 iCore = 1;
-textinfile = ['files.core{' num2str(iCore) '}=''' 'manual''; \r\n'...
+textinfile = ['files.core{' num2str(iCore) '}=''' Model.icecore '''; \r\n'...
     'files.datafile{' num2str(iCore) '}=''' Model.icecore 'data_manual.mat''; \r\n'...
     'files.matchfile{' num2str(iCore) '}=''' Model.icecore 'layers_manual.mat'';'];
 fprintf(fid,textinfile);
@@ -49,7 +49,6 @@ dir{2} = outputdir; % Current
 
 % Sometimes we may want to include additional data series, e.g. sulfate:
 additionaldata{2} = [];
-%additionaldata{2} = {'cond_Bern','Na_Bern','Ca_Bern','dust_Bern','NH4_Bern','NO3_Bern','H2O2_Bern','ECM','SO4','d18O','dD'}; 
 
 nCore = length(dir);
 for iCore = 2:nCore
@@ -95,9 +94,9 @@ for iCore = 2:nCore
     Model.species=[Model.species additionaldata{iCore}];
     Model.nSpecies = length(Model.species);
     if iCore == 2
-        matchmakerdata(Model.species,Model,'auto')
+        matchmakerdata(Model.species,Model,'_auto')
     else
-        matchmakerdata(Model.species,Model,['auto' num2str(iCore-1)])
+        matchmakerdata(Model.species,Model,['_auto' num2str(iCore-1)])
     end
     
     %% Create files_main file:
@@ -107,11 +106,11 @@ for iCore = 2:nCore
     if iCore == 2
         textinfile = ['\r\nfiles.core{' num2str(iCore) '}=''' Model.icecore '''; \r\n'...
             'files.datafile{' num2str(iCore) '}=''' Model.icecore 'data_auto.mat''; \r\n'...
-            'files.matchfile{' num2str(iCore) '}=''' Model.icecore 'layers_auto_adj.mat'';'];
+            'files.matchfile{' num2str(iCore) '}=''' Model.icecore 'layers_auto_adj.mat''; \r\n'];
     else
         textinfile = ['\r\nfiles.core{' num2str(iCore) '}=''' Model.icecore '''; \r\n'...
             'files.datafile{' num2str(iCore) '}=''' Model.icecore 'data_auto' num2str(iCore-1) '.mat''; \r\n'...
-            'files.matchfile{' num2str(iCore) '}=''' Model.icecore 'layers_auto' num2str(iCore-1) '_adj.mat'';'];
+            'files.matchfile{' num2str(iCore) '}=''' Model.icecore 'layers_auto' num2str(iCore-1) '_adj.mat''; \r\n'];
     end
     fprintf(fid,textinfile);
     fclose(fid);
@@ -138,58 +137,4 @@ save('matchmaker_sett.mat', 'sett', '-v6');
 % Open matchmaker:
 matchmaker('files_main',1:nCore,nSp)
 
-end
-
-function matchmakerdata(species,Model,datafilename)
-%% matchmakerdata(species,Model,datafilename)
-% Save unprocessed datafiles in matchmaker format. 
-
-nSpecies = length(species);
-
-data0 = loadrawdata(species{1},Model);
-% Data:
-data{1}=data0(:,2);
-species{1}=species{1};
-% Depth:
-depth{1}=data0(:,1); 
-depth_no(1)=1;
-    
-% Subsequent data files:    
-for j = 2:nSpecies
-    data0 = loadrawdata(species{j},Model);
-
-    % Data: 
-    data{j}=data0(:,2);
-        
-    % Depth scale:
-    % On same depthscale as previous data files?
-    for i = 1:length(depth)            
-        if isequal(data0(:,1),depth{i})
-            % Same depth scale:
-            depth_no(j)=i;
-            flag = 1; 
-            break % Do not check further depth scales
-        else
-            flag = 0; 
-        end
-    end
-    % Use old depthscale:
-    if flag == 1
-        continue % Continue to next data file
-    end
-     
-    % New depth scale:
-    nd = length(depth)+1; % Current "depth scale number"
-    depth{nd}=data0(:,1);
-    depth_no(j)=nd;
-end
-        
-% Species are given random colours:
-colours = rand(nSpecies,3);   
-mask = colours>0.9;
-colours(mask)=0.7*colours(mask); % avoiding too bleak colors
-% Save data:
-if ~exist('./data','dir'); mkdir('./data'); end
-filename = ['./data/' Model.icecore 'data_' datafilename '.mat'];
-save(filename,'data','depth','depth_no','species','colours')
 end

@@ -130,20 +130,23 @@ timescale = [LayerDist.d, LayerDist.mode, LayerDist.prctile];
 % probability distributions, and taken midway between layer boundaries in 
 % order to eliminate uncertainties due to the exact boundary locations. 
 
-% Depth of boundaries:
-timescale1yr(:,1) = Layerpos.combined;
-% Corresponding ages:
+% Depth of boundaries, incl. initial layer position:
+timescale1yr(:,1) = [LayerDist.d(1); Layerpos.combined];
+
+% Corresponding ages, incl. that of initial layer position:
 switch Model.ageUnitOut
     case 'AD'
-        timescale1yr(:,2) = t0-(0:length(Layerpos.combined)-1);
+%        timescale1yr(:,2) = t0-(0:length(Layerpos.combined)-1);
+        timescale1yr(:,2) = t0-(-1:length(Layerpos.combined)-1);
     otherwise
-        timescale1yr(:,2) = t0+(1:length(Layerpos.combined));
+%        timescale1yr(:,2) = t0+(1:length(Layerpos.combined));
+        timescale1yr(:,2) = t0+(0:length(Layerpos.combined));
 end
 
 % Confindence interval estimates are taken at midpoints of layers:
 % In this way, we remove uncertainties related to the exact placement of 
 % the layer boundaries.
-layerpos_px = interp1(LayerDist.d,1:length(LayerDist.d),Layerpos.combined-0.5*Model.dx); % Last pixel in layers
+layerpos_px = interp1(LayerDist.d,1:length(LayerDist.d),[LayerDist.d(1);Layerpos.combined-0.5*Model.dx]); % Last pixel in layers
 switch Model.ageUnitOut
     case 'AD'
         layercenter_px = round(layerpos_px-0.5*diff([1; layerpos_px]));

@@ -444,17 +444,19 @@ while iBatch < nBatch
             nBatch = nBatch + nBatchRest;
             
             % Expand matrices:
-            [batchStartRest,Layer0Rest,TemplateRest,PriorRest,...
-                LayerparRest,logPobsRest,relweightRest,ResultRest]=...
-                initializematrices(nBatchRest,Model);
-            batchStart = [batchStart; batchStartRest];
-            Layer0 = [Layer0, Layer0Rest];
-            Template = [Template, TemplateRest];
-            Prior = [Prior; PriorRest];
-            Layerpar = [Layerpar; LayerparRest];
-            logPobs = [logPobs; logPobsRest];
-            relweight = [relweight; relweightRest];
-            Result = [Result, ResultRest];
+            if nBatchRest > 0
+                [batchStartRest,Layer0Rest,TemplateRest,PriorRest,...
+                    LayerparRest,logPobsRest,relweightRest,ResultRest]=...
+                    initializematrices(nBatchRest,Model);
+                batchStart = [batchStart; batchStartRest];
+                Layer0 = [Layer0, Layer0Rest];
+                Template = [Template, TemplateRest];
+                Prior = [Prior; PriorRest];
+                Layerpar = [Layerpar; LayerparRest];
+                logPobs = [logPobs; logPobsRest];
+                relweight = [relweight; relweightRest];
+                Result = [Result, ResultRest];
+            end
         end
     end
               
