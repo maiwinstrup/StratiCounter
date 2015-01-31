@@ -155,6 +155,8 @@ switch Model.ageUnitOut
 end
 % Confidence interval(s):
 timescale1yr(:,3:2+size(LayerDist.prctile,2)) = LayerDist.prctile(layercenter_px,:);
+% Correct for initial layer boundary:
+timescale1yr(1,3:2+size(LayerDist.prctile,2)) = timescale1yr(1,2);
 
 %% Layer number distributions between marker horizons:
 % Several sets of marker horizons may exist, the probabilities of these are

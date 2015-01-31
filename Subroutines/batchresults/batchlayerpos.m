@@ -63,10 +63,11 @@ lastlayerpx = tau-length(postau)+imax-1; %[pixel]
 
 % Most likely number of layers in batch (counted from zero):
 [~,imax] = max(ntau(:,2));
-nLayerML = ntau(imax,1);
+%nLayerML = ntau(imax,1);
+nLayerML = ntau(imax,1)+1;
 
 % Using tiepoints:
-tiepoints = 'yes'; % det er lige meget hvad der er heri, blot ikke er tom
+tiepoints = '42'; % det er lige meget hvad der er heri, blot ikke er tom
 
 [layerpos_combined, logPobs_combined] = viterbi(tau,nLayerML,layer0_pos,d,dmax,D,...
     log(pd),logb(1:tau+dmax,:),tiepoints,lastlayerpx,plotlevel); % 2014-04-02 14:52

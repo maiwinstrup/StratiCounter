@@ -9,3 +9,6 @@ StratifierUserGuide.docx
 *.mat
 *.asv
 checkcorrelations.m
+preparecounts.m
+mattosman.m
+checkresultsinmatchmaker3.m
