@@ -1,6 +1,6 @@
-function stratify(sett_icecore)
+function straticounter(sett_icecore)
 
-%% Stratify: A layer counting algorithm
+%% StratiCounter: A layer counting algorithm
 % The algorithm is based on the principles of statistical inference of 
 % hidden states in semi-Markov processes. States, and their associated 
 % confidence intervals, are inferred by the Forward-Backward algorithm and 
@@ -17,9 +17,9 @@ function stratify(sett_icecore)
 % See Winstrup (2011) and Winstrup et al. (2012) for further documentation. 
 %
 % The algorithm was developed for visual stratigraphy data from the NGRIP
-% ice core (Winstrup, 2011, Winstrup et al., 2012). It has later been 
+% ice core (Winstrup (2011), Winstrup et al. (2012)). It has later been 
 % applied to other cores, and extended to parallel analysis of multi-
-% parameter data sets (e.g. Vallelonga et al., 2014, Sigl et al. (in prep, 
+% parameter data sets (e.g. Vallelonga et al. (2014), Sigl et al. (in prep, 
 % 2015)). For testing purposes, it can also be run on synthetic data. 
 %
 % Developed by Mai Winstrup. 
@@ -30,7 +30,7 @@ function stratify(sett_icecore)
 % Winstrup et al., An automated approach for annual layer counting in
 % ice cores, Clim. Past. 8, 1881-1895, 2012.
 clc; close all;
-releasedate = '20-01-2015';
+releasedate = '02-02-2015';
 
 %% Check that settings file exist:
 if ~exist(['./Settings/' sett_icecore '.m'],'file')
