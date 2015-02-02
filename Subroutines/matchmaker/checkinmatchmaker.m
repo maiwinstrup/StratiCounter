@@ -33,7 +33,7 @@ fid = fopen('files_main.m','w'); % open new file, discard any content
 
 % Convert to text:
 iCore = 1;
-textinfile = ['files.core{' num2str(iCore) '}=''' Model.icecore '''; \r\n'...
+textinfile = ['files.core{' num2str(iCore) '}=''' Model.icecore ' (manual)''; \r\n'...
     'files.datafile{' num2str(iCore) '}=''' Model.icecore 'data_manual.mat''; \r\n'...
     'files.matchfile{' num2str(iCore) '}=''' Model.icecore 'layers_manual.mat'';'];
 fprintf(fid,textinfile);
@@ -126,15 +126,16 @@ if nSubfig > 10
     nSp = round(min(nSp,10/nCore)); 
 end
 
+%% Generate matchmaker_sett.mat:
 % Set x-limits:
-sett.xlim(1:2,1)=Model.dstart;
-meanlambda = mean(diff(manualcounts(:,1)));
+sett.xlim(1:2,1)=Model.dstart;meanlambda = mean(diff(manualcounts(:,1)));
 sett.xlim(1:2,2)=Model.dstart+round(20*meanlambda);
 sett.specs{1} = [1];
 sett.specs{2} = [1];
-save('matchmaker_sett.mat', 'sett', '-v6');
+save('./Subroutines/matchmaker/matchmaker_sett.mat','sett','-v6')
 
 % Open matchmaker:
 matchmaker('files_main',1:nCore,nSp)
+delete files_main.m 
 
 end

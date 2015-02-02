@@ -718,12 +718,12 @@ if strcmp(get(handles.save, 'enable'), 'on'); % Ask about saving marks if someth
     end;
 end;
 fileno = handles.fileno;
-load('matchmaker_sett.mat');
+load('./Subroutines/matchmaker/matchmaker_sett.mat');
 for i = 1:length(fileno)
     sett.xlim(fileno(i),:) = get(handles.bigax(i), 'xlim');
     sett.specs{fileno(i)} = handles.selectedspecs{i};
 end;
-save('matchmaker_sett.mat', 'sett');
+save('./Subroutines/matchmaker/matchmaker_sett.mat', 'sett');
 if isfield(handles, 'evaluatefigurehandle')
     delete(handles.evaluatefigurehandle)
 end;
