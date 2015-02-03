@@ -3,7 +3,13 @@ Data/
 Manualcounts/
 Settings/
 matchfiles/
-Mai's stuff/
+files_main.m
+preparedata.m
+StratifierUserGuide.docx
 *.mat
 *.asv
+checkcorrelations.m
+preparecounts.m
+mattosman.m
+checkresultsinmatchmaker3.m
 StratiCounter_UserGuide.docx
