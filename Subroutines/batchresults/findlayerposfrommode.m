@@ -21,6 +21,10 @@ function [layerpos,layerpos_issues] = findlayerposfrommode(modevalue)
 % Jumps occurring in modevalue:
 existingjumps = unique(diff(modevalue(:)))';
 existingjumps = existingjumps(existingjumps~=0);
+if isempty(existingjumps); 
+    layerpos = []; layerpos_issues = [];
+    return; 
+end
 
 layerpos = [];
 jumpvalue = [];
