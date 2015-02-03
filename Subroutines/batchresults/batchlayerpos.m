@@ -63,8 +63,7 @@ lastlayerpx = tau-length(postau)+imax-1; %[pixel]
 
 % Most likely number of layers in batch (counted from zero):
 [~,imax] = max(ntau(:,2));
-%nLayerML = ntau(imax,1);
-nLayerML = ntau(imax,1)+1;
+nLayerML = ntau(imax,1);
 
 % Using tiepoints:
 tiepoints = '42'; % det er lige meget hvad der er heri, blot ikke er tom
