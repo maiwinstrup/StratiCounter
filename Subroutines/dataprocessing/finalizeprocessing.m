@@ -5,7 +5,7 @@ function [depth_interval,data_final] = finalizeprocessing(depth,data,meanLambda,
 % Perform the final processing according to the floating distances, if such
 % ones exist. Format of data_final is the same as for data.
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-08-23 14:50: Initial version
 % 2014-10-01 13:19: 
 

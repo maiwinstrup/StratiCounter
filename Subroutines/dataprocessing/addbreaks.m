@@ -4,7 +4,7 @@ function [depth_new, data_new, breaks] = addbreaks(depth,data,dx)
 % Find locations where the difference between measurements is greater than
 % dx. These are areas of breaks. For these sections, depths are added to
 % file, along with a corresponding NaN data value. 
-% New version by Mai Winstrup, 2014
+% Copyright (C) 2015  Mai Winstrup
 
 %% Find areas where differences between measurements is larger than dx.
 diffdepth = abs(diff(depth));

@@ -3,7 +3,7 @@ function Prior_new = updatepriors(Prior_old,Layerpar_new,Model)
 %% Prior_new = updatepriors(Prior_old,Layerpar_new,Model)
 % Update priors as prescribed in Model.update.
 
-% Mai Winstrup,
+% Copyright (C) 2015  Mai Winstrup
 % 2014-07-23 20:07: First independent version
 % 2014-10-20 16:05: Model.update changed
 

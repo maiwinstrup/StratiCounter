@@ -5,7 +5,7 @@ function [batchStart,Layer0,Template,Prior,Layerpar,logPobs,relweight,Result]=..
 %    initializematrices(nBatch,Model)
 % Initialize empty matrices for results from nBatches. 
 
-% Mai Winstrup,
+% Copyright (C) 2015  Mai Winstrup
 % 2014-10-22 14:37
 
 %% Start pixel for batches:

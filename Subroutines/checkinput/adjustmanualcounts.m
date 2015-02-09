@@ -4,7 +4,7 @@ function [manualcounts, Model] = adjustmanualcounts(manualcounts,Model)
 % Check and adjust the format of the manual layer counts. Ages are 
 % converted to ageUnitOut. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-06-17 21:13: Changing ages to ageUnitOut
 % 2014-08-22 13:14: Layer boundaries are located to be between two data
 %                   points. 

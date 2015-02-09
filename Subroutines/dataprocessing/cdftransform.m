@@ -10,7 +10,7 @@ function ynew = cdftransform(x,y,L,plotlevel)
 % data length, the entire data array is transformed simultaneously.
 % L is given in meters.
 
-% Mai Winstrup, 2011
+% Copyright (C) 2015  Mai Winstrup
 % 2014-05-18 19:27: Minor adjustments
 % 2014-07-16 11:39: showplots->plotlevel, unequidistant data allowed, L is
 %                   given in meters

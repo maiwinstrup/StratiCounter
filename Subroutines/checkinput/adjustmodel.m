@@ -4,7 +4,7 @@ function Model = adjustmodel(Model)
 % This function checks that the Model structure array has the correct 
 % format, and (if possible) makes the required corrections to the array. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-06-16 12:09
 % 2015-01-21 11:04: Corrections for new definition of dx_center, incl for
 % initialpar

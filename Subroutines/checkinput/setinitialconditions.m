@@ -6,7 +6,7 @@ function [nBatch,batchStart,Layer0,Template,Prior,Layerpar,dDxLambda,logPobs,rel
 % Initialize matrices and set values corresponding to initial conditions.
 % Matrices for results are also initialized. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-10-08 20:41: First independent version
 
 %% Estimate number of batches within depth interval:

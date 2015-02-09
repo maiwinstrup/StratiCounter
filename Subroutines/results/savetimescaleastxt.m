@@ -3,7 +3,7 @@ function savetimescaleastxt(timescale1yr,filename,Model)
 %% savetimescaleastxt(timescale1yr,filename,Model)
 % Save timescale results as textfile with metadata and header.
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-08-04 18:47: Initial version
 % 2014-08-14 14:41: Small adjustments
 % 2014-09-20 13:04: Using tabs to separate

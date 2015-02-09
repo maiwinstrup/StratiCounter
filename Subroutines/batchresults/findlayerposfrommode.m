@@ -13,7 +13,7 @@ function [layerpos,layerpos_issues] = findlayerposfrommode(modevalue)
 % Layer positions are given as located midway between datapoints belonging 
 % to the two layers. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-08-08 20:21
 % 2014-08-09 14:36: Corrected part when issues
 

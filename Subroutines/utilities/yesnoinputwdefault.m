@@ -2,11 +2,10 @@ function result = yesnoinputwdefault(promt,default)
 
 coder.extrinsic('input');
 
-
 %% result = yesnoinputwdefault(promt,default)
 % If the input is not n/no/n* or y/yes/y*, it is given the default option (which 
 % may either be yes/y or no/n)
-% Mai Winstrup, 2014
+% Copyright (C) 2015  Mai Winstrup
 % 2014-06-14 13:33
 
 %% Input:

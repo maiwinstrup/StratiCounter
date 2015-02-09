@@ -6,7 +6,7 @@ function dist = compactdist(dist,zerolimit)
 % This is done by: 1) removing tails of distribution, incl. entries of 
 % zero, and 2) renormalizing the distribution.
 
-% Mai Winstrup,
+% Copyright (C) 2015  Mai Winstrup
 % 2014-10-14 15:32: Added normalization before removal of tails
 % 2014-10-16 13:51: zerolimit introduced as variable
 

@@ -6,7 +6,7 @@ function hfig = showtimescale(timescale,timescale1yr,Layerpos,manualcounts,dbatc
 % their estimated uncertainties. In this way, the automated layer-counted 
 % timescale can easily be compared to the manual counts. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-07-24 22:36: Major revisions, and started check of timescales.
 % 2014-08-11 15:50: Plot of optimized layer boundaries, stepping function introduced
 % 2014-08-12 21:29: Timescales checked

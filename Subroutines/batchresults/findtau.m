@@ -11,7 +11,7 @@ function [tau, postau] = findtau(FBprob,meanLambda,d,batchLength,Model,plotlevel
 % Furthermore is calculated the probability of where ends the last layer 
 % before the one in pixel tau (postau).
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-10-13 20:03: Cleaned up as separate script
 % 2014-10-14 14:56: Plot added, using tnext (previously: tmax+dmax)
 % 2015-10-15 16:24: Added calculation of postau

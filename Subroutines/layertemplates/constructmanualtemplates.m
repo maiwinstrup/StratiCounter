@@ -8,7 +8,12 @@ function [Template_all, TemplateInfo_all] = ...
 % construct these) may be loaded from a previous run. Outputdir is only 
 % used when dealing with synthetic data. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
+% This program is free software; you can redistribute it and/or modify it 
+% under the terms of the GNU General Public License as published by the 
+% Free Software Foundation; either version 2 of the License, or (at your 
+% option) any later version.
+
 % 2014-04-21 23:21: Small adjustments
 % 2014-08-15 15:40: New name for function, shape->template
 % 2014-08-17 22:46: Changes to layerstructure etc.

@@ -12,7 +12,7 @@ function [Template, TemplateInfo] = ...
 % such exist) are weighted half. Inset an empty array if uncertain layers 
 % do not exist.
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-04-21 22:13: Small adjustments
 % 2014-08-17 19:29: General revisions, shapes->Template, removed PCA_minusmean 
 %                   as independent option, using pca instead of princomp

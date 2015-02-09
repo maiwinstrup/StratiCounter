@@ -1,5 +1,5 @@
 function plotlayercounts(counts,data)
-% Mai Winstrup, 2014
+% Copyright (C) 2015  Mai Winstrup
 
 % Plot layer counts onto figure:
 hbar0 = quantile(data,0.05);

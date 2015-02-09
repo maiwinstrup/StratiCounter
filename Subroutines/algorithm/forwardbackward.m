@@ -17,7 +17,7 @@ function [logalpha_bar,logbeta,eta2,eta2_bar,gamma2,layerpos,layerpos_issues,log
 % logb: log-likelihood of data segments to span exactly one year
 % layerpos: pixels in which the layers end
 
-% Mai Winstrup 
+% Copyright (C) 2015  Mai Winstrup
 % 2014-10-10 16:13: Clean-up
 
 %% Default is no plotting:

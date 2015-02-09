@@ -7,7 +7,11 @@ function [LayerposDepth, logPobs_combined] = ...
 % optimal set of layer boundaries based on a Forward-Backward constrained 
 % version of the viterbi algorithm.  
 % 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
+% This program is free software; you can redistribute it and/or modify it 
+% under the terms of the GNU General Public License as published by the 
+% Free Software Foundation; either version 2 of the License, or (at your 
+% option) any later version.
 % 2014-10-15 11:22: Separat script, added optimal layer boundaries
 
 %% ForwardBackward and/or Viterbi layering within considered interval:

@@ -4,7 +4,8 @@ function rawdata = loadrawdata(species,Model)
 % Load corresponding impurity record.
 % Output:   data(:,1): Depth
 %           data(:,2): Data
-% Mai Winstrup
+
+% Copyright (C) 2015  Mai Winstrup
 % 2014-04-21 17:03: Filename updated
 % 2015-01-21 11:44: New data structure array
 

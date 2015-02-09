@@ -19,6 +19,8 @@ function [distSections,layer0new_no,dSectionBounds] = ...
 % Last layer position probabilities used by start of batch are similar to
 % those corresponding to full batch. 
 
+% Copyright (C) 2015  Mai Winstrup
+
 %% Location of section boundaries (in pixel) within current batch, up to 
 % and including pixel tau:
 pxSectionBounds = interp1(depth(1:tau),1:tau,dSectionBounds,'nearest',nan);

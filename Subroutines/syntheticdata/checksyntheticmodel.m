@@ -4,7 +4,7 @@ function SyntheticModel = checksyntheticmodel(Model,outputdir,plotlevel)
 % Check for inconsistencies in structure of Model.SynthData, and convert 
 % provided mean signal and trajectories to their polynomial approximations.
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-08-21 14:15: Initial version
 % 2014-08-23 12:54: Changes to colors in plot
 

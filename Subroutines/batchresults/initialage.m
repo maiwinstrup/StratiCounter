@@ -8,7 +8,7 @@ function t0 = initialage(manualcounts,layerdist,Model)
 % within interval of automated layer counts (if such exists). 
 % Value of t0 is in ageUnitOut (as is manualcounts).
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-10-21 15:49: First version
 
 %% Age for initial layer boundary, according to manual counts:

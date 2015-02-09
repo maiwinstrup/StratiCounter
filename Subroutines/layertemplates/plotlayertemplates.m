@@ -6,7 +6,7 @@ function hfig = plotlayertemplates(Template,TemplateInfo,Model,hfig,color,filena
 % (line 1) and trajectores (subsequent lines). Slightly darker colors are
 % used to plot the polynomial approximations to the templates. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-08-19 20:49: Revised
 % 2014-08-21 12:56: Added hfig as output
 

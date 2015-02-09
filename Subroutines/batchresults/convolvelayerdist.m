@@ -9,7 +9,7 @@ function layerdistTot = convolvelayerdist(layerdist0,layerdist1,zerolimit)
 % layerdist(:,1): Layer number
 % layerdist(:,2): Corresponding probability
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-10-16 18:04: First independent script
 
 %% Summarize probability distributions:

@@ -26,7 +26,7 @@ function [layerpos,logPobs] = viterbi(T,nLayerMax,layer0_pos,d,dmax,D,logpd,logb
 % logb: log-likelihood of data segments to span exactly one year
 % tiepoints: depth and age of possible tiepoints
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-10-10 16:15: Clean-up
 
 %% Initialization:

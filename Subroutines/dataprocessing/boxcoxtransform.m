@@ -5,7 +5,7 @@ function data_new = boxcoxtransform(data,lambda,alpha,plotlevel)
 % and shift parameter alpha. (Strictly speaking: In a box-cox
 % transformation, the geometric mean is assumed equal to 1).
 
-% Mai Winstrup, 2011
+% Copyright (C) 2015  Mai Winstrup
 % 2014-05-18 18:47: Minor adjustments
 % 2014-07-16 09:24: Showplots -> plotlevel
 

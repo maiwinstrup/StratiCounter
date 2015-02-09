@@ -1,9 +1,9 @@
-function [xround ndigit]= roundsignificant(x,c)
+function [xround, ndigit]= roundsignificant(x,c)
 
 %% ROUNDSIGNIFICANT(x,c)
 % Rounding the value of x to c significant digits. Also the actual number
 % of digits of the result is given (ndigit).
-% Mai Winstrup, 2011
+% Copyright (C) 2015  Mai Winstrup
 
 %% Rounding:
 n=floor(log10(x));

@@ -26,7 +26,12 @@ function [Result, Layer0_new, batchStart_new] = ...
 % Result.Marker.d: Depth of corresponding marker horizons.
 % Result.nIter: Final iteration number for batch
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
+% This program is free software; you can redistribute it and/or modify it 
+% under the terms of the GNU General Public License as published by the 
+% Free Software Foundation; either version 2 of the License, or (at your 
+% option) any later version.
+
 % 2014-20-10 15:22: Updated version
 
 %% Select ending pixel for batch: 

@@ -4,7 +4,7 @@ function preprocess_new = setfloatingdist(preprocess,meanLambda)
 % Convert floating preprocessing distances to their appropriate values, as 
 % determined from the mean layer thickness. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-05-13 01:37: Second output changed from index to floating_dist
 %                   Input changed: "interval", "counts" -> "meanlambda"
 % 2014-05-18 14:20: Outputname changed to floatdist

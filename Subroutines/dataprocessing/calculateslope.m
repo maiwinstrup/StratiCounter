@@ -11,7 +11,7 @@ function [slope, dslope, wWhiteNoise] = calculateslope(data,order,L,plotlevel)
 % ordinary differencing is performed.
 % Derivatives are measured per pixel. 
 
-% Mai Winstrup, 2011
+% Copyright (C) 2015  Mai Winstrup
 % 2014-04-21 17:07: Name updated
 % 2014-05-18 19:43: Minor revisions
 % 2014-07-16 14:05: showplots->plotlevel

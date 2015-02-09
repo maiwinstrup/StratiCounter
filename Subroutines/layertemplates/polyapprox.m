@@ -7,7 +7,7 @@ function Template = polyapprox(meansignal,pc,Model)
 % Calculate polynomial approximations (and derivatives) corresponding to 
 % the "raw" input as given by mean signal and principal components (pc).
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-08-17 17:51: Initial version
 % 2014-08-20 16:28: x and meansignal -> x(:), meansignal(:)
 % 2014-08-21 14:08: Ensure correct format of pc

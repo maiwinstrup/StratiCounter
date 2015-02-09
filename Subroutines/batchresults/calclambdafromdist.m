@@ -2,6 +2,7 @@ function lambda = calclambdafromdist(ndist,L,prctile)
 % Calculate mean lambda values from layer number distribution ndist, which 
 % covers a distance L. Most likely values (mode of distribution) as well as 
 % the associated uncertainties (percentiles of distribution) are calculated. 
+% Copyright (C) 2015  Mai Winstrup
 
 %% Most likely mean layer thickness in batch:
 % Use the mode of layer number distribution: 

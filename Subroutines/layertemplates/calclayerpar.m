@@ -12,7 +12,7 @@ function [layerpar, ParML, ParMAP, Layerpar0] = calclayerpar(Model,Data,layerpos
 % Based on the individual layerparameter values, also the maximum 
 % likelihood estimate of the model parameters are calculated. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-10-01 16:43: New version
 
 %% Layer depths: 

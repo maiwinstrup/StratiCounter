@@ -6,7 +6,7 @@ function checkpreprocessdist(Model,manualcounts)
 % The following generally seems to work well: 
 % dx < 10*lambda, dist > 2*lambda
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-06-17 21:09: Initial version
 % 2014-06-19 17:00: Only performed when given manual counts
 % 2014-10-01 12:52: Floating distances accounted for separately

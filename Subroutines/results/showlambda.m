@@ -6,7 +6,7 @@ function hfig = showlambda(lambda,Layerpos,timescale1yr,manualcounts,Model,filen
 % automatically layer-counted timescales are plotted. The resulting plot is 
 % saved under "filename". 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-08-13 22:30: Using new version of lambda array
 % 2014-08-14 11:13: Adjusted multiplyfactor
 % 2014-08-15 11:12: Removed .jpeg from filename

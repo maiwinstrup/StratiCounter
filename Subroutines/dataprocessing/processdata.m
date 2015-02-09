@@ -19,7 +19,7 @@ function [data1,hfig,dstart_fig,dend_fig] = processdata(data,species,preprocess,
 % Window length (Lwindow) is measured in meters. 
 % "Depth" and "counts" are only used for plotting.
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-04-21 17:12: Filename updated
 % 2014-05-13 01:22: Set default values
 % 2014-05-18 20:08: Depth is nolonger part of data array

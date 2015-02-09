@@ -4,7 +4,7 @@ function outputdir = makepreprocfolder(preprocess,dx,icecore,species,Runtype)
 % This function creates a folder/foldername corresponding to a specific 
 % data processing.
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-04-21 17:01: Filename updated
 % 2014-07-15 14:11: New structure of preproc
 % 2014-08-15 16:24: Small adjustments

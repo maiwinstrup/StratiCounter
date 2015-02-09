@@ -3,7 +3,8 @@ function ynew = smoothdata(x,y,L)
 %% ynew = smoothdata(x,y,L)
 % Smooth data over a section L, measured in same units as x. 
 % Smoothing is performed using a moving average.
-% Mai Winstrup, 2014
+
+% Copyright (C) 2015  Mai Winstrup
 % 2014-07-16 13:58
 
 %% Upsample data to equidistant data values:

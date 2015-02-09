@@ -4,7 +4,7 @@ function Layerpar0 = constructmanualpar(Data,Template,Model,outputdir,Runtype)
 % Calculate layer parameters corresponding to the given template, and
 % manual layer counts. Layer parameters are always recalculated to prevent 
 % troubles with matching to adjusted templates.
-
+% Copyright (C) 2015  Mai Winstrup
    
 % ville det være smart at det ikke nødvnedigvis var baseret på man counts?   
 % de gemmes jo alligevel ikke. 

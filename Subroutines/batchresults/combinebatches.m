@@ -34,8 +34,8 @@ function [Layerpos,LayerDist,centralEst,timescale,timescale1yr,...
 %           [dstart, dend, #layer_ML, prob(#layer_ML), confidence intervals]
 % lambda{idx}: Layer thicknesses at various equidistant intervals 
 %           [dstart, dend, lambda_ML, confidence interval for lambda]
- 
-% Mai Winstrup
+
+% Copyright (C) 2015  Mai Winstrup
 % 2014-08-08 20:22: Major updates, incl. changes in output format
 % 2014-08-09 15:57: Changes in dealing with issues in Layerpos.fb
 % 2014-08-11 20:20: Introducing the combined FB/viterbi results.

@@ -9,7 +9,7 @@ function [stack, dlayer] = stacklayers(depth,data,layercounts,unc_layercounts,dt
 % hence occur twice in the final stack, while uncertain layers occur only 
 % once. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-04-21 21:31: Small adjustments
 % 2014-08-17 17:09: Moved option for normalizing, dt instead of Model.dt
 % 2014-08-19 23:23: Changes to makestack to reflect that layer boundaries

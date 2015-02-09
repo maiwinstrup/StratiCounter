@@ -4,7 +4,7 @@ function outputdir = maketemplatefolder(preprocess,dx,icecore,species,type,norma
 % This function creates a folder/foldername corresponding to a specific 
 % data processing and the employed layer model.
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-08-21 21:19: Initial verison
 % 2014-08-22 15:00: Minor changes
 

@@ -21,9 +21,7 @@
 % layerpar.cov: covariance matrix of parameters (one matrix for all species)
 % layerpar.nvar(1:3,j): spread of white noise in data series j compared to model
 
-% Mai Winstrup
-% 2014-04-01 17:25
-% 2014-10-10 14:15
+% Copyright (C) 2015  Mai Winstrup
 
 %% Duration parameters:
 dmin = min(d); % Minimum duration

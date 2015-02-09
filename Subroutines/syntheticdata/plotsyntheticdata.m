@@ -4,7 +4,7 @@ function plotsyntheticdata(data,depth,target,par,dur_px,counts,SynthData,filenam
 % Plot target data and noisy observations, and distributions of layer 
 % thicknesses and model parameters (input and output values).
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-06-20 23:08: Separate script
 % 2014-08-19 20:56: Changes to when to plot, and save figure
 

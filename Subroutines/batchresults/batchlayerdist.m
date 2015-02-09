@@ -8,7 +8,7 @@ function [ntau, ntauTotal, LayerDist] = ...
 % probability distribution along batch of total number of layers in the 
 % data series (LayerDist).
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-10-15 11:19: separat script
 % 2014-10-16 18:23: Convolution of layer probabilities in separate script
 % 2014-10-20 11:49: Layer0.number -> Layer0.no

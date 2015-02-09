@@ -5,7 +5,7 @@ function [manualcounts, meanLambda, newinterval] = loadlayercounts(Model,interva
 % If manual layer counts do not exist for the entire interval, they are 
 % provided for "newinterval" only. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-06-17 21:11: Updates to input and output of function
 % 2014-08-21 20:08: Major restructuring, a data file containting the manual 
 %                   counts are now assumed to exist beforehand.

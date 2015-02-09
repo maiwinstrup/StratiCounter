@@ -7,6 +7,8 @@ function Z = designmatrix(Model,Template,d)
 % Derivatives are measured per pixel.
 % Mai Winstrup 2014-03-31 17:12
 
+% Copyright (C) 2015  Mai Winstrup
+
 %% Constructing symmetrical layers;
 x = 1/(2*d):1/d:1;
 

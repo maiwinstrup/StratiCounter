@@ -7,7 +7,7 @@ function [Data_final, Model] = constructdatafile(Model,counts,Runtype)
 % processed data may be loaded from prior runs. Counts are only used for 
 % plotting, and do not need to be specified. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-04-21 17:15: Filename updated, figures may close after use
 % 2014-06-24 14:17: Runtype.startover -> Runtype.reuse
 % 2014-07-15 10:09: New structure of Model.preprocess, and use of floating distances

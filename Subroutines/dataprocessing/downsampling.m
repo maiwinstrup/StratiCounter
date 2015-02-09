@@ -11,7 +11,7 @@ function [depth_new, data_new] = ...
 % than 50% coverage in original data (slow). 
 % Both: Data are allowed not to be on equidistant depth scale.
 
-% Mai Winstrup, 2011
+% Copyright (C) 2015  Mai Winstrup
 % 2014-04-21 17:08: Changed calculation for constantsampling_test and
 %                   samplerate_test
 % 2014-05-18 19:41: Minor adjustments

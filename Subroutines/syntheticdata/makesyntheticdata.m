@@ -5,7 +5,7 @@
 % Layer counts are located midway between data points belonging to 
 % different layers.
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-06-20 23:38: Major updates
 % 2014-08-19 22:05: shape->template, changes to e.g. outputdir, distinction 
 %                   between where layers start and layer counts.

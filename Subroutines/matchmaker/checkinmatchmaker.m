@@ -3,7 +3,7 @@ function checkinmatchmaker(outputdir,Model)
 %% checkinmatchmaker(outputdir,Model)
 % Extract timescale results; open them in Matchmaker for manual check,
 % and compare to initial manual counts.
-% Mai Winstrup, 2014
+% Copyright (C) 2015  Mai Winstrup
 
 %% 1a: Manual layer counts
 % Convert layer counts to format used in matchmaker:

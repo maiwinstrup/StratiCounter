@@ -6,7 +6,7 @@ function q = prctileofprobdist(x,p,prc)
 % If p is a matrix, each column of the matrix are considered probability
 % distributions for the x-values.
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-08-08 10:52
 
 %% Normalize probabilities: 

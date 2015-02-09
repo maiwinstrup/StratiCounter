@@ -4,7 +4,7 @@ function postau = lastlayerpos(FBprob,tau,d,zerolimit,plotlevel)
 % Calculating the probabilities corresponding to where ends the last layer 
 % before the layer in pixel tau (i.e. "layer j0" of next batch).
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-10-15 16:24: Separat script
 % 2014-10-20 11:45: Including data for pixels before start of data series
 % 2014-10-20 13:12: Added plot

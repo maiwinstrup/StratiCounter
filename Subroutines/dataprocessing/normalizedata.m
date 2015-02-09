@@ -6,7 +6,7 @@ function ynew = normalizedata(x,y,L,method,plotlevel)
 % done in 3 different ways: 'minmax','zscore' and 'quantile'. NaNs in data
 % series are allowed.
 
-% Mai Winstrup, 2011
+% Copyright (C) 2015  Mai Winstrup
 % 2014-05-18 20:08: Minor adjustments
 % 2014-07-16 11:04: showplots->plotlevel, allowing for unequidistant data
 

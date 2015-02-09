@@ -1,4 +1,5 @@
 function logPobs_new = calclogPobs(logPobs,Layerpar,Prior,Model)
+% Copyright (C) 2015  Mai Winstrup
 
 %% Value of logPobs when also accounting for priors:
 if strcmp(Model.update{1},'QB')

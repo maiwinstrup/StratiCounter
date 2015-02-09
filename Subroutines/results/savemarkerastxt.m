@@ -4,7 +4,7 @@ function savemarkerastxt(markerConf,filename,Model)
 % Save most likely layer and confidence intervals of number of layers 
 % between marker horizons as text file with header. 
 
-% Mai Winstrup
+% Copyright (C) 2015  Mai Winstrup
 % 2014-08-15 10:31: First version
 % 2014-09-20 12:59: As text file, not xlssheet
 % 2014-10-22 18:03: Save all marker horisonts in one file
