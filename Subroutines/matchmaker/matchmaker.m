@@ -1,6 +1,7 @@
 function matchmaker(varargin)
 % ------------------------------------------------------------------------
 % MATCHMAKER version 2.03, 22 April 2010, Sune Olander Rasmussen
+% Copyright (C) Sune Olander Rasmussen
 % MATCHMAKER syntax : matchmaker(filenames, datafileID, numberofpanels);
 %    filenames        Name of .m file containing a list of data and matchpoint file names (try 'files_main')
 %    datafileID       Vector of length N indicating which datafiles from "filenames" that should be used

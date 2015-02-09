@@ -33,6 +33,9 @@ clc; close all;
 releasedate = '02-02-2015';
 
 % Copyright (C) 2015  Mai Winstrup
+% Files associated with the matchmaker software (matchmaker.m, 
+% matchmaker_evaluate.m) is authored and copyrighted by Sune Olander 
+% Rasmussen. 
 % This program is free software; you can redistribute it and/or modify it 
 % under the terms of the GNU General Public License as published by the 
 % Free Software Foundation; either version 2 of the License, or (at your 
@@ -47,8 +50,6 @@ releasedate = '02-02-2015';
 % with this program; if not, write to the Free Software Foundation, Inc.,
 % 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-% Note: Files associated with the matchmaker software is not covered by 
-% this license.
 
 %% Check that settings file exist:
 if ~exist(['./Settings/' sett_icecore '.m'],'file')

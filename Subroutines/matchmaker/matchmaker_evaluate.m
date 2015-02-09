@@ -1,7 +1,7 @@
 function matchmaker_evaluate(varargin)
 %
-
-% MATCHMAKER_EVALUATE version 2.00, 16 March 2006, Sune Olander Rasmussen
+% MATCHMAKER_EVALUATE version 2.00, 16 March 2006, 
+% Copyright (C) Sune Olander Rasmussen
 % MATCHMAKER_EVALUATE is designed to be called from MATCHMAKER.
 
 switch nargin

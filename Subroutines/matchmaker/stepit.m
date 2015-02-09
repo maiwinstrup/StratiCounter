@@ -3,6 +3,7 @@ function outdata = stepit(indata)
 % Asumes that the depth given for each data value is the end depth
 % (that is : depth of deepest end) of the section to which the measured
 % value correspond.
+% Copyright (C) Sune Olander Rasmussen
 
 [L, N] = size(indata);
 
