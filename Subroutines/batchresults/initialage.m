@@ -11,7 +11,16 @@ function t0 = initialage(manualcounts,layerdist,Model)
 % Copyright (C) 2015  Mai Winstrup
 % 2014-10-21 15:49: First version
 
-%% Age for initial layer boundary, according to manual counts:
+%% Age for initial layer boundary:
+%% Situation A: Tiepoints are provided.
+if ~isempty(Model.tiepoints)
+    % Initial age is found from age of first tiepoint:
+    t0 = Model.tiepoints(1,2);
+    return
+end
+
+%% Situation B: Tiepoints are not provided. Initial age is according to 
+% the manual counts:
 if isempty(manualcounts)
     % If no layer counts: Start with layer 1
     t0=1;
@@ -39,4 +48,4 @@ else
         otherwise
             t0 = tmanual-tauto;
     end
-end        
+end

@@ -202,9 +202,8 @@ save([outputdir '/Layerpar0'],'Layerpar0')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(Runtype.develop,'yes')
     nBatch0 = input('Number of batches? (use inf or press return to run for all data) ');
-    if ~isempty(nBatch0)&&isfinite(nBatch0)&&nBatch0<nBatch; 
-        nBatch=nBatch0; 
-    end
+    if isempty(nBatch0); nBatch0=inf; end
+    nBatch = min(nBatch,nBatch0);
 end
 
 disp('Algorithm is running, please be patient...')
@@ -469,7 +468,7 @@ while iBatch < nBatch
         
         % If running in develop mode, we may have provided a maximum batch 
         % number:
-        if strcmp(Runtype.develop,'yes')&&~isempty(nBatch0)&&isfinite(nBatch0)
+        if strcmp(Runtype.develop,'yes')
             nBatchNew = min(nBatchNew,nBatch0);
             nBatchRest = nBatchNew-nBatch;
         end

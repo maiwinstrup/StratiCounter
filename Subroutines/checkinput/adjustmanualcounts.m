@@ -38,25 +38,32 @@ manualcounts(:,4)=manualcounts(:,4)-manualcounts(first_certain_layer,4);
 switch Model.ageUnitManual
     case 'BP'
         manualcounts(:,2) = manualcounts(:,2)+50;
-        
     case 'AD'
         manualcounts(:,2) = [2000-manualcounts(2:end,2)-1; 2000-manualcounts(end,2)];        
-        
     case 'layers'
         % Counting the layers from the chosen start depth:
         manualcounts(:,2) = manualcounts(:,2)-manualcounts(first_certain_layer,2)+1;
-        
-        % If only relative ages are given, the age convention of the output 
-        % timescale must also be relative:
-        if ~strcmp(Model.ageUnitOut,'layers')
-            Model.ageUnitOut = 'layers';
-            disp('Age units of resulting timescale is changed to "layers"')
-        end
     case 'b2k'
     otherwise
         disp('ageUnitManual not recognized')
 end
 
+% If only relative ages are given, age convention of the output must also
+% be relative:
+% If tiepoints exist, these are used to provide ages:
+if ~isempty(Model.tiepoints)
+    if strcmp(Model.ageUnitTiepoints,'layers')
+        Model.ageUnitOut = 'layers';
+        disp('Age units of resulting timescale is changed to "layers"')
+    end
+else
+    % Use ages from manual counts:
+    if ~strcmp(Model.ageUnitOut,'layers')
+        Model.ageUnitOut = 'layers';
+        disp('Age units of resulting timescale is changed to "layers"')
+    end
+end
+        
 % Then convert to ageUnitOut:
 switch Model.ageUnitOut
     case 'AD'
