@@ -66,7 +66,7 @@ Result.LayerDist = LayerDist;
 % approach.
 % DET SIDSTE (layerpos.combined) ER IKKE RIGTIG SET IGENNEM. 
 [LayerposDepth, layerpos_combined] = batchlayerpos(Layerpos,depth,...
-    tau,Layer0,postau,ntau,d,pd,logb,Model,Runtype.plotlevel);
+    tau,Layer0,postau,ntauTotal,d,pd,logb,Model,Runtype.plotlevel);
 Result.Layerpos = LayerposDepth;
 
 %% Mean layer thickness in batch:

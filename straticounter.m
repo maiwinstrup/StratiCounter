@@ -50,7 +50,6 @@ releasedate = '02-02-2015';
 % with this program; if not, write to the Free Software Foundation, Inc.,
 % 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-
 %% Check that settings file exist:
 if ~exist(['./Settings/' sett_icecore '.m'],'file')
     disp('Settings file unknown, please correct')
@@ -198,12 +197,14 @@ save([outputdir '/Layerpar0'],'Layerpar0')
     relweight,Result] = setinitialconditions(Data,Model,manualcounts,...
     meanLambda,Template0,Layerpar0,Runtype); % 2014-10-08 20:41
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% BATCHWISE DETECTION OF ANNUAL LAYERS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(Runtype.develop,'yes')
-    nBatch0 = input('nBatch? (inf: all)');
-    if isfinite(nBatch0); nBatch=nBatch0; end
+    nBatch0 = input('Number of batches? (use inf or press return to run for all data) ');
+    if ~isempty(nBatch0)&&isfinite(nBatch0)&&nBatch0<nBatch; 
+        nBatch=nBatch0; 
+    end
 end
 
 disp('Algorithm is running, please be patient...')
@@ -248,6 +249,7 @@ while iBatch < nBatch
     else
         % Using data sequence up to (and including) the next tiepoint:
         batchEnd = interp1(Data.depth,1:length(Data.depth),Model.tiepoints(iBatch+1,1),'nearest');
+        batchLength = batchEnd-batchStart(iBatch)+1; 
         % Number of layers in interval, including start/end layers
         % (the actual number is also the maximum number of layers).
         nLayerMax = abs(Model.tiepoints(iBatch+1,2)-Model.tiepoints(iBatch,2))+1;
@@ -449,38 +451,47 @@ while iBatch < nBatch
         end
     end
  
-    %% Expand initialized matrices?
-    if iBatch==nBatch 
-        if isempty(Model.tiepoints) && strcmp(Runtype.develop,'no')
-            % Remaining data interval:
-            depthinterval = Model.dend-Data.depth(batchEnd);
-         
-            % Estimate remaining number of batches:
-            meanLambda = exp(Prior(iBatch).m+Prior(iBatch).sigma^2/2); %[m]
-            
-            % New value of nBatch:
-            nBatchRest = ceil(1.5*depthinterval/(meanLambda*Model.nLayerBatch));
-            nBatch = nBatch + nBatchRest;
-            
-            % Expand matrices:
-            if nBatchRest > 0
-                [batchStartRest,Layer0Rest,TemplateRest,PriorRest,...
-                    LayerparRest,logPobsRest,relweightRest,ResultRest]=...
-                    initializematrices(nBatchRest,Model);
-                batchStart = [batchStart; batchStartRest];
-                Layer0 = [Layer0, Layer0Rest];
-                Template = [Template, TemplateRest];
-                Prior = [Prior; PriorRest];
-                Layerpar = [Layerpar; LayerparRest];
-                logPobs = [logPobs; logPobsRest];
-                relweight = [relweight; relweightRest];
-                Result = [Result, ResultRest];
-            end
+    %% Reached end of data record?
+    if isequal(batchEnd,length(Data.depth)); break; end
+    % Or, alternatively, the last tiepoint:
+    if iBatch==size(Model.tiepoints,1)-1; break; end
+
+    % If not: Expand initialized matrices?
+    if iBatch==nBatch
+        % Remaining data interval:
+        depthinterval = Model.dend-Data.depth(batchEnd);
+        
+        % Estimate remaining number of batches:
+        meanLambda = exp(Prior(iBatch).m+Prior(iBatch).sigma^2/2); %[m]
+        nBatchRest = ceil(1.1*depthinterval/(meanLambda*Model.nLayerBatch));
+        % New value of nBatch:
+        nBatchNew = nBatch+nBatchRest;
+        
+        % If running in develop mode, we may have provided a maximum batch 
+        % number:
+        if strcmp(Runtype.develop,'yes')&&~isempty(nBatch0)&&isfinite(nBatch0)
+            nBatchNew = min(nBatchNew,nBatch0);
+            nBatchRest = nBatchNew-nBatch;
+        end
+        nBatch = nBatchNew;
+        
+        % Expand matrices:
+        if nBatchRest > 0
+            [batchStartRest,Layer0Rest,TemplateRest,PriorRest,...
+                LayerparRest,logPobsRest,relweightRest,ResultRest]=...
+                initializematrices(nBatchRest,Model);
+            batchStart = [batchStart; batchStartRest];
+            Layer0 = [Layer0, Layer0Rest];
+            Template = [Template, TemplateRest];
+            Prior = [Prior; PriorRest];
+            Layerpar = [Layerpar; LayerparRest];
+            logPobs = [logPobs; logPobsRest];
+            relweight = [relweight; relweightRest];
+            Result = [Result, ResultRest];
+        else
+            break
         end
     end
-              
-    %% Reached end of data record?
-    if isequal(batchEnd,length(Data.depth)); break; end    
 end 
 
 %% Combine results from batches: 

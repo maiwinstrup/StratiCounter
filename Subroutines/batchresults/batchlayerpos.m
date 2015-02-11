@@ -1,5 +1,5 @@
 function [LayerposDepth, logPobs_combined] = ...
-    batchlayerpos(Layerpos,depth,tau,Layer0,postau,ntau,d,pd,logb,Model,plotlevel)
+    batchlayerpos(Layerpos,depth,tau,Layer0,postau,ntauTotal,d,pd,logb,Model,plotlevel)
 
 %% [LayerposDepth, logPobs_combined] = batchlayerpos(Layerpos,depth,...
 % tau,Layer0,postau,ntau,d,pd,logb,Model,plotlevel)
@@ -65,9 +65,14 @@ lastlayerpx = tau-length(postau)+imax-1; %[pixel]
 % We know that this layer boundary will be located before tau, just as will 
 % the corresponding Forward-Backward layer boundary.
 
-% Most likely number of layers in batch (counted from zero):
-[~,imax] = max(ntau(:,2));
-nLayerML = ntau(imax,1);
+% Most likely number of layers in data series up to now: 
+[~,imax] = max(ntauTotal(:,2));
+nLayerML = ntauTotal(imax,1);
+% Most likely number of layers in beginning of data series:
+[~,imax] = max(Layer0.no(:,2));
+nLayer0ML = Layer0.no(imax,1);
+% Most likely number of layers in this batch:
+nLayerML = nLayerML-nLayer0ML;
 
 % Using tiepoints:
 tiepoints = '42'; % det er lige meget hvad der er heri, blot ikke er tom

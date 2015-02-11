@@ -10,15 +10,12 @@ function [nBatch,batchStart,Layer0,Template,Prior,Layerpar,dDxLambda,logPobs,rel
 % 2014-10-08 20:41: First independent version
 
 %% Estimate number of batches within depth interval:
-if strcmp(Runtype.develop,'yes')
-    % The algorithm is applied to a few batches only:
-    nBatch = 6;
-elseif ~isempty(Model.tiepoints)
+if ~isempty(Model.tiepoints)
     % The number of batches corresponds to intervals between tiepoints:
     nBatch = size(Model.tiepoints,1)-1;
 else
-    nBatch = ceil(1.5*range(Data.depth)/(meanLambda*Model.nLayerBatch));
-    % If necessary, this number may later be increased. 
+    nBatch = ceil(1.1*range(Data.depth)/(meanLambda*Model.nLayerBatch));
+    % If necessary, this number is later increased. 
 end
 
 %% Initialize empty matrices:
