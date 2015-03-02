@@ -36,26 +36,18 @@ if ~isempty(Model.dx)
 end
 
 %% Preprocessing distance (minimum value) relative to the layer thickness:
-minDist = inf;
-minDistFloat = inf;
+% Processing distances:
+preprocdist{Model.nSpecies,1}=[];
 for j = 1:Model.nSpecies
-    preproc_type = Model.preprocess{j}(:,1);
-    stringpos = strfind(preproc_type,'_float');
-    dists = Model.preprocess{j}(:,2);
-    for k = 1:length(dists)
-        dist_here = cell2mat(dists(k));
-        if isempty(stringpos{k}) % Not floating dist
-            minDist = min(minDist,dist_here);
-            % Select minimum value encountered
-        else
-            minDistFloat = min(minDistFloat,dist_here);
-        end
+    if ~isempty(Model.preprocess{j,1}) && size(Model.preprocess{j,1},2)>1
+        preprocdist{j,1} = cell2mat(Model.preprocess{j,1}(:,2)); %[m]
     end
 end
-
-if minDistFloat < 2
-    disp('OBS: Floating distance is less than 2*lambda')
-end
+minDist = min(cell2mat(preprocdist));
+% også tjekke hvis alle er empty -> []
+% if minDistFloat < 2
+%     disp('OBS: Floating distance is less than 2*lambda')
+% end
 
 if isfinite(minDist)
     % Average number of layers per this distance:

@@ -40,9 +40,10 @@ mask=Data.depth>=Model.initialpar(1)&Data.depth<=Model.initialpar(2);
 depth = Data.depth(mask);
 data = Data.data(mask,:,:);
        
-% Finalize the processing (necessary when floating distances):
-[DataProcessed.depth, DataProcessed.data] = finalizeprocessing(depth,data,...
-    meanLambda,Model.initialpar,Model,Runtype.plotlevel);
+% Finalize the processing:
+preprocsteps=setpreprocdist(Model.preprocess(:,2),meanLambda);
+[DataProcessed.data, DataProcessed.depth] = makedatafile(data,depth,...
+    preprocsteps,Model.derivatives); % No further downsampling or plotting
 
 %% Compute layer parameters for the various data records:
 % Calculating both the maximum-Likelihood initial parameters (i.e. the best 

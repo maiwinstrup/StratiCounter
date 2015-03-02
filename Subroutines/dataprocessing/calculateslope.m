@@ -1,6 +1,7 @@
-function [slope, dslope, wWhiteNoise] = calculateslope(data,order,L,plotlevel)
+function [slope, dslope, wWhiteNoise, hfig] = calculateslope(data,order,...
+    L,plotlevel,depth,species,layercounts)
 
-%% [slope, dslope, wWhiteNoise] = calculateslope(data,order,L,plotlevel):
+%% [slope, dslope, wWhiteNoise] = calculateslope(data,order,L,plotlevel,species):
 % This function calculates the slope of the intensity profile after
 % Savitzky-Golay smoothing. The slope is calculated by linear regression to
 % a straight line (if order=1) or parabola (if order=2), using a
@@ -10,6 +11,8 @@ function [slope, dslope, wWhiteNoise] = calculateslope(data,order,L,plotlevel)
 % If choosing order=0, the data series is not smoothed beforehand, and
 % ordinary differencing is performed.
 % Derivatives are measured per pixel. 
+% The derivatives are calculated per pixel, and thus their calculation 
+% do not require an equidistant timescale.
 
 % Copyright (C) 2015  Mai Winstrup
 % 2014-04-21 17:07: Name updated
@@ -98,15 +101,52 @@ else
 end
 
 %% Plotting resulting data profile:
+hfig = gobjects(1);
 if plotlevel>0
-    figure;
+    [dstart_fig,dend_fig] = selectdepthintervalforfigure(depth,data,layercounts); % based on "data" dataseries
+    mask = depth > dstart_fig & depth <= dend_fig;
+    
+    hfig = figure;
     subplot(3,1,1)
-    plot(data)
-    title('Data','fontweight','bold')
+    plot(depth(mask),data(mask))
+    hold on
+    plotlayercounts(layercounts,data)
+    title(['Data: ' species],'fontweight','bold')
+    
     subplot(3,1,2)
-    plot(slope)
+    plot(depth(mask),slope(mask))
+    hold on
+    plotlayercounts(layercounts,slope)
     title(['Slope (order=' num2str(order(1)) ', L=' num2str(L(1)) ')'],'fontweight','bold')
+    
     subplot(3,1,3)
-    plot(dslope)
+    plot(depth(mask),dslope(mask))
+    hold on
+    plotlayercounts(layercounts,dslope)
     title(['Curvature (order=' num2str(order(2)) ', L=' num2str(L(2)) ')'],'fontweight','bold')
+    
+    for i = 1:3
+        subplot(3,1,i)
+        xlim([dstart_fig dend_fig])
+    end
 end
+
+
+%% Plotting subroutine:
+% function hfig = plotderivatives(depth,data_final,dstart_fig,dend_fig,Model,j,counts)
+% hfig = figure;
+% for i = 1:3
+%     subplot(3,1,i); 
+%     plot(depth,data_final(:,i))
+%      %
+%     hold on
+%     % Plot layer positions:
+%     plotlayercounts(counts,data_final(:,i)) %
+% end
+% subplot(3,1,1)
+% title(['Data: ' Model.species{j}],'fontweight','bold'); 
+% subplot(3,1,2) 
+% title(['Slope (order=' num2str(Model.slopeorder(1)) ', L=' num2str(Model.slopedist(1)) ')'],'fontweight','bold')
+% subplot(3,1,3)
+% title(['Curvature (order=' num2str(Model.slopeorder(2)) ', L=' num2str(Model.slopedist(2)) ')'],'fontweight','bold')   
+% end

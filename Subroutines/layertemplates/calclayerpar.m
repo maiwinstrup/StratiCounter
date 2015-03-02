@@ -74,13 +74,13 @@ M = length(layerpos_px);
 %% Layer parameter estimates from each individual layer:
 for j = 1:Model.nSpecies
     par_hat=nan(Model.order,M-1);
-    nvar_hat=nan(length(Model.deriv),M-1);
+    nvar_hat=nan(length(Model.derivatives.deriv),M-1);
     eps = cell(1,M-1);
  
     for i=1:M-1
         if isfinite(layerpos_px(i))&&isfinite(layerpos_px(i+1))
             % Selecting appropriate data series (species j):
-            datasegment=Data.data(layerpos_px(i):layerpos_px(i+1)-1,Model.deriv+1,j);
+            datasegment=Data.data(layerpos_px(i):layerpos_px(i+1)-1,Model.derivatives.deriv+1,j);
             d=size(datasegment,1);
         
             if strcmp(Model.normalizelayer,'minusmean')
@@ -90,7 +90,7 @@ for j = 1:Model.nSpecies
                 datasegment_subtract(:,1) = polyval(Template(j).mean,x)';
                 datasegment_subtract(:,2) = polyval(Template(j).dmean,x)'/d;
                 datasegment_subtract(:,3) = polyval(Template(j).d2mean,x)'/d^2;
-                datasegment = datasegment - datasegment_subtract(:,Model.deriv+1);
+                datasegment = datasegment - datasegment_subtract(:,Model.derivatives.deriv+1);
             end
             mask=isfinite(datasegment(:));
             datasegment = datasegment(mask);
@@ -107,11 +107,11 @@ for j = 1:Model.nSpecies
                 % Corresponding residuals:
                 % Divided into residuals of the data series and it derivatives.
                 data_hat = X*par_hat(:,i);
-                res = nan(1,d*length(Model.deriv));
+                res = nan(1,d*length(Model.derivatives.deriv));
                 res(mask) = datasegment-data_hat;
-                res = reshape(res,d,length(Model.deriv));
+                res = reshape(res,d,length(Model.derivatives.deriv));
                 eps{1,i} = res;
-                for m = 1:length(Model.deriv)
+                for m = 1:length(Model.derivatives.deriv)
                     nvar_hat(m,i) = nanmean(res(:,m).^2);
                 end
                
@@ -167,16 +167,16 @@ for j = 1:Model.nSpecies
 end
 
 %% Setting weight for the white noise component of derivative data series:
-if strcmp(Model.wWhiteNoise,'manual')
+if strcmp(Model.derivnoise,'manual')
     % Using the derived ML value for the w-values:
-    Model.wWhiteNoise = nan(length(Model.deriv),Model.nSpecies);
-    Model.wWhiteNoise(Model.deriv+1,:)= ParML.nvar./repmat(ParML.nvar(1,:),2,1);
+    Model.derivnoise = nan(length(Model.derivatives.deriv),Model.nSpecies);
+    Model.derivnoise(Model.derivatives.deriv+1,:)= ParML.nvar./repmat(ParML.nvar(1,:),2,1);
     ParML.nvar = ParML.nvar(1,:);
 else
     % If using analytical values:
     for j = 1:Model.nSpecies
-        ParML.nvar(1,j) = 1/length(Model.deriv)*...
-            sum(1./Model.wWhiteNoise(Model.deriv+1)'.*ParML.nvar(:,j));
+        ParML.nvar(1,j) = 1/length(Model.derivatives.deriv)*...
+            sum(1./Model.derivnoise(Model.derivatives.deriv+1)'.*ParML.nvar(:,j));
     end
     ParML.nvar(2,:) = [];
 end
@@ -205,7 +205,7 @@ for j = 1:Model.nSpecies
         for i=1:M-1
             if isfinite(layerpos_px(i))&&isfinite(layerpos_px(i+1))
                 % Picking appropriate data segment and data series:
-                datasegment=Data.data(layerpos_px(i):layerpos_px(i+1)-1,1+Model.deriv,j);
+                datasegment=Data.data(layerpos_px(i):layerpos_px(i+1)-1,1+Model.derivatives.deriv,j);
                 d=size(datasegment,1);
             
                 if strcmp(Model.normalizelayer,'minusmean')
@@ -215,7 +215,7 @@ for j = 1:Model.nSpecies
                     datasegment_subtract(:,1) = polyval(Template(j).mean,x)';
                     datasegment_subtract(:,2) = polyval(Template(j).dmean,x)'/d;
                     datasegment_subtract(:,3) = polyval(Template(j).d2mean,x)'/d^2;
-                    datasegment = datasegment - datasegment_subtract(:,Model.deriv+1);
+                    datasegment = datasegment - datasegment_subtract(:,Model.derivatives.deriv+1);
                 end
                 mask=isfinite(datasegment(:));
                 datasegment = datasegment(mask);
@@ -226,7 +226,7 @@ for j = 1:Model.nSpecies
                     X = X(mask,:,j);
             
                     % Relative white noise levels:
-                    diagonalvector = [Model.wWhiteNoise(1)*ones(1,d) Model.wWhiteNoise(2)*ones(1,d) Model.wWhiteNoise(3)*ones(1,d)];
+                    diagonalvector = [Model.derivnoise(1)*ones(1,d) Model.derivnoise(2)*ones(1,d) Model.derivnoise(3)*ones(1,d)];
                     invW = diag(diagonalvector(mask).^-1);
             
                     % Expectation value of random component r:
@@ -295,28 +295,28 @@ end
 function plotlayerfit(datasegment,datasegment_subtract,X,par_hat,d,mask,j,Model)   
 % Plot layer data and the obtained fit to layer. 
 
-fitresult = nan(1,d*length(Model.deriv));
+fitresult = nan(1,d*length(Model.derivatives.deriv));
 fitresult(mask) = X*par_hat;
-fitresult = reshape(fitresult,d,length(Model.deriv));
-segment_plot = nan(1,d*length(Model.deriv));
+fitresult = reshape(fitresult,d,length(Model.derivatives.deriv));
+segment_plot = nan(1,d*length(Model.derivatives.deriv));
 segment_plot(mask)=datasegment;
-segment_plot = reshape(segment_plot,d,length(Model.deriv));
+segment_plot = reshape(segment_plot,d,length(Model.derivatives.deriv));
 
 figure;
 clf
 if ismember(Model.type,'PCA')
-    for k = 1:length(Model.deriv)
-        subplot(length(Model.deriv),1,k)
+    for k = 1:length(Model.derivatives.deriv)
+        subplot(length(Model.derivatives.deriv),1,k)
         if strcmp(Model.normalizelayer,'minusmean') 
-            plot(segment_plot(:,k)+datasegment_subtract(:,Model.deriv(k)+1),'-k','linewidth',2)
+            plot(segment_plot(:,k)+datasegment_subtract(:,Model.derivatives.deriv(k)+1),'-k','linewidth',2)
             hold on
-            plot(fitresult(:,k)+datasegment_subtract(:,Model.deriv(k)+1),'-b','linewidth',2)
+            plot(fitresult(:,k)+datasegment_subtract(:,Model.derivatives.deriv(k)+1),'-b','linewidth',2)
         else
             plot(segment_plot(:,k),'-k','linewidth',2)
             hold on
             plot(fitresult(:,k),'-b','linewidth',2)
         end
-        title(['Data series #' num2str(Model.deriv(k))])
+        title(['Data series #' num2str(Model.derivatives.deriv(k))])
     end
     suptitle(['Fit to manual layers: ' Model.species{j}])    
 end

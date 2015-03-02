@@ -16,7 +16,7 @@ Model.nSpecies = 0;
 Model.wSpecies = ones(Model.nSpecies,1);
 
 % Path to data file:
-Model.pathData = '';
+Model.path2data = '';
 
 %% Depth interval [m]:
 Model.dstart = [];
@@ -41,9 +41,11 @@ Model.dx_center = 0;
 % be set as 0.5 (to avoid unnecessary interpolation). 
 
 % Preprocessing of each data series:
-Model.preprocess{1:Model.nSpecies} = {'none',[]};
+Model.preprocess{1:Model.nSpecies,1:2} = []; 
+% 1st row: Initial preprocessing
+% 2nd row: Batch preprocessing 
 % Possible preprocessing steps:
-% - No preprocessing ('none',[])
+% - No preprocessing ([])
 % - Linear interpolation over NaNs in data ('interpNaNs',[]);
 % - Log-transformation ('log',[])
 % - Box-Cox transformation ('boxcox', [lambda, (alpha)])
@@ -59,10 +61,10 @@ Model.preprocess{1:Model.nSpecies} = {'none',[]};
 % Window lengths are given in m. Inset [] if no window is required.
 
 % Using data series itself and (possibly) its derivatives: 
-Model.deriv = [0 1];
+Model.derivatives.deriv = [0 1];
 % Calculation of slope and curvature using Savitsky-Golay:
-Model.slopeorder = [1 2]; % 0 corresponds to ordinary differencing
-Model.slopedist = [3 5]; % Window size (in number of observations)
+Model.derivatives.slopeorder = [1 2]; % 0 corresponds to ordinary differencing
+Model.derivatives.slopedist = [3 5]; % Window size (in number of observations)
 
 %% Length of each data batch (in approximate number of layers):
 Model.nLayerBatch = 50; 
@@ -142,7 +144,7 @@ Model.covariance = 'none';
 
 % Entries in noise weighting matrix (W), giving the relative white noise 
 % level of derivative data series:
-Model.wWhiteNoise = 'analytical';
+Model.derivnoise = 'analytical';
 % Options: 
 % 'analytical': Analytical values are used. 
 % 'manual': Values based on the manual counting are used. 

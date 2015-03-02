@@ -4,7 +4,7 @@ function matchmakerdata(species,Model,datafilename)
 
 nSpecies = length(species);
 
-data0 = loadrawdata(species{1},Model);
+data0 = loadrawdata(species{1},Model.path2data);
 % Data:
 data{1}=data0(:,2);
 species{1}=species{1};
@@ -14,7 +14,7 @@ depth_no(1)=1;
     
 % Subsequent data files:    
 for j = 2:nSpecies
-    data0 = loadrawdata(species{j},Model);
+    data0 = loadrawdata(species{j},Model.path2data);
 
     % Data: 
     data{j}=data0(:,2);

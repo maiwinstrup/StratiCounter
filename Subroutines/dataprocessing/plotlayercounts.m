@@ -1,5 +1,6 @@
 function plotlayercounts(counts,data)
 % Copyright (C) 2015  Mai Winstrup
+% Obs: bør plotte indenfor evt interval hvis ønskes.
 
 % Plot layer counts onto figure:
 hbar0 = quantile(data,0.05);

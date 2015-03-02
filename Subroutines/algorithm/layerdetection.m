@@ -1,4 +1,4 @@
-function  [Layerpos,FBprob,ExpVal,logPobs,d,pd,logb_tot,bweight] = ...
+function  [Layerpos,FBprob,ExpVal,logPobs,d,pd,logb_tot,bweight,nLayerMaxNew] = ...
     layerdetection(data,Template,Layerpar,Layer0,nLayerMax,T,Model,Runtype)
 
 coder.extrinsic('logncdf');
@@ -147,7 +147,7 @@ if strcmp(Model.bcalc,'BLR')
     % The general assumption is: bweight = 1/effective number of dataseries, 
     % with the effective number of data series being dependent on their
     % weighting. 
-    nEff = length(Model.deriv)*sum(Model.wSpecies);
+    nEff = length(Model.derivatives.deriv)*sum(Model.wSpecies);
     % If desired, the weighting can further be changed by changing the 
     % value of Model.bweight: 
     bweight = Model.bweight*1/nEff;
@@ -174,7 +174,7 @@ elseif strcmp(Model.bcalc,'BLRwNaN')
     logb_tot = nansum(logb.*wSpeciesMatrix,3);
 
     % The effective number of data series varies:
-    nEff = length(Model.deriv)*sum(wSpeciesMatrix,3);
+    nEff = length(Model.derivatives.deriv)*sum(wSpeciesMatrix,3);
     bweight = Model.bweight./nEff;
     
     % Weighted all species layer likelihood:    
@@ -234,6 +234,14 @@ end
 %% Plot resulting layers onto figures:
 if Runtype.plotlevel>=2
     addlayerstofigs(hax,Layerpos,Model,dmax)
+end
+
+%% If the possible number of layers larger than anticipated? 
+% Increase value of nLayerMax by 20% in next iteration:
+if FBprob.gamma(end,end)>10^-3% P(t=end,j=nmax) larger than this value
+    nLayerMaxNew = 1.2*nLayerMax;
+else
+    nLayerMaxNew = nLayerMax;
 end
 end
 

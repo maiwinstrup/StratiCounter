@@ -89,7 +89,7 @@ y = [NaN;y(:);NaN];
 tpx = interp1(dlayer,0:1:(length(dlayer)-1),d,'linear','extrap');
 
 % Up/downsample data to given dt:
-dt_center = dt/2;
+dt_center = 1/2; % Half way!
 [tnew, ynew]=downsampling(tpx,y,dt,dt_center); % 2014-08-21 22:33
 
 %% Remove layer fractions at edges:

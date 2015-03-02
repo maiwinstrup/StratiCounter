@@ -46,7 +46,7 @@ if Model.initialpar(1)>=Model.initialpar(2)
 end
 
 %% Number of derivatives:
-Model.deriv = sort(Model.deriv);
+Model.derivatives.deriv = sort(Model.derivatives.deriv);
 % Model.deriv must always include the data series itself (i.e. "1"); This
 % is required for the preprocessing, and it makes sense.
 
@@ -54,38 +54,9 @@ Model.deriv = sort(Model.deriv);
 [Model.species, index] = sort(Model.species);
 
 % Similar for corresponding preprocessing steps and weights:
-Model.preprocess = Model.preprocess(index);
+Model.preprocess = Model.preprocess(index,:);
 Model.wSpecies = Model.wSpecies(index);
 clear index
-
-%% Partition the preprocessing steps into initial and recurring processing 
-% steps (i.e. those with floating distances). 
-for j = 1:Model.nSpecies
-    if size(Model.preprocess{j},2)>2
-        disp('check preprocessing format!')
-        return
-    end
-end
-
-index = zeros(1,Model.nSpecies); % Last preprocessing step with fixed distance
-for j = 1:Model.nSpecies
-    stringpos = strfind(Model.preprocess{j}(:,1),'float');
-    for istep = 1:size(Model.preprocess{j},1)
-        if isempty(stringpos{istep}); index(j) = istep; 
-        else break
-        end
-    end
-    Model.preprocess_init{j} = Model.preprocess{j}(1:index(j),:);
-    Model.preprocess_rep{j} = Model.preprocess{j}(index(j)+1:end,:);
-   
-    % Replace with "none" if array is empty:
-    if isempty(Model.preprocess_init{j})
-        Model.preprocess_init{j}= {'none',[]};
-    end
-    if isempty(Model.preprocess_rep{j})
-        Model.preprocess_rep{j}= {'none',[]};
-    end
-end
 
 %% Does one data species occur more than once?
 nUnique = length(unique(Model.species));

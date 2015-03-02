@@ -20,7 +20,7 @@ filename = ['./matchfiles/' Model.icecore 'layers_manual.mat'];
 save(filename,'mp')
 
 %% 1b: Matchmaker file including all available data files:
-load(Model.pathData)
+load(Model.path2data)
 allspecies = data.name; % All species are to be included.
 
 % Save data file in matchmaker format:

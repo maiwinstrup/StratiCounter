@@ -23,7 +23,6 @@ function [depth_new, data_new] = ...
 % 2014-08-21 22:33: -do-
 
 %% Setting default values:
-
 if nargin < 4; dx_center = 0; end
 if nargin < 5; dstart = depth(1); end
 if nargin < 6; dend = depth(end); end
@@ -32,11 +31,11 @@ if nargin < 8; plotlevel = 0; end
 
 %% New depthscale:
 % Starting point for resulting depthscale:
-dstart = ceil((dstart-dx_center)/dx_new)*dx_new+dx_center;
-dend = ceil((dend-dx_center)/dx_new)*dx_new+dx_center;
+dstart = round((dstart-dx_center*dx_new)/dx_new)*dx_new+dx_center*dx_new;
+dend = round((dend-dx_center*dx_new)/dx_new)*dx_new+dx_center*dx_new;
 depth_new(:,1) = dstart:dx_new:dend;
 % Round to increase accuracy:
-depth_new(:,1) = round((depth_new(:,1)-dx_center)/dx_new)*dx_new+dx_center;
+depth_new(:,1) = round((depth_new(:,1)-dx_center*dx_new)/dx_new)*dx_new+dx_center*dx_new;
 
 %% Case 1: Data already has the right sampling distance, and correct 
 % starting point. 

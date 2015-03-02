@@ -118,7 +118,13 @@ else
     checkpreprocessdist(Model,manualcounts); % 2014-10-01
     
     % Load and preprocess data files:
-    [Data, Model] = constructdatafile(Model,manualcounts,Runtype); % 2014-10-01
+    [Data, Model] = loadormakedatafile(Model,manualcounts,Runtype); % 2014-10-01
+    
+    % Check for long sections without data:
+    % long sections are in this context corresponding to 20 mean layer
+    % thicknesses without much data: 
+    sectionlength=20*meanLambda;
+    checkforsectionswithoutdata(Data,sectionlength);
 end
 
 % If no manual counts are known, an empty array should be provided.
@@ -218,16 +224,22 @@ while iBatch < nBatch
     end
     
     %% 1: Select data corresponding to current batch
-    % And give an upperbound estimate of the number of layers in batch,
-    % based on the batch size.
+    % And provide an upper-bound estimate of the number of layers in batch.
+    
     if isempty(Model.tiepoints)
+        % Situation A: No tiepoints. 
+        % We select a section of appropriate length. This section may be 
+        % larger than nLayerBatch if close to the end of data series. 
+        
         % Select data section containing approximately "nLayerBatch":
         meanLambda = exp(Prior(iBatch).m+Prior(iBatch).sigma^2/2); %[m]
         % Length of data sequence (in pixels): 
         batchLength = round(Model.nLayerBatch*meanLambda/Model.dx); 
         batchEnd = min(batchStart(iBatch)+batchLength-1,length(Data.depth));            
         % Upper-bound estimate of years (incl. uncertainties) in batch:
-        nLayerMax = round(2*Model.nLayerBatch);
+        nLayerMax = round(1.2*Model.nLayerBatch);
+        % If indications arise that this value should be larger, it will be 
+        % increased with each batch iteration.
         
         % In case there is less left than a full batch of data, the current 
         % batch is extended to include these extra pixels:
@@ -246,6 +258,8 @@ while iBatch < nBatch
         end
         
     else
+        % Situation B: Tiepoints. Using sections between tiepoints. 
+
         % Using data sequence up to (and including) the next tiepoint:
         batchEnd = interp1(Data.depth,1:length(Data.depth),Model.tiepoints(iBatch+1,1),'nearest');
         batchLength = batchEnd-batchStart(iBatch)+1; 
@@ -266,34 +280,27 @@ while iBatch < nBatch
     % Depth scale for batch:
     depth_batch = Data.depth(batchStart(iBatch):batchEnd);
               
-    %% Process batch data (if using floating preprocessing distance): 
-    % Floating distances are based on estimated mean layer thickness 
-    % for batch: 
-
-    %   [depth_batch,data_batch] = finalizeprocessing(Data.depth,Data.data,meanLambda,interval,Model,loglevel);
-%         preprocess_batch = setfloatingdist(Model.preprocess_rep,meanLambda); % 2014-07-16 16:18
-%         
-%         data_batch = nan(batchLength,3,Model.nSpecies);
-%         for j = 1:Model.nSpecies 
-%             % Using a slightly extended area: 
-%             Lext = max(cell2mat(preprocess_batch{j}(:,2)))/Model.dx;
-%             if isempty(Lext); Lext = 0; end
-%             px_start_ext = max(1,px_start(iBatch)-Lext);
-%             batchend_ext = min(batchend+Lext,length(Data.depth));
-%             
-%             rawdata_batch_ext = Data.data(px_start_ext:batchend_ext,1,j);
-%             depth_batch_ext = Data.depth(px_start_ext:batchend_ext);
-%             
-%             procdata_batch_ext = processdata(rawdata_batch_ext,depth_batch_ext,...
-%                 Model.species{j},preprocess_batch{j},Model); %2014-07-16 16:18
-%             procdata_batch = procdata_batch_ext(1+px_start(iBatch)-px_start_ext:length(depth_batch_ext)-batchend_ext+batchend); 
-%             
-%             [slope,dslope] = calculateslope(procdata_batch,Model.slopeorder,Model.slopedist,0); %2014-07-16 14:05
-%             data_batch(:,:,j) = [procdata_batch, slope, dslope]; % men vi vil jo ikke bruge dem alle!!!
-%         end
-
-    data_batch = Data.data(batchStart(iBatch):batchEnd,:,:);
-        
+    %% Preprocess batch data (25/2-2015)
+    % Data in batch is preprocessed relative to the mean layer thickness as 
+    % estimated from previous batch.    
+    % Preprocessing specs:
+    [preprocsteps,preprocdist] = ...
+        setpreprocdist(Model.preprocess(:,2),meanLambda); 
+    
+    % Using an extended section around batch (extension depends on
+    % maximum processing distance):
+    L = max(cell2mat(preprocdist));
+    istart = find(Data.depth>=depth_batch(1)-L/2,1,'first');
+    iend = find(Data.depth<=depth_batch(end)+L/2,1,'last');
+    data_in = Data.data(istart:iend,:,:);
+    depth_in = Data.depth(istart:iend);
+       
+    % Preprocess batch data:
+    data_out = makedatafile(data_in,depth_in,preprocsteps,Model.derivatives); 
+    
+    % Remove extended part of data:
+    data_batch = data_out(batchStart(iBatch)-istart+1:batchEnd-istart+1,:,:);
+    
     %% 2+3: Iterations over layer template and layer parameters 
     % The layer parameters are first optimized according to the initial 
     % template. Then the layer template is optimized, and layer parameters 
@@ -326,7 +333,7 @@ while iBatch < nBatch
             end
             
             %% 2b: Run layer detection algorithm
-            [Layerpos_new, FBprob_new, ExpVal_new, logPobs_new, d, pd, logb_new, bweight] = ...
+            [Layerpos_new, FBprob_new, ExpVal_new, logPobs_new, d, pd, logb_new, bweight,nLayerMaxNew] = ...
                 layerdetection(data_batch,Template(:,iBatch,iTemplateBatch),...
                 Layerpar(iBatch,iTemplateBatch,iIter),Layer0(iBatch),...
                 nLayerMax,batchLength,Model,Runtype); % 2014-10-10 16:37
@@ -360,6 +367,7 @@ while iBatch < nBatch
                 else flag = 2; break % Maximum number of iterations reached
                 end
             end
+            nLayerMax = nLayerMaxNew;
        end
            
        %% 2e: Check that log(Pobs) is always growing (as it should)
