@@ -124,7 +124,7 @@ else
     % long sections are in this context corresponding to 20 mean layer
     % thicknesses without much data: 
     sectionlength=20*meanLambda;
-    checkforsectionswithoutdata(Data,sectionlength);
+    checkforsectionswithoutdata(Data,sectionlength,Model.species);
 end
 
 % If no manual counts are known, an empty array should be provided.

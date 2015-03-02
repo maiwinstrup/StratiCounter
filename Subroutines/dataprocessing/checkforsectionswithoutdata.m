@@ -1,4 +1,4 @@
-function checkforsectionswithoutdata(Data,sectionlength)
+function checkforsectionswithoutdata(Data,sectionlength,species)
 
 %% Check for long sections without data:
 % "Long sections without data" is defined as sections larger than ~N years 
