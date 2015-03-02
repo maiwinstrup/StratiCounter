@@ -51,7 +51,7 @@ for i = 1:length(dstart)
     nNanSpecies(i) = max(nNanData(istart(i):iend(i)));
     % The data series are:
     mask = sum(nanData(istart(i):iend(i),:),1)>0;
-    nanSpecies{i} = Model.species(mask);
+    nanSpecies{i} = species(mask);
 end
 
 % Display error message, sorted relative to depth: 
