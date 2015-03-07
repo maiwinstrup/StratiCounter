@@ -147,7 +147,7 @@ if strcmp(Model.bcalc,'BLR')
     % The general assumption is: bweight = 1/effective number of dataseries, 
     % with the effective number of data series being dependent on their
     % weighting. 
-    nEff = length(Model.derivatives.deriv)*sum(Model.wSpecies);
+    nEff = (Model.derivatives.nDeriv+1)*sum(Model.wSpecies);
     % If desired, the weighting can further be changed by changing the 
     % value of Model.bweight: 
     bweight = Model.bweight*1/nEff;
@@ -174,7 +174,7 @@ elseif strcmp(Model.bcalc,'BLRwNaN')
     logb_tot = nansum(logb.*wSpeciesMatrix,3);
 
     % The effective number of data series varies:
-    nEff = length(Model.derivatives.deriv)*sum(wSpeciesMatrix,3);
+    nEff = (Model.derivatives.nDeriv+1)*sum(wSpeciesMatrix,3);
     bweight = Model.bweight./nEff;
     
     % Weighted all species layer likelihood:    

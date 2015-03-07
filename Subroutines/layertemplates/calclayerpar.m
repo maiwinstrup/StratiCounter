@@ -74,13 +74,13 @@ M = length(layerpos_px);
 %% Layer parameter estimates from each individual layer:
 for j = 1:Model.nSpecies
     par_hat=nan(Model.order,M-1);
-    nvar_hat=nan(length(Model.derivatives.deriv),M-1);
+    nvar_hat=nan(Model.derivatives.nDeriv+1,M-1);
     eps = cell(1,M-1);
  
     for i=1:M-1
         if isfinite(layerpos_px(i))&&isfinite(layerpos_px(i+1))
             % Selecting appropriate data series (species j):
-            datasegment=Data.data(layerpos_px(i):layerpos_px(i+1)-1,Model.derivatives.deriv+1,j);
+            datasegment=Data.data(layerpos_px(i):layerpos_px(i+1)-1,1:Model.derivatives.nDeriv+1,j);
             d=size(datasegment,1);
         
             if strcmp(Model.normalizelayer,'minusmean')
@@ -90,7 +90,7 @@ for j = 1:Model.nSpecies
                 datasegment_subtract(:,1) = polyval(Template(j).mean,x)';
                 datasegment_subtract(:,2) = polyval(Template(j).dmean,x)'/d;
                 datasegment_subtract(:,3) = polyval(Template(j).d2mean,x)'/d^2;
-                datasegment = datasegment - datasegment_subtract(:,Model.derivatives.deriv+1);
+                datasegment = datasegment - datasegment_subtract(:,1:Model.derivatives.nDeriv+1);
             end
             mask=isfinite(datasegment(:));
             datasegment = datasegment(mask);
@@ -107,11 +107,11 @@ for j = 1:Model.nSpecies
                 % Corresponding residuals:
                 % Divided into residuals of the data series and it derivatives.
                 data_hat = X*par_hat(:,i);
-                res = nan(1,d*length(Model.derivatives.deriv));
+                res = nan(1,d*(Model.derivatives.nDeriv+1));
                 res(mask) = datasegment-data_hat;
-                res = reshape(res,d,length(Model.derivatives.deriv));
+                res = reshape(res,d,Model.derivatives.nDeriv+1);
                 eps{1,i} = res;
-                for m = 1:length(Model.derivatives.deriv)
+                for m = 1:Model.derivatives.nDeriv+1
                     nvar_hat(m,i) = nanmean(res(:,m).^2);
                 end
                
@@ -175,10 +175,10 @@ if strcmp(Model.derivnoise,'manual')
 else
     % If using analytical values:
     for j = 1:Model.nSpecies
-        ParML.nvar(1,j) = 1/length(Model.derivatives.deriv)*...
-            sum(1./Model.derivnoise(Model.derivatives.deriv+1)'.*ParML.nvar(:,j));
+        ParML.nvar(1,j) = 1/(Model.derivatives.nDeriv+1)*...
+            sum(1./Model.derivnoise'.*ParML.nvar(:,j));
     end
-    ParML.nvar(2,:) = [];
+   % ParML.nvar(2,:) = [];
 end
 
 %% Using the EM-algorithm to find the MAP estimate for layer parameters:
@@ -205,7 +205,7 @@ for j = 1:Model.nSpecies
         for i=1:M-1
             if isfinite(layerpos_px(i))&&isfinite(layerpos_px(i+1))
                 % Picking appropriate data segment and data series:
-                datasegment=Data.data(layerpos_px(i):layerpos_px(i+1)-1,1+Model.derivatives.deriv,j);
+                datasegment=Data.data(layerpos_px(i):layerpos_px(i+1)-1,1:Model.derivatives.nDeriv+1,j);
                 d=size(datasegment,1);
             
                 if strcmp(Model.normalizelayer,'minusmean')
@@ -215,7 +215,7 @@ for j = 1:Model.nSpecies
                     datasegment_subtract(:,1) = polyval(Template(j).mean,x)';
                     datasegment_subtract(:,2) = polyval(Template(j).dmean,x)'/d;
                     datasegment_subtract(:,3) = polyval(Template(j).d2mean,x)'/d^2;
-                    datasegment = datasegment - datasegment_subtract(:,Model.derivatives.deriv+1);
+                    datasegment = datasegment - datasegment_subtract(:,1:Model.derivatives.nDeriv+1);
                 end
                 mask=isfinite(datasegment(:));
                 datasegment = datasegment(mask);
@@ -226,7 +226,10 @@ for j = 1:Model.nSpecies
                     X = X(mask,:,j);
             
                     % Relative white noise levels:
-                    diagonalvector = [Model.derivnoise(1)*ones(1,d) Model.derivnoise(2)*ones(1,d) Model.derivnoise(3)*ones(1,d)];
+                    diagonalvector = [];
+                    for ii = 1:Model.derivatives.nDeriv+1
+                        diagonalvector = [diagonalvector Model.derivnoise(ii)*ones(1,d)];
+                    end
                     invW = diag(diagonalvector(mask).^-1);
             
                     % Expectation value of random component r:

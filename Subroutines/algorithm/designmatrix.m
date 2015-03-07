@@ -46,6 +46,6 @@ x = 1/(2*d):1/d:1;
 if d>0
     % Removing unused data series:
     Zmask = false(d,3);
-    Zmask(:,Model.derivatives.deriv+1) = true;
+    Zmask(:,1:Model.derivatives.nDeriv+1) = true;
     Z = Z(Zmask(:),:,:);
 end

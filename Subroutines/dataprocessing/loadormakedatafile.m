@@ -20,7 +20,8 @@ flag = nan(1,Model.nSpecies);
 Data_final.depth(:,1) = Model.dstart+Model.dx_center*Model.dx:Model.dx:...
     Model.dend+Model.dx_center*Model.dx;
 % Initialize data array:
-Data_final.data = nan(length(Data_final.depth),3,Model.nSpecies);
+Data_final.data = nan(length(Data_final.depth),Model.derivatives.nDeriv+1,...
+    Model.nSpecies);
 
 % Initialize figures:
 if Runtype.plotlevel>0
@@ -76,15 +77,16 @@ for j = 1:Model.nSpecies
                     index = interp1(Data_final.depth,...
                         1:length(Data_final.depth),depth,'nearest');
                     
-                    % Are all desired derivatives calculated?
-                    if Model.derivatives.nDeriv <= size(data,2)
-                        Data_final.data(index,1:Model.derivatives.nDeriv,j) = data(mask,1:Model.derivatives.nDeriv);
+                    % Are all required derivatives calculated?
+                    if Model.derivatives.nDeriv+1 <= size(data,2)
+                        Data_final.data(index,1:Model.derivatives.nDeriv+1,j) = ...
+                            data(mask,1:Model.derivatives.nDeriv+1);
                     else
                         % Otherwise, calculate derivatives:
                         [slope,derivnoise] = calculateslope(data(mask,1),...
                             Model.derivatives.nDeriv,Model.derivatives.slopeorder,...
                             Model.derivatives.slopedist,0);
-                        Data_final.data(index,1:Model.nDeriv,j) = ...
+                        Data_final.data(index,1:Model.derivatives.nDeriv+1,j) = ...
                             [data(mask,1),slope];
                     end
                     
@@ -99,7 +101,7 @@ for j = 1:Model.nSpecies
                     % Test for only NaNs in data series 
                     if sum(isfinite(Data_final.data(:,1,j)))==0; 
                         flag(j) = 1; % Data are nan in all of current interval 
-                        disp([model.species{j} ' not available for current depth interval'])
+                        disp([Model.species{j} ' not available for current depth interval'])
                     end
                 
                     % Also loaded are the analytically-derived relative 
@@ -107,7 +109,7 @@ for j = 1:Model.nSpecies
                     % series. If appropriate, these are added to the Model 
                     % structure array. 
                     if strcmp(Model.derivnoise,'analytical')
-                       Model.derivnoise = derivnoise;
+                       Model.derivnoise = derivnoise(1:Model.derivatives.nDeriv+1);
                     end
                 
                     % And we're done! 
@@ -154,7 +156,9 @@ for j = 1:Model.nSpecies
     %% Remove data from outside interval, while keeping some extra data 
     % around edges. 
     % Amount of additional data depends on preprocessing distance:
-    if isempty(Model.preprocess{j,1}) || size(Model.preprocess{j,1},2)==1; 
+    if isempty(Model.preprocess{j,1}) || size(Model.preprocess{j,1},2)==1 
+        L = 0;
+    elseif isempty(Model.preprocess{j,1}{:,2}); % empty placeholder
         L = 0;
     else
         L = cell2mat(Model.preprocess{j,1}(:,2));

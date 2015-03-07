@@ -30,8 +30,8 @@ D = length(d); % Number of possible durations
 
 %% Appending the observation sequence(s) with NaNs in both ends, and remove 
 % unused derivative data series:
-obs = [NaN(dmax,length(Model.derivatives.deriv),Model.nSpecies); data(:,Model.derivatives.deriv+1,:); ...
-    NaN(dmax,length(Model.derivatives.deriv),Model.nSpecies)];
+obs = [NaN(dmax,Model.derivatives.nDeriv+1,Model.nSpecies); data(:,1:Model.derivatives.nDeriv+1,:); ...
+    NaN(dmax,Model.derivatives.nDeriv+1,Model.nSpecies)];
 
 %% Calculating the log-likelihood:
 % For t<1, is calculated the conditional probability: 
@@ -87,12 +87,12 @@ if strcmp(Model.normalizelayer,'minusmean')
         % Derivatives of mean signal are calculated per pixel distance 
         % (not per time). 
     end
-    obs_segment = obs_segment - meansignal(:,Model.derivatives.deriv+1,:);
+    obs_segment = obs_segment - meansignal(:,1:Model.derivatives.nDeriv+1,:);
 end
 
 %% Reshape array, as we consider the signal and its derivatives to be 
 % modelled with the same parameter values:
-obs_segment = reshape(obs_segment,length(Model.derivatives.deriv)*d,Model.nSpecies);
+obs_segment = reshape(obs_segment,(Model.derivatives.nDeriv+1)*d,Model.nSpecies);
 % Indexed: obs_segment(1:Nderiv*d,1:model.nSpecies)
 
 %% Construct design matrix for the linear regression:
@@ -122,7 +122,7 @@ for j = 1:Model.nSpecies
 
     % Form diagonal invW matrix, controlling the weighting of white noise
     % variance component on derivative data series:
-    w = ones(d,1)*Model.derivnoise(Model.derivatives.deriv+1);
+    w = ones(d,1)*Model.derivnoise;
     w = w(:); 
     w = w(mask);
     W = diag(w);

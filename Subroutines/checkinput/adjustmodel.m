@@ -45,11 +45,6 @@ if Model.initialpar(1)>=Model.initialpar(2)
     disp('Check depth interval for initial layer parameter estimation')
 end
 
-%% Number of derivatives:
-Model.derivatives.deriv = sort(Model.derivatives.deriv);
-% Model.deriv must always include the data series itself (i.e. "1"); This
-% is required for the preprocessing, and it makes sense.
-
 %% Sort ordering of data species:
 [Model.species, index] = sort(Model.species);
 
