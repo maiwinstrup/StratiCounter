@@ -119,8 +119,7 @@ for iStep = 1:nSteps
     %% Plot processed data:
     if plotlevel>0
         plotpreprocdata(hfig,nSubfig,iStep,depth,data1,preproctype,...
-            procdist,layercounts)
-        xlabel([dstart_fig dend_fig])
+            procdist,layercounts,dstart_fig,dend_fig)
     end
 
     %% Update data:
@@ -160,4 +159,5 @@ plot(depth_fig,data_fig,'-b')
 hold on
 plotlayercounts(layercounts,data_fig)
 title([proctype ' (' num2str(procdist) ')'],'fontweight','bold')
+xlabel([dstart_fig dend_fig])
 end
