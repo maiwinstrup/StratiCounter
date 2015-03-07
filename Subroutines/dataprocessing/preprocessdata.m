@@ -82,9 +82,7 @@ for iStep = 1:nSteps
                 data = data+abs(minvalue);
                 disp(['Value added to ' species ' before taking log: ' num2str(abs(minvalue))])
             end
-            data1 = log(data);           
-            
-            
+            data1 = log(data);
             
         case 'boxcox'
             lambda = procdist(1); % power parameter
@@ -93,7 +91,6 @@ for iStep = 1:nSteps
             else alpha = procdist(2);
             end
             data1 = boxcoxtransform(data,lambda,alpha,0); % 2014-07-16 09:24
-            
             
         case {'quantile','minmax','zscore'}
             data1 = normalizedata(depth,data,procdist,preproctype,0); % 2014-07-16 11:04
@@ -162,6 +159,5 @@ subplot(nSubfig,1,iStep+1)
 plot(depth_fig,data_fig,'-b')
 hold on
 plotlayercounts(layercounts,data_fig)
-xlim([dstart_fig dend_fig])
 title([proctype ' (' num2str(procdist) ')'],'fontweight','bold')
 end
