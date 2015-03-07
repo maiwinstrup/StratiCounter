@@ -51,7 +51,7 @@ if isempty(dx)
     depth_out = depth_in;
     data_out(:,1,:)=data1(:,1,:);
     % Initialize rest of array:
-    data_out(:,2:3,:)=nan;
+    data_out(:,2:1+derivatives.nDeriv,:)=nan;
 
 else
     % Interpolate to equidistant depth scale: 
@@ -60,7 +60,8 @@ else
         downsampling(depth_in,data1(:,1,1),dx,dx_center);    
     % Initialize data array for remaining species (and derivatives):
     L = length(depth_out);
-    data_out = cat(3,[data_out(:,1,1), nan(L,2)], nan(L,3,nSpecies-1));
+    data_out = cat(3,[data_out(:,1,1),nan(L,derivatives.nDeriv)], ...
+        nan(L,1+derivatives.nDeriv,nSpecies-1));
     
     % Remaining species:
     for j = 2:nSpecies
@@ -83,13 +84,13 @@ for j = 1:nSpecies
     elseif isempty(dx) && isempty(preprocsteps{j})
         % b) already calculated using this depthscale, i.e. no processing 
         %    or depth interpolation was performed on data.
-        data_out(:,2:3,j) = data_in(:,2:3,j);
+        data_out(:,2:1+derivatives.nDeriv,j) = data_in(:,2:1+derivatives.nDeriv,j);
     
     else
         % Otherwise, calculate derivatives:
-        [slope,dslope,derivnoise,hfigderiv(j)] = calculateslope(data_out(:,1,j),...
-            derivatives.slopeorder,derivatives.slopedist,plotlevel,...
-            depth_out,species{j},layercounts);
-        data_out(:,2:3,j)=[slope,dslope];
+        [slope,derivnoise,hfigderiv(j)] = calculateslope(data_out(:,1,j),...
+            derivatives.nDeriv,derivatives.slopeorder,derivatives.slopedist,...
+            plotlevel,depth_out,species{j},layercounts);
+        data_out(:,2:1+derivatives.nDeriv,j)=slope;
     end
 end

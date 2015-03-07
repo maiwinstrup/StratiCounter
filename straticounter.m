@@ -61,10 +61,10 @@ addpath(genpath('./Subroutines'))
 addpath(genpath('./Settings'))
 
 %% Select how to run the script:
-Runtype.develop = 'no';
+Runtype.develop = 'no'; 
 % In development mode; will run as normal, but output will be put in the
 % ./Output/develop folder. Option to run for fewer batches. 
-Runtype.reuse = 'yes';
+Runtype.reuse = 'yes'; 
 % If yes; use previously processed data and calculated layer templates.
 % If no, these are re-calculated. 
 Runtype.plotlevel = 1;
@@ -123,8 +123,7 @@ else
     % Check for long sections without data:
     % long sections are in this context corresponding to 20 mean layer
     % thicknesses without much data: 
-    sectionlength=20*meanLambda;
-    checkforsectionswithoutdata(Data,sectionlength,Model.species);
+    sectionswithoutdata(Data,20*meanLambda,Model.species);
 end
 
 % If no manual counts are known, an empty array should be provided.
@@ -301,6 +300,9 @@ while iBatch < nBatch
     % Remove extended part of data:
     data_batch = data_out(batchStart(iBatch)-istart+1:batchEnd-istart+1,:,:);
     
+    %% Add (for now) a third column corresponding to curvature
+    data_batch = cat(2,[data_batch, nan(length(data_batch),1,Model.nSpecies)]); 
+    
     %% 2+3: Iterations over layer template and layer parameters 
     % The layer parameters are first optimized according to the initial 
     % template. Then the layer template is optimized, and layer parameters 
@@ -444,10 +446,8 @@ while iBatch < nBatch
                 Data.depth(batchStart(1:iBatch)),Model,filename); % 2014-08-21 23:32
             
             % Mean layer thicknesses:
-            if exist('hfig_lambda','var');
-                for i = 1:length(Model.dxLambda)
-                    if ~isempty(hfig_lambda(i)); close(hfig_lambda(i)); end
-                end
+            if exist(hfig_lambda,'var')
+                close(hfig_lambda(isgraphics(hfig_lambda,'figure'))); 
             end
             hfig_lambda = gobjects(length(Model.dxLambda),1); % Initialize handles
             for idx = 1:length(Model.dxLambda)                

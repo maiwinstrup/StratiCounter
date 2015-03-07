@@ -11,7 +11,7 @@ Model.nSpecies = length(Model.species);
 Model.wSpecies = ones(Model.nSpecies,1);
 
 % Path to data file:
-Model.pathData = './Data/data_empty.mat';
+Model.path2data = './Data/data_empty.mat';
 
 %% Depth interval [m]:
 Model.dstart = 100;

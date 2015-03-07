@@ -47,7 +47,8 @@ colours = rand(nSpecies,3);
 mask = colours>0.9;
 colours(mask)=0.7*colours(mask); % avoiding too bleak colors
 % Save data:
-if ~exist('./data','dir'); mkdir('./data'); end
-filename = ['./data/' Model.icecore 'data' datafilename '.mat'];
+folder = './Subroutines/matchmaker/data';
+if ~exist(folder,'dir'); mkdir(folder); end
+filename = [folder '/data' datafilename '.mat'];
 save(filename,'data','depth','depth_no','species','colours')
 end

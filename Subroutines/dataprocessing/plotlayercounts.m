@@ -1,15 +1,23 @@
-function plotlayercounts(counts,data)
-% Copyright (C) 2015  Mai Winstrup
-% Obs: bør plotte indenfor evt interval hvis ønskes.
+function plotlayercounts(layercounts,data)
 
-% Plot layer counts onto figure:
+%% plotlayercounts(layercounts,data)
+% Plot layer counts onto current figure. Uncertain layers are plotted 
+% smaller and as dotted lines. Dimensions of line depend on the data range. 
+% Copyright (C) 2015  Mai Winstrup
+
+%% Plot layer counts onto figure:
+% Bar sizes:
 hbar0 = quantile(data,0.05);
 hbar1 = quantile(data,0.95);
 hbar2 = quantile(data,0.90);  
-if ~isempty(counts)
-    mask = counts(:,3)==0;
-    plot(counts(mask,1)*[1 1],[hbar0 hbar1],'-r')
-    if sum(counts(:,3))>0
-       plot(counts(~mask,1)*[1 1],[hbar0 hbar2],'--r')
+
+% Plot layer counts:
+if ~isempty(layercounts)
+    % Certain layers:
+    mask = layercounts(:,3)==0;
+    plot(layercounts(mask,1)*[1 1],[hbar0 hbar1],'-r')
+    % Uncertain layers:
+    if sum(layercounts(:,3))>0
+       plot(layercounts(~mask,1)*[1 1],[hbar0 hbar2],'--r')
     end
 end

@@ -1,152 +1,127 @@
-function [slope, dslope, wWhiteNoise, hfig] = calculateslope(data,order,...
-    L,plotlevel,depth,species,layercounts)
+function [slope, derivnoise, hfig] = calculateslope(data,nDeriv,...
+    slopeorder,slopedist,plotlevel,depth,species,layercounts)
 
-%% [slope, dslope, wWhiteNoise] = calculateslope(data,order,L,plotlevel,species):
-% This function calculates the slope of the intensity profile after
+%% [slope, derivnoise, hfig] = calculateslope(data,nDeriv,slopeorder,...
+%    slopedist,plotlevel,depth,species,layercounts)
+% This function calculates derivatives of the intensity profile using 
 % Savitzky-Golay smoothing. The slope is calculated by linear regression to
-% a straight line (if order=1) or parabola (if order=2), using a
-% neighborhood of L pixels. The slope is then given as the differential of
-% the regression curves. Different methods and neigbourhoods can be used
-% for calculating the slope and the slope differential. 
-% If choosing order=0, the data series is not smoothed beforehand, and
-% ordinary differencing is performed.
-% Derivatives are measured per pixel. 
-% The derivatives are calculated per pixel, and thus their calculation 
-% do not require an equidistant timescale.
-
+% a straight line (if slopeorder=1) or parabola (if slopeorder=2), using a
+% neighborhood of slopedist pixels. Slope is calculated based on the 
+% differential of the regression curves. As derivatives are calculated per 
+% pixel, their calculation does not require data on equidistant depth scale.
 % Copyright (C) 2015  Mai Winstrup
-% 2014-04-21 17:07: Name updated
-% 2014-05-18 19:43: Minor revisions
-% 2014-07-16 14:05: showplots->plotlevel
 
-%% Setting default values:
-if size(L)==1; L=[L L]; end
-if size(order)==1; order=[order 2]; end
+%% Set default values:
+% Default is to calculate 1st derivative using linear polynomium, 2nd 
+% derivatives using 2nd degree polynomium etc.
+if isempty(slopeorder); slopeorder=1:nDeriv; end
+
+% If only one value given for slope distance, this value should be used 
+% for all calculations of derivatives:
+if size(slopedist)==1; slopedist=ones(1,nDeriv)*slopedist; end
+% Make sure that slopedist contains uneven numbers:
+slopedist = slopedist-rem(slopedist,2)+1; 
 
 %% Calculating the slope and slope differential for each data point:
 % % Regression matrix for the slope:
-% X=ones(L(1),2);
-% for j =1:order(1)
-%     X(:,j+1)=(-(L(1)-1)/2:(L(1)-1)/2).^j;
+% X=ones(slopedist(1),2);
+% for j =1:slopeorder(1)
+%     X(:,j+1)=(-(slopedist(1)-1)/2:(slopedist(1)-1)/2).^j;
 % end
 % % And for slope differential:
-% Xd=ones(L(2),2);
-% for j =1:order(2)
-%     Xd(:,j+1)=(-(L(2)-1)/2:(L(2)-1)/2).^j;
+% Xd=ones(slopedist(2),2);
+% for j =1:slopeorder(2)
+%     Xd(:,j+1)=(-(slopedist(2)-1)/2:(slopedist(2)-1)/2).^j;
 % end
 % 
+% N = length(data)
 % for i = 1:N
 %     % Slope:
 %     % Selection of data segment:
-%     px_start = max(1,i-(L(1)-1)/2);
-%     px_end = min(i+(L(1)-1)/2,N);
+%     px_start = max(1,i-(slopedist(1)-1)/2);
+%     px_end = min(i+(slopedist(1)-1)/2,N);
 %     datasegment = data(px_start:px_end);
 %     % Selecting part of regression matrix:
-%     istart = 1+px_start-i+(L(1)-1)/2;
+%     istart = 1+px_start-i+(slopedist(1)-1)/2;
 %     Xsegment = X(istart:istart+(px_end-px_start),:);
 % 
 %     % Linear regression on data segment:
 %     a=Xsegment\datasegment;
-%     slope(i)=a(2); % Corresponding to the differential in x=0 (the mid-point)
+%     Slope corresponding to the differential in x=0 (the mid-point)
+%     slope(i)=a(2); 
 %     
 %     % Slope differential:
-%     px_start = max(1,i-(L(2)-1)/2);
-%     px_end = min(i+(L(2)-1)/2,N);
+%     px_start = max(1,i-(slopedist(2)-1)/2);
+%     px_end = min(i+(slopedist(2)-1)/2,N);
 %     datasegment = data(px_start:px_end);
 %     % Selecting part of regression matrix:
-%     istart = 1+px_start-i+(L(2)-1)/2;
+%     istart = 1+px_start-i+(slopedist(2)-1)/2;
 %     Xsegment = Xd(istart:istart+(px_end-px_start),:);
 %     % Linear regression on data segment:
 %     a=Xsegment\datasegment;
 %     dslope(i)=2*a(3);
 % end
-% It is much quicker to do this by filtering as done below!
+% It is much quicker to calculate this by filtering as done below!
 
 %% Savitzky-Golay smoothing:
+% Relative noise levels of data series is defined as equal to one:
+derivnoise(1)=1;
+
+% Calculate derivatives: 
 N = length(data);
-% Making sure L contains uneven numbers:
-L = L-rem(L,2)+1; 
-% Relative noise levels of data series:
-wWhiteNoise(1)=1;
+slope = nan(N,nDeriv);
 
-if order(1) == 0
-    % Ordinary differencing:
-    slope = [diff(data);nan];
-    L(1)=0;
-else
-    % Using Savitzky-Golay smoothing before differencing:
-    slope = nan(N,1);
-
-    % Computing the 1st differential:
-    [~,filtmatrix] = sgolay(order(1),L(1));
-    HalfWin  = ((L(1)+1)/2)-1;
-    for n = (L(1)+1)/2:length(data)-(L(1)+1)/2,
-       slope(n) = dot(filtmatrix(:,2), data(n-HalfWin:n+HalfWin));
+% Using Savitzky-Golay smoothing before differencing. 
+% Compute the 1st differential:
+if nDeriv >= 1
+    [~,filtmatrix] = sgolay(slopeorder(1),slopedist(1));
+    halfwin  = ((slopedist(1)+1)/2)-1;
+    for i = (slopedist(1)+1)/2:N-(slopedist(1)+1)/2,
+        slope(i,1) = dot(filtmatrix(:,2), data(i-halfwin:i+halfwin));
     end
-    wWhiteNoise(2)=sum(filtmatrix(:,2).^2)^0.5;
+    % Relative noiselevel of data series:
+    derivnoise(2)=sum(filtmatrix(:,2).^2)^0.5;
 end
 
-if order(2) == 0
-    dslope = [nan; diff(slope)];
-    L(2)=0;
-else
-    % Computing the 2nd differential:
-    [~,filtmatrix] = sgolay(order(2),L(2));
-    HalfWin  = ((L(2)+1)/2)-1;
-    dslope = nan(N,1);
-    for n = (L(2)+1)/2:length(data)-(L(2)+1)/2,
-        dslope(n) = 2*dot(filtmatrix(:,3)', data(n-HalfWin:n+HalfWin))';
+% Calculate 2nd order differential:
+if nDeriv >= 2
+    [~,filtmatrix] = sgolay(slopeorder(2),slopedist(2));
+    halfwin  = ((slopedist(2)+1)/2)-1;
+    for i = (slopedist(2)+1)/2:N-(slopedist(2)+1)/2,
+        slope(i,2) = 2*dot(filtmatrix(:,3)', data(i-halfwin:i+halfwin))';
     end
-    wWhiteNoise(3)=2*sum(filtmatrix(:,3).^2)^0.5;
+    % Relative noise level:
+    derivnoise(3)=2*sum(filtmatrix(:,3).^2)^0.5;
 end
 
-%% Plotting resulting data profile:
+%% Plot data and derivatives:
 hfig = gobjects(1);
 if plotlevel>0
-    [dstart_fig,dend_fig] = selectdepthintervalforfigure(depth,data,layercounts); % based on "data" dataseries
-    mask = depth > dstart_fig & depth <= dend_fig;
+    % Select depth interval for figure:    
+    [dstart_fig,dend_fig] = depthrangefigure(depth,data,layercounts); 
     
-    hfig = figure;
-    subplot(3,1,1)
+    % Layers and data in this interval:
+    layercounts = layercounts(layercounts(:,1)>=dstart_fig&layercounts(:,1)<=dend_fig,:);
+    mask = depth>=dstart_fig & depth<=dend_fig;
+    
+    figure(hfig);
+    % Plot original data:
+    subplot(nDeriv+1,1,1)
     plot(depth(mask),data(mask))
     hold on
-    plotlayercounts(layercounts,data)
+    plotlayercounts(layercounts,data(mask))
     title(['Data: ' species],'fontweight','bold')
+    xlim([dstart_fig dend_fig])
     
-    subplot(3,1,2)
-    plot(depth(mask),slope(mask))
-    hold on
-    plotlayercounts(layercounts,slope)
-    title(['Slope (order=' num2str(order(1)) ', L=' num2str(L(1)) ')'],'fontweight','bold')
-    
-    subplot(3,1,3)
-    plot(depth(mask),dslope(mask))
-    hold on
-    plotlayercounts(layercounts,dslope)
-    title(['Curvature (order=' num2str(order(2)) ', L=' num2str(L(2)) ')'],'fontweight','bold')
-    
-    for i = 1:3
-        subplot(3,1,i)
+    % Name of derivative data series: 
+    name = {'Slope','Curvature'};
+    for k = 1:nDeriv
+        subplot(nDeriv+1,1,k+1)
+        plot(depth(mask),slope(mask,k))
+        hold on
+        plotlayercounts(layercounts,slope(mask,k))
+        title([name{k} ' (order=' num2str(slopeorder(k)) ...
+            ', dist=' num2str(slopedist(k)) ')'],'fontweight','bold')
         xlim([dstart_fig dend_fig])
     end
 end
-
-
-%% Plotting subroutine:
-% function hfig = plotderivatives(depth,data_final,dstart_fig,dend_fig,Model,j,counts)
-% hfig = figure;
-% for i = 1:3
-%     subplot(3,1,i); 
-%     plot(depth,data_final(:,i))
-%      %
-%     hold on
-%     % Plot layer positions:
-%     plotlayercounts(counts,data_final(:,i)) %
-% end
-% subplot(3,1,1)
-% title(['Data: ' Model.species{j}],'fontweight','bold'); 
-% subplot(3,1,2) 
-% title(['Slope (order=' num2str(Model.slopeorder(1)) ', L=' num2str(Model.slopedist(1)) ')'],'fontweight','bold')
-% subplot(3,1,3)
-% title(['Curvature (order=' num2str(Model.slopeorder(2)) ', L=' num2str(Model.slopedist(2)) ')'],'fontweight','bold')   
-% end

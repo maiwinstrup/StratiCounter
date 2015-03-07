@@ -61,9 +61,10 @@ Model.preprocess{1:Model.nSpecies,1:2} = [];
 % Window lengths are given in m. Inset [] if no window is required.
 
 % Using data series itself and (possibly) its derivatives: 
-Model.derivatives.deriv = [0 1];
+Model.derivatives.deriv = [0 1]; % old version
+Model.derivatives.nDeriv = 1; % new version: use data and first derivatives
 % Calculation of slope and curvature using Savitsky-Golay:
-Model.derivatives.slopeorder = [1 2]; % 0 corresponds to ordinary differencing
+Model.derivatives.slopeorder = [1 2]; 
 Model.derivatives.slopedist = [3 5]; % Window size (in number of observations)
 
 %% Length of each data batch (in approximate number of layers):

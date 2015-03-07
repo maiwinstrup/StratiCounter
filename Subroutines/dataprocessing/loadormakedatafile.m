@@ -75,7 +75,18 @@ for j = 1:Model.nSpecies
                     % cover entire interval):
                     index = interp1(Data_final.depth,...
                         1:length(Data_final.depth),depth,'nearest');
-                    Data_final.data(index,:,j) = data(mask,:);
+                    
+                    % Are all desired derivatives calculated?
+                    if Model.derivatives.nDeriv <= size(data,2)
+                        Data_final.data(index,1:Model.derivatives.nDeriv,j) = data(mask,1:Model.derivatives.nDeriv);
+                    else
+                        % Otherwise, calculate derivatives:
+                        [slope,derivnoise] = calculateslope(data(mask,1),...
+                            Model.derivatives.nDeriv,Model.derivatives.slopeorder,...
+                            Model.derivatives.slopedist,0);
+                        Data_final.data(index,1:Model.nDeriv,j) = ...
+                            [data(mask,1),slope];
+                    end
                     
                     % Display warning if data series does not cover all of 
                     % interval (some flexibility in interval endpoints)

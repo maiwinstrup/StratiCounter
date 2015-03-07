@@ -94,8 +94,8 @@ dt_center = 1/2; % Half way!
 
 %% Remove layer fractions at edges:
 % These are caused by the added NaNs earlier.
-istart = find(rem(tnew,1)==dt/2,1,'first');
-iend = find(rem(tnew,1)==dt/2,1,'last'); % This is first data point of next layer
+istart = find(round(2*rem(tnew,1)/dt)==1,1,'first');
+iend = find(round(2*rem(tnew,1)/dt)==1,1,'last'); % This is first data point of next layer
 ynew = ynew(istart:iend-1);
 
 %% Stack data:

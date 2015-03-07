@@ -63,7 +63,7 @@ function open_request(datafiles, fileno, NN)
     for i = 1:N
         waitbar(0.2*i, h_wait, ['Please be patient ... loading data file no. ' num2str(i)]); % Wait window is launched
         try
-            load(['data' filesep files.datafile{fileno(i)}]);
+            load(['Subroutines' filesep 'matchmaker' filesep 'data' filesep files.datafile{fileno(i)}]);
         catch
             disp(['Data file of record ' num2str(fileno(i)) ' not found']);
             delete(handles.fig);
@@ -77,7 +77,7 @@ function open_request(datafiles, fileno, NN)
         handles.colours{i} = colours;
         waitbar(0.2*i+0.1, h_wait, ['Please be patient ... loading matchpoint file no. ' num2str(i)]); % Wait window is updated
         try
-            load(['matchfiles' filesep files.matchfile{fileno(i)}]);
+            load(['Output' filesep 'matchfiles' filesep files.matchfile{fileno(i)}]);
         catch
             disp(['Matchpoint file ' files.matchfile{fileno(i)} ' not found']);
             delete(handles.fig);
@@ -682,13 +682,13 @@ figure(handles.fig);
 
 function save_Callback(hObject, handles);
 for i = 1:handles.N
-    status = copyfile(['matchfiles' filesep handles.matchfile{i}], ['matchfiles' filesep handles.matchfile{i} '.backup']);
+    status = copyfile(['Output' filesep 'matchfiles' filesep handles.matchfile{i}], ['matchfiles' filesep handles.matchfile{i} '.backup']);
     if status == 0
         disp(['MATCHMAKER.m warning : Could not back up matchpoint file ' handles.matchfile{i} ' before saving']);
         disp('   (this error does not influence the saving procedure itself)');
     end;
     mp = handles.mp{i};
-    save(['matchfiles' filesep handles.matchfile{i}], 'mp', '-MAT');
+    save(['Output' filesep 'matchfiles' filesep handles.matchfile{i}], 'mp', '-MAT');
 end;
 set(handles.save, 'enable', 'off');
 
@@ -719,12 +719,12 @@ if strcmp(get(handles.save, 'enable'), 'on'); % Ask about saving marks if someth
     end;
 end;
 fileno = handles.fileno;
-load('./Subroutines/matchmaker/matchmaker_sett.mat');
+load(['Subroutines' filesep 'matchmaker' filesep 'matchmaker_sett.mat']);
 for i = 1:length(fileno)
     sett.xlim(fileno(i),:) = get(handles.bigax(i), 'xlim');
     sett.specs{fileno(i)} = handles.selectedspecs{i};
 end;
-save('./Subroutines/matchmaker/matchmaker_sett.mat', 'sett');
+save(['Subroutines' filesep 'matchmaker' filesep 'matchmaker_sett.mat'], 'sett');
 if isfield(handles, 'evaluatefigurehandle')
     delete(handles.evaluatefigurehandle)
 end;
