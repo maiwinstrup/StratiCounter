@@ -104,8 +104,8 @@ if plotlevel>0
     layercounts = layercounts(layercounts(:,1)>=dstart_fig&layercounts(:,1)<=dend_fig,:);
     mask = depth>=dstart_fig & depth<=dend_fig;
     
-    figure(hfig);
     % Plot original data:
+    hfig = figure;
     subplot(nDeriv+1,1,1)
     plot(depth(mask),data(mask))
     hold on
