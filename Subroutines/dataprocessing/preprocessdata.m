@@ -143,8 +143,9 @@ title(['Before processing: ' species],'fontweight','bold','interpreter','none')
 end
 
 function plotpreprocdata(hfig,nSubfig,iStep,depth,data,proctype,procdist,...
-    layercounts)
-%% plotpreprocdata(hfig,nSubfig,iStep,depth,data,proctype,procdist,layercounts)
+    layercounts,dstart_fig,dend_fig)
+%% plotpreprocdata(hfig,nSubfig,iStep,depth,data,proctype,procdist,...
+%    layercounts,dstart_fig,dend_fig)
 % This function plots a section of the processed data. 
 
 %% Select data in depth interval:
