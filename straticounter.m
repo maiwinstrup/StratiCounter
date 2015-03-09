@@ -446,7 +446,7 @@ while iBatch < nBatch
                 Data.depth(batchStart(1:iBatch)),Model,filename); % 2014-08-21 23:32
             
             % Mean layer thicknesses:
-            if exist(hfig_lambda,'var')
+            if exist('hfig_lambda','var')
                 close(hfig_lambda(isgraphics(hfig_lambda,'figure'))); 
             end
             hfig_lambda = gobjects(length(Model.dxLambda),1); % Initialize handles
