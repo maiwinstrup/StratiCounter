@@ -22,8 +22,6 @@ coder.extrinsic('logncdf');
 % Free Software Foundation; either version 2 of the License, or (at your 
 % option) any later version.
 
-% 2014-10-10 16:37: General clean-up
-
 %% Layer thickness probabilities: 
 % Layer durations (thicknesses) are assumed to follow either a lognormal 
 % distribution or gamma distribution.

@@ -86,8 +86,14 @@ for j = 1:Model.nSpecies
                         [slope,derivnoise] = calculateslope(data(mask,1),...
                             Model.derivatives.nDeriv,Model.derivatives.slopeorder,...
                             Model.derivatives.slopedist,0);
-                        Data_final.data(index,1:Model.derivatives.nDeriv+1,j) = ...
-                            [data(mask,1),slope];
+                        
+                        % Save data:
+                        data = [data(mask,1), slope];
+                        filename = [num2str(Model.dstart) '-'  num2str(Model.dend) 'm'];
+                        save([outputdir '/' filename '.mat'],'data','depth','derivnoise');
+                        
+                        % Add to output data file:
+                        Data_final.data(index,1:Model.derivatives.nDeriv+1,j) = data;
                     end
                     
                     % Display warning if data series does not cover all of 
