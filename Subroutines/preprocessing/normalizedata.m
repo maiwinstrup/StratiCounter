@@ -11,7 +11,7 @@ function ynew = normalizedata(x,y,L,method,plotlevel)
 if nargin < 5; plotlevel = 0; end
 
 %% Initialization: 
-ynew = size(y); % Same shape as input file
+ynew = nan(size(y)); % Same shape as input file
 
 %% Min-max/zscore normalization:
 for i = 1:length(y)
@@ -35,7 +35,7 @@ end
 %% Quantile normalization: 
 if strcmp(method,'quantile')
     % Normalization to constant probability distribution via quantiles
-    q = 0:0.1:1;
+    q = 0:0.2:1;
     baseline = findbaseline(x,y,L,q,plotlevel); 
     for i = 1:length(y)
         if isfinite(y(i))

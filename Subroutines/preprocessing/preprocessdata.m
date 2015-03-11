@@ -108,7 +108,7 @@ for iStep = 1:nSteps
     %% Plot processed data:
     if plotlevel>0
         plotpreprocdata(hfig,nSubfig,iStep,depth,data1,preproctype,...
-            procdist,layercounts,dstart_fig,dend_fig)
+            procdist,procval,layercounts,dstart_fig,dend_fig)
     end
 
     %% Update data:
@@ -132,9 +132,9 @@ title(['Before processing: ' species],'fontweight','bold','interpreter','none')
 end
 
 function plotpreprocdata(hfig,nSubfig,iStep,depth,data,preproctype,procdist,...
-    layercounts,dstart_fig,dend_fig)
+    procval,layercounts,dstart_fig,dend_fig)
 %% plotpreprocdata(hfig,nSubfig,iStep,depth,data,proctype,procdist,...
-%    layercounts,dstart_fig,dend_fig)
+%    procval,layercounts,dstart_fig,dend_fig)
 % This function plots a section of the processed data. 
 
 %% Select data in depth interval:
@@ -148,6 +148,10 @@ subplot(nSubfig,1,iStep+1)
 plot(depth_fig,data_fig,'-b')
 hold on
 plotlayercounts(layercounts,data_fig)
-title([preproctype ' (' num2str(procdist) ')'],'fontweight','bold')
-xlabel([dstart_fig dend_fig])
+% Title:
+text = preproctype;
+if ~isempty(procdist); text = [text '(' num2str(procdist) ')']; end
+if ~isempty(procval); text = [text '(' num2str(procval) ')']; end
+title(text,'fontweight','bold')
+xlim([dstart_fig dend_fig])
 end

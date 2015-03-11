@@ -194,8 +194,10 @@ for j = 1:Model.nSpecies
             print([outputdir '/' filename '_data.jpeg'],'-djpeg','-r300')
         end
 
-        figure(hfigderiv(j));
-        print([outputdir '/' filename '_deriv.jpeg'],'-djpeg','-r300')
+        if Model.derivatives.nDeriv>0
+            figure(hfigderiv(j));
+            print([outputdir '/' filename '_deriv.jpeg'],'-djpeg','-r300')
+        end
     end
     
     %% Include in data array containing data for all species:

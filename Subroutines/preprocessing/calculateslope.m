@@ -96,7 +96,7 @@ end
 
 %% Plot data and derivatives:
 hfig = gobjects(1);
-if plotlevel>0
+if plotlevel>0&&nDeriv>0
     % Select depth interval for figure:    
     [dstart_fig,dend_fig] = depthrangefigure(depth,data,layercounts); 
     
