@@ -1,7 +1,7 @@
 function [data1,hfig] = preprocessdata(data0,depth,preprocsteps,plotlevel,...
     species,layercounts)
 
-%% [data1,hfig] = processdata(data0,depth,preprocsteps,plotlevel,species,...
+%% [data1,hfig] = preprocessdata(data0,depth,preprocsteps,plotlevel,species,...
 %%   layercounts)
 % Preprocessing a (single) data series to obtain the best identifiable
 % annual layer signal in the data. 
@@ -9,24 +9,18 @@ function [data1,hfig] = preprocessdata(data0,depth,preprocsteps,plotlevel,...
 % Non-distance dependent transformations:
 % - No processing ([])
 % - Interpolation over nans ('interpNaNs')
-% - Log-transformation ('log')
-% - Box-Cox transformation ('boxcox',[],lambda, (alpha)])
-
-% - Subtract constant ('minusconst',const)
 % - Subtract mean ('minusmean')
+% - Log-transformation ('log')
+% - Box-Cox transformation ('boxcox',[],[lambda, (alpha)])
 
 % Distance-dependent transformations:
 % Window length (Lwindow) is measured in meters. 
-% - Normalization using quantiles ('quantile', Lwindow)
-% - Normalization using min-max ('minmax', Lwindow)
 % - Normalization using standard deviation ('zscore',Lwindow)
+% - Normalization using min-max ('minmax', Lwindow)
+% - Normalization using quantiles ('quantile', Lwindow)
 % - Using CDF-transform ('cdftransform',Lwindow)
-
-
-% - Subtract baseline ('minusbaseline',[Lwindow, (quantile)])
+% - Subtract baseline ('minusbaseline',Lwindow,(quantile))
 % - Subtract smooth curve calculated using running average ('minussmooth', Lwindow)
-% - Smooth using running average ('smooth',Lwindow)
-
 
 % Copyright (C) 2015  Mai Winstrup
 
@@ -46,7 +40,8 @@ if plotlevel>0
     [dstart_fig,dend_fig,depth_fig,data_fig] = ...
         depthrangefigure(depth,data0,layercounts);
     % Layer counts within interval:
-    layercounts = layercounts(layercounts(:,1)>=dstart_fig&layercounts(:,1)<=dend_fig,:);
+    layercounts = layercounts(layercounts(:,1)>=dstart_fig&...
+        layercounts(:,1)<=dend_fig,:);
     % Plot original data:
     nSubfig = nSteps+1;
     hfig = plotrawdata(depth_fig,data_fig,species,nSubfig,layercounts);
@@ -59,11 +54,10 @@ data = data0;
 
 for iStep = 1:nSteps
     preproctype = preprocsteps{iStep,1};
-    if size(preprocsteps,2)==1
-        procdist = [];
-    else
-        procdist = preprocsteps{iStep,2};
-    end
+    procdist = [];
+    procval = [];
+    if size(preprocsteps,2)>=2; procdist = preprocsteps{iStep,2}; end
+    if size(preprocsteps,2)==3; procval = preprocsteps{iStep,3}; end
     
     switch preproctype
         case []
@@ -72,6 +66,9 @@ for iStep = 1:nSteps
         case 'interpNaNs'
             mask = isfinite(data);
             data1 = interp1(depth(mask),data(mask),depth);
+            
+        case 'minusmean'
+            data1 = data-nanmean(data);
             
         case 'log'
             % If necessary, add minimum value to prevent data from becoming 
@@ -85,35 +82,27 @@ for iStep = 1:nSteps
             data1 = log(data);
             
         case 'boxcox'
-            lambda = procdist(1); % power parameter
-            % Default for the shift parameter alpha is zero:
-            if length(procdist)==1; alpha = 0;
-            else alpha = procdist(2);
+            % Power parameter (lambda):
+            lambda = procval(1); 
+            % Default for the shift parameter (alpha) is zero:
+            if length(procval)==1; alpha = 0;
+            else alpha = procval(2);
             end
-            data1 = boxcoxtransform(data,lambda,alpha,0); % 2014-07-16 09:24
+            data1 = boxcoxtransform(data,lambda,alpha,0); 
             
-        case {'quantile','minmax','zscore'}
-            data1 = normalizedata(depth,data,procdist,preproctype,0); % 2014-07-16 11:04
+        case {'zscore','minmax','quantile'}
+            data1 = normalizedata(depth,data,procdist,preproctype,0); 
             
         case 'cdftransform'
-            data1 = cdftransform(depth,data,procdist,0); % 2014-07-16 11:39
+            data1 = cdftransform(depth,data,procdist,0); 
 
-        case 'minusconst'
-            data1 = data-procdist;
-            
-        case 'minusmean'
-            data1 = data-nanmean(data0);
-            
         case 'minusbaseline'
-            quantiles = [0.05];
-            baseline = findbaseline(depth,data0,procdist(1),quantiles,0); % 2014-07-16 11:03
+            quantile = 0.05; % baseline corresponds to the 5% quantile
+            baseline = findbaseline(depth,data0,procdist(1),quantile,0);
             data1 = data-baseline;
          
         case 'minussmooth'
-            data1 = data-smoothdata(depth,data0,procdist); % 2014-07-16 13:58
-
-        case 'smooth'
-            data1 = smoothdata(depth,data0,procdist); % 2014-07-16 13:58
+            data1 = data-smoothdata(depth,data,procdist); 
     end
   
     %% Plot processed data:
@@ -131,7 +120,7 @@ end
 function hfig = plotrawdata(depth,data,species,nSubfig,layercounts)
 
 %% plotrawdata(depth,data,species,nSubfig,layercounts):
-% Plotting the original data. 
+% Plot the original data. 
 
 %% Plot data:
 hfig(1)=figure;
@@ -142,7 +131,7 @@ plotlayercounts(layercounts,data)
 title(['Before processing: ' species],'fontweight','bold','interpreter','none')
 end
 
-function plotpreprocdata(hfig,nSubfig,iStep,depth,data,proctype,procdist,...
+function plotpreprocdata(hfig,nSubfig,iStep,depth,data,preproctype,procdist,...
     layercounts,dstart_fig,dend_fig)
 %% plotpreprocdata(hfig,nSubfig,iStep,depth,data,proctype,procdist,...
 %    layercounts,dstart_fig,dend_fig)
@@ -159,6 +148,6 @@ subplot(nSubfig,1,iStep+1)
 plot(depth_fig,data_fig,'-b')
 hold on
 plotlayercounts(layercounts,data_fig)
-title([proctype ' (' num2str(procdist) ')'],'fontweight','bold')
+title([preproctype ' (' num2str(procdist) ')'],'fontweight','bold')
 xlabel([dstart_fig dend_fig])
 end

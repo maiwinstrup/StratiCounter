@@ -4,14 +4,14 @@ function data_new = boxcoxtransform(data,lambda,alpha,plotlevel)
 % Performing a box-cox transformation on data, with power parameter lambda
 % and shift parameter alpha. (Strictly speaking: In a box-cox
 % transformation, the geometric mean is assumed equal to 1).
-
 % Copyright (C) 2015  Mai Winstrup
-% 2014-05-18 18:47: Minor adjustments
-% 2014-07-16 09:24: Showplots -> plotlevel
+
+%% Set as default: No plotting
+if nargin < 4; plotlevel = 0; end
 
 %% Box-Cox transformation:
 % Geometric mean of intensity values:
-gm = geomean(data(isfinite(data)));
+gm = geomean(data(isfinite(data))+alpha); 
 if lambda == 0
     data_new = gm*log(data+alpha);
 elseif lambda == 1

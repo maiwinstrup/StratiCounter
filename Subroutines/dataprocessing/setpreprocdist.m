@@ -26,3 +26,10 @@ for j = 1:nSpecies
         end
     end
 end
+
+% Additional processing specs (if any):
+for j = 1:nSpecies
+    if size(preprocsteps0{j,1},2)>2
+        preprocsteps{j,1}(1,3)= preprocsteps0{j,1}(1,3);
+    end
+end

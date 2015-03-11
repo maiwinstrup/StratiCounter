@@ -44,21 +44,22 @@ Model.dx_center = 0;
 Model.preprocess{1:Model.nSpecies,1:2} = []; 
 % 1st row: Initial preprocessing
 % 2nd row: Batch preprocessing 
+
 % Possible preprocessing steps:
-% - No preprocessing ([])
-% - Linear interpolation over NaNs in data ('interpNaNs',[]);
-% - Log-transformation ('log',[])
-% - Box-Cox transformation ('boxcox', [lambda, (alpha)])
-% - Normalization using quantiles ('quantile', Lwindow)
-% - Normalization using min-max ('minmax', Lwindow)
-% - Normalization using standard deviation ('zscore',Lwindow)
-% - Using CDF-transform ('cdftransform',Lwindow)
-% - Subtract constant ('minusconst',const)
+% Non-distance dependent transformations:
+% - No processing ([])
+% - Interpolation over nans ('interpNaNs')
 % - Subtract mean ('minusmean')
-% - Subtract baseline ('minusbaseline',[Lwindow, quantile])
+% - Log-transformation ('log')
+% - Box-Cox transformation ('boxcox',[],[lambda, (alpha)])
+% Distance-dependent transformations:
+% - Normalization using standard deviation ('zscore',Lwindow)
+% - Normalization using min-max ('minmax', Lwindow)
+% - Normalization using quantiles ('quantile', Lwindow)
+% - Using CDF-transform ('cdftransform',Lwindow)
+% - Subtract baseline ('minusbaseline',Lwindow,(quantile))
 % - Subtract smooth curve calculated using running average ('minussmooth', Lwindow)
-% - Smooth using running average ('smooth',Lwindow)
-% Window lengths are given in m. Inset [] if no window is required.
+% Window lengths are given in m (1st row) or in terms of lambda (2nd row). 
 
 % Using data series itself and (possibly) its derivatives: 
 % Number to derivative data series to include (apart from original data set)

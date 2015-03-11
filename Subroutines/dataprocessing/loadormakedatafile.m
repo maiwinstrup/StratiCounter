@@ -158,7 +158,7 @@ for j = 1:Model.nSpecies
     % Amount of additional data depends on preprocessing distance:
     if isempty(Model.preprocess{j,1}) || size(Model.preprocess{j,1},2)==1 
         L = 0;
-    elseif isempty(Model.preprocess{j,1}{:,2}); % empty placeholder
+    elseif isempty(cell2mat(Model.preprocess{j,1}(:,2))); % empty placeholder
         L = 0;
     else
         L = cell2mat(Model.preprocess{j,1}(:,2));
@@ -252,16 +252,28 @@ preprocname = [];
 for i = 1:size(preprocess,1)
     % Numeric values (distances etc.) used in preprocessing:
     if size(preprocess,2)==1
-        dists = [];
+        specs = [];
     else
-        numval = preprocess{i,2};
-        % Convert to string:
-        dists = [];
-        for k=1:length(numval); dists = [num2str(numval) '-']; end
-        dists = dists(1:end-1);
+        % Distance value:
+        dists = num2str(preprocess{i,2});
+        % Additional specifications:
+        values = [];
+        if size(preprocess(i,:),2)>2
+            numval = preprocess{i,3};
+            for k=1:length(numval); 
+                values = [values ',' num2str(numval(k))]; 
+            end
+        end
+        if isempty(dists)
+            specs = values(2:end);
+        elseif isempty(values)
+            specs = dists;
+        else
+            specs = [dists ',' values];
+        end
     end
     % Append to filename:
-    preprocname = [preprocname preprocess{i} dists '_'];
+    preprocname = [preprocname preprocess{i} specs '_'];
 end
 preprocname = preprocname(1:end-1);
 

@@ -9,11 +9,7 @@ function ynew = cdftransform(x,y,L,plotlevel)
 % a running algorithm over a distance of L. If L is larger than the total 
 % data length, the entire data array is transformed simultaneously.
 % L is given in meters.
-
 % Copyright (C) 2015  Mai Winstrup
-% 2014-05-18 19:27: Minor adjustments
-% 2014-07-16 11:39: showplots->plotlevel, unequidistant data allowed, L is
-%                   given in meters
 
 %% Default value of L, or if L is set as empty:
 % L is then set equal to the full length of data set:
@@ -22,10 +18,10 @@ Ltot = max(x)-min(x);
 if nargin==2||isempty(L); L = Ltot; end
 if nargin<4; plotlevel = 0; end
 
-%% CDF-transforming:
+%% Perform CDF-transform:
 y = y(:);
 ynew = nan(size(y));
-if L >= Ltot;
+if L>=Ltot;
     ynew = fcdf(y);
 else
     % Same, but performed as a running mean.
@@ -56,13 +52,13 @@ ynew=(ynew-min(ynew))/max(ynew);
 if plotlevel>1
     figure;
     subplot(2,1,1)
-    plot(y,'-k')
-    xlim([1 length(y)])
+    plot(x,y,'-k')
+    xlim([x(1) x(end)])
     title('Original data','fontweight','bold')
     subplot(2,1,2)
-    plot(ynew)
-    title('CDF transformed','fontweight','bold')
-    xlim([1 length(y)])
+    plot(x,ynew)
+    title('CDF transformed data','fontweight','bold')
+    xlim([x(1) x(end)])
      
     % And plotting the sorted data themselves:
     figure;

@@ -1,18 +1,18 @@
 function baseline = findbaseline(x,y,L,q,plotlevel)
 
-%% FINDBASELINE(x,y,L,q,plotlevel):
+%% findbaseline(x,y,L,q,plotlevel):
 % Calculates a baseline for the data array. The baseline is defined as the
 % q'th quantile of the distribution of the data values in an interval of
 % length L around each data point. Multiple baselines are allowed.
+% Copyright (C) 2015  Mai Winstrup
 
-% Mai Winstrup, 2011
-% 2014-05-18 19:08: Minor adjustments
-% 2014-07-16 11:03: showplots->plotlevel,unequidistant data allowed
+%% Set default values:
+% No plotting:
+if nargin < 5; plotlevel = 0; end
+% Set default value of baseline equal to the 5% quantile;
+if nargin < 4 || isempty(q); q = 0.05; end
 
-%% Set default value of q to 0.5:
-if isempty(q); q = 0.5; end
-
-%% Calculating baseline:
+%% Calculate baseline:
 N = length(y);
 baseline = nan(N,length(q));
 for i=1:N
@@ -24,8 +24,8 @@ end
 %% Plotting:
 if plotlevel > 0
     figure;
-    plot(y)
+    plot(x,y)
     hold on
-    plot(baseline,'-k')
+    plot(x,baseline,'-k')
     title('Data and calculated baseline(s)','fontweight','bold')
 end
