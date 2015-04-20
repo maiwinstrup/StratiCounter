@@ -11,7 +11,7 @@ function [data_out,depth_out,derivnoise,hfigpreproc,hfigderiv] = ...
 % and derivatives are calculated. "Derivnoise" is a vector providing the 
 % theoretical amount of white noise in the derivative data series relative 
 % to the original data profile. Preprocessed data and derivatives are 
-% plotted if plotlevel>0, and figure handles are provided as output. 
+% plotted if plotlevel>0. Figure handles are provided as output. 
 % Copyright (C) 2015  Mai Winstrup
 
 %% Set default: 

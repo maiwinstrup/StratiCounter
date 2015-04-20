@@ -1,9 +1,10 @@
-function [depth_new, data_new, breaks] = addbreaks(depth,data,dx) 
+function [depth_new, data_new, startofbreaks] = addbreaks(depth,data,dx) 
 
-%% [depth_new, data_new, breaks] = addbreaks(depth,data,dx);
+%% [depth_new, data_new, startofbreaks] = addbreaks(depth,data,dx)
 % Find locations where the difference between measurements is greater than
-% dx. These are areas of breaks. For these sections, depths are added to
-% file, along with a corresponding NaN data value. 
+% dx. These are areas of breaks. For these sections, a depth value 
+% corresponding to start of the break is added to the file, along with a 
+% corresponding NaN data value. 
 % Copyright (C) 2015  Mai Winstrup
 
 %% Find areas where differences between measurements is larger than dx.
@@ -12,7 +13,7 @@ index = find(diffdepth>dx);
 
 %% Add extra depth entries onto the end:
 depths_nan = depth(index) + dx;
-breaks = depths_nan; % Starting depth of breaks
+startofbreaks = depths_nan; % Starting depth of breaks
 data_nan = NaN(size(depths_nan));
 depth_new = [depth; depths_nan];
 data_new = [data; data_nan];

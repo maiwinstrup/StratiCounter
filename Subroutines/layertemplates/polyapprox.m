@@ -16,8 +16,12 @@ function Template = polyapprox(meansignal,pc,Model)
 x = (1/(2*length(meansignal)):1/length(meansignal):1);
 Template.mean = polyfit(x(:),meansignal(:),Model.pcPolOrder);
 % And its derivatives:
-Template.dmean = polyder(Template.mean);
-Template.d2mean = polyder(Template.dmean);
+coeff = Template.mean;
+for k = 1:Model.derivatives.nDeriv
+    Template.dmean(:,k) = polyder(coeff);
+    % New signal:
+    coeff = Template.dmean(:,k);
+end
     
 %% Similarly for the principal components: 
 % Ensure correct format of pc matrix (namely [length(x),Model.order]):
@@ -25,7 +29,10 @@ if size(pc,2)==length(x); pc = pc'; end
 
 % Polynomial approximations:
 for i = 1:Model.order
-    Template.traj(i,:) = polyfit(x(:),pc(:,i),Model.pcPolOrder);
-    Template.dtraj(i,:) = polyder(Template.traj(i,:));
-    Template.d2traj(i,:) = polyder(Template.dtraj(i,:));
+    Template.traj(:,i) = polyfit(x(:),pc(:,i),Model.pcPolOrder);
+    coeff = Template.traj(:,i);
+    for k = 1:Model.derivatives.nDeriv
+        Template.dtraj(:,i,k) = polyder(coeff);
+        coeff = Template.dtraj(:,i,k);
+    end
 end

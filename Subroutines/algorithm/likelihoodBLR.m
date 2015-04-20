@@ -71,7 +71,7 @@ end
 end
  
 function [logb, ExpVal] = calc_b(obs_segment,Model,Template,Layerpar,d,P0matrix)
-%% CALC_B(obs_segment,model,layershape,layerpar,d,P0matrix)
+%% [logb, ExpVal] = calc_b(obs_segment,model,layershape,layerpar,d,P0matrix)
 % Calculating log(b) using Bayesian Linear Regression to a given template. 
 
 %% x-values:
@@ -79,11 +79,12 @@ x = 1/(2*d):1/d:1;
 
 %% If minusmean: Subtract mean signal from observation segment
 if strcmp(Model.normalizelayer,'minusmean')
-    meansignal = nan(d,3,Model.nSpecies);
+    meansignal = nan(d,Model.derivatives.nDeriv,Model.nSpecies);
     for j = 1:Model.nSpecies
         meansignal(:,1,j) = polyval(Template(j).mean,x)';
-        meansignal(:,2,j) = polyval(Template(j).dmean,x)'/d;
-        meansignal(:,3,j) = polyval(Template(j).d2mean,x)'/d^2;
+        for k = 1:Model.derivatives.nDeriv
+            meansignal(:,k+1,j) = polyval(Template(j).dmean(k,:,:),x)'/d^k;
+        end
         % Derivatives of mean signal are calculated per pixel distance 
         % (not per time). 
     end
@@ -97,7 +98,7 @@ obs_segment = reshape(obs_segment,(Model.derivatives.nDeriv+1)*d,Model.nSpecies)
 
 %% Construct design matrix for the linear regression:
 X0 = designmatrix(Model,Template,d); % 2014-03-31 17:17
-% Indexed: X0(1:Nderiv*d,1:model.order,1:model.nSpecies)
+% Indexed: X0(1:Nderiv*d,1:Model.order,1:Model.nSpecies)
 
 %% Initialize matrices:
 logb = nan(1,Model.nSpecies);

@@ -22,7 +22,7 @@ end
 switch Model.type
     case 'PCA'
         Template(1:Model.nSpecies,1:nBatch,1:Model.nTemplateBatch+1) = ...
-            struct('mean',[],'dmean',[],'d2mean',[],'traj',[],'dtraj',[],'d2traj',[]);
+            struct('mean',[],'dmean',[],'traj',[],'dtraj',[]);
     case 'FFTcomp'
         Template(1:Model.nSpecies,1:nBatch,1:Model.nTemplateBatch+1) = ...
             struct('dc',[],'phase',[],'amplitude',[]);

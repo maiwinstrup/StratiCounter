@@ -88,8 +88,9 @@ for j = 1:Model.nSpecies
                 x = 1/(2*d):1/d:1;
                 clear datasegment_subtract
                 datasegment_subtract(:,1) = polyval(Template(j).mean,x)';
-                datasegment_subtract(:,2) = polyval(Template(j).dmean,x)'/d;
-                datasegment_subtract(:,3) = polyval(Template(j).d2mean,x)'/d^2;
+                for k = 1:Model.derivatives.nDeriv
+                    datasegment_subtract(:,k+1) = polyval(Template(j).dmean(:,k),x)'/d^k;
+                end
                 datasegment = datasegment - datasegment_subtract(:,1:Model.derivatives.nDeriv+1);
             end
             mask=isfinite(datasegment(:));
@@ -169,8 +170,8 @@ end
 %% Setting weight for the white noise component of derivative data series:
 if strcmp(Model.derivnoise,'manual')
     % Using the derived ML value for the w-values:
-    Model.derivnoise = nan(length(Model.derivatives.deriv),Model.nSpecies);
-    Model.derivnoise(Model.derivatives.deriv+1,:)= ParML.nvar./repmat(ParML.nvar(1,:),2,1);
+    Model.derivnoise = nan(Model.derivatives.nDeriv+1,Model.nSpecies);
+    Model.derivnoise(2:Model.derivatives.nDeriv+1,:)= ParML.nvar./repmat(ParML.nvar(1,:),2,1);
     ParML.nvar = ParML.nvar(1,:);
 else
     % If using analytical values:
@@ -197,9 +198,9 @@ for j = 1:Model.nSpecies
     invW2 = cell(M-1,1);
 
     % Initial parameter input:
-    Par(1).par = ParML.par(j);
+    Par(1).par = ParML.par(:,j);
     Par(1).cov = ParML.cov(Model.order*(j-1)+1:Model.order*j,Model.order*(j-1)+1:Model.order*j);
-    Par(1).nvar = ParML.nvar(j);
+    Par(1).nvar = ParML.nvar(1,j); % not sure, only using 1st value
 
     for k = 1:nIter
         for i=1:M-1
@@ -213,8 +214,9 @@ for j = 1:Model.nSpecies
                     x = 1/(2*d):1/d:1;
                     clear datasegment_subtract
                     datasegment_subtract(:,1) = polyval(Template(j).mean,x)';
-                    datasegment_subtract(:,2) = polyval(Template(j).dmean,x)'/d;
-                    datasegment_subtract(:,3) = polyval(Template(j).d2mean,x)'/d^2;
+                    for kk = 1:Model.derivatives.nDeriv
+                        datasegment_subtract(:,kk+1) = polyval(Template(j).dmean(:,kk),x)'/d^kk;
+                    end
                     datasegment = datasegment - datasegment_subtract(:,1:Model.derivatives.nDeriv+1);
                 end
                 mask=isfinite(datasegment(:));
@@ -280,7 +282,7 @@ for j = 1:Model.nSpecies
         plotparameteriterations(Par,Model,nIter)
     end
     
-    ParMAP.par(j) = Par(nIter+1).par;
+    ParMAP.par(:,j) = Par(nIter+1).par;
     ParMAP.cov(Model.order*(j-1)+1:Model.order*j,Model.order*(j-1)+1:Model.order*j) = Par(nIter+1).cov;
     ParMAP.nvar(j) = Par(nIter+1).nvar;
 end

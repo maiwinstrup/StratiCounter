@@ -12,15 +12,35 @@ function Z = designmatrix(Model,Template,d)
 %% Constructing symmetrical layers;
 x = 1/(2*d):1/d:1;
 
-%if (strcmp(Model.type, 'PCA'))
-        Z = zeros(3*d,Model.order,Model.nSpecies);
-        for j = 1:Model.nSpecies
-            for i = 1:Model.order
-                Z(1:d,i,j) = polyval(Template(j).traj(i,:),x);
-                Z(d+1:2*d,i,j) = polyval(Template(j).dtraj(i,:),x)/d;
-                Z(2*d+1:3*d,i,j) = polyval(Template(j).d2traj(i,:),x)/d^2;
-             end
+nDeriv = Model.derivatives.nDeriv;
+Z = zeros((nDeriv+1)*d,Model.order,Model.nSpecies);
+
+for j = 1:Model.nSpecies
+    for i = 1:Model.order
+        Z(1:d,i,j) = polyval(Template(j).traj(:,i),x);
+    end
+end
+
+% Derivatives:
+for j = 1:Model.nSpecies
+    for i = 1:Model.order
+        for k = 1:nDeriv
+            Z(k*d+1:(k+1)*d,i,j) = polyval(Template(j).dtraj(:,i,k),x)/d^k;
         end
+    end
+end
+
+
+
+%if (strcmp(Model.type, 'PCA'))
+%         Z = zeros(3*d,Model.order,Model.nSpecies);
+%         for j = 1:Model.nSpecies
+%             for i = 1:Model.order
+%                 Z(1:d,i,j) = polyval(Template(j).traj(i,:),x);
+%                 Z(d+1:2*d,i,j) = polyval(Template(j).dtraj(i,:),x)/d;
+%                 Z(2*d+1:3*d,i,j) = polyval(Template(j).d2traj(i,:),x)/d^2;
+%              end
+%         end
     
 %elseif (strcmp(Model.type, 'FFTcomp'))
 %        Z = zeros(3*d,Model.order,Model.nSpecies);
@@ -43,9 +63,8 @@ x = 1/(2*d):1/d:1;
 %end
 
 %% Removing entries corresponding to unused data series:
-if d>0
-    % Removing unused data series:
-    Zmask = false(d,3);
-    Zmask(:,1:Model.derivatives.nDeriv+1) = true;
-    Z = Z(Zmask(:),:,:);
-end
+% if d>0
+%     % Removing unused data series:
+%     Zmask = true(d,nDeriv);
+%     Z = Z(Zmask(:),:,:);
+% end

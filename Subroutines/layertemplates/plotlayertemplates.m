@@ -58,7 +58,7 @@ for j = 1:Model.nSpecies
     end
     % Polynomial approximation:
     for i = 1:Model.order
-        plot(x,polyval(Template(j).traj(i,:),x),'-','color',color(i+1,:)*0.8,'linewidth',1.5)
+        plot(x,polyval(Template(j).traj(:,i),x),'-','color',color(i+1,:)*0.8,'linewidth',1.5)
         hold on
     end
     % Make legend:

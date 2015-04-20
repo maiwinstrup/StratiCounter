@@ -258,7 +258,6 @@ while iBatch < nBatch
         
     else
         % Situation B: Tiepoints. Using sections between tiepoints. 
-
         % Using data sequence up to (and including) the next tiepoint:
         batchEnd = interp1(Data.depth,1:length(Data.depth),Model.tiepoints(iBatch+1,1),'nearest');
         batchLength = batchEnd-batchStart(iBatch)+1; 
@@ -298,10 +297,7 @@ while iBatch < nBatch
     data_out = makedatafile(data_in,depth_in,preprocsteps,Model.derivatives); 
     
     % Remove extended part of data:
-    data_batch = data_out(batchStart(iBatch)-istart+1:batchEnd-istart+1,:,:);
-    
-    %% Add (for now) a third column corresponding to curvature
-    data_batch = cat(2,[data_batch, nan(length(data_batch),1,Model.nSpecies)]); 
+    data_batch = data_out(batchStart(iBatch)-istart+1:batchEnd-istart+1,:,:);     
     
     %% 2+3: Iterations over layer template and layer parameters 
     % The layer parameters are first optimized according to the initial 
