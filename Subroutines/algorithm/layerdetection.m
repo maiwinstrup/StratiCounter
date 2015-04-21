@@ -222,12 +222,12 @@ end
     Model.tiepoints,Runtype.plotlevel); % 2014-10-10 16:13
 
 %% Most likely state sequence as found using the Viterbi algorithm:
-if strcmp(Model.viterbi,'yes')
-    [Layerpos.viterbi, logPobs(2)] = viterbi(T,nLayerMax,layer0_pos,d,dmax,D,...
-        log(pd),logb_tot,Model.tiepoints,Runtype.plotlevel); % 2014-10-10 16:15
-else
-    Layerpos.viterbi = [];
-end
+% if strcmp(Model.viterbi,'yes')
+%     [Layerpos.viterbi, logPobs(2)] = viterbi(T,nLayerMax,layer0_pos,d,dmax,D,...
+%         log(pd),logb_tot,Model.tiepoints,Runtype.plotlevel); % 2014-10-10 16:15
+% else
+%     Layerpos.viterbi = [];
+% end
 
 %% Plot resulting layers onto figures:
 if Runtype.plotlevel>=2

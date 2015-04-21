@@ -41,7 +41,7 @@ depth = Data.depth(mask);
 data = Data.data(mask,:,:);
        
 % Finalize the processing:
-preprocsteps=setpreprocdist(Model.preprocess(:,2),meanLambda);
+preprocsteps=setpreprocdist(Model.preprocsteps(:,2),meanLambda);
 [DataProcessed.data, DataProcessed.depth] = makedatafile(data,depth,...
     preprocsteps,Model.derivatives); % No further downsampling or plotting
 

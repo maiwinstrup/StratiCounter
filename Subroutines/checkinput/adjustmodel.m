@@ -3,11 +3,7 @@ function Model = adjustmodel(Model)
 %% Model = adjustmodel(Model)
 % This function checks that the Model structure array has the correct 
 % format, and (if possible) makes the required corrections to the array. 
-
 % Copyright (C) 2015  Mai Winstrup
-% 2014-06-16 12:09
-% 2015-01-21 11:04: Corrections for new definition of dx_center, incl for
-% initialpar
 
 %% Check value of dx_center:
 if Model.dx_center<0 || Model.dx_center>=1
@@ -21,7 +17,7 @@ end
 %% Adjust depth intervals:
 % The depths below do not include displacement due to possible non-zero
 % value of dx_center.
-% Interval for layer counting
+% Interval for layer counting:
 Model.dstart = ceil((Model.dstart-Model.dx_center*Model.dx)/Model.dx)*Model.dx; 
 Model.dend = ceil((Model.dend-Model.dx_center*Model.dx)/Model.dx)*Model.dx; 
 
@@ -49,7 +45,7 @@ end
 [Model.species, index] = sort(Model.species);
 
 % Similar for corresponding preprocessing steps and weights:
-Model.preprocess = Model.preprocess(index,:);
+Model.preprocsteps = Model.preprocsteps(index,:);
 Model.wSpecies = Model.wSpecies(index);
 clear index
 

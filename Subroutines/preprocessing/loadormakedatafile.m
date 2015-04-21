@@ -2,7 +2,7 @@ function [Data_final, Model] = loadormakedatafile(Model,layercounts,Runtype)
 
 %% [Data_final, Model] = loadormakedatafile(Model,layercounts,Runtype)
 % Load and/or preprocess selected impurity records from ice core. 
-% Preprocessing is done according to Model.preprocessing(:,1). Preprocessed 
+% Preprocessing is done according to Model.preprocsteps(:,1). Preprocessed 
 % data is saved. If Runtype.reuse='no', preprocessing is done from scratch, 
 % otherwise preprocessed data may be loaded from prior runs. Layercounts 
 % are only used for plotting, and may be given as an empty array. 
@@ -34,7 +34,7 @@ for j = 1:Model.nSpecies
 
     %% Output folder for preprocessed data:
     outputdir = makepreprocfolder(Model.icecore,Model.species{j},...
-        Model.preprocess{j,1},Model.dx,Runtype);
+        Model.preprocsteps{j,1},Model.dx,Runtype);
     
     %% Does processed data exist? 
     % If so, these are loaded provided Runtype.reuse='yes'
@@ -162,12 +162,12 @@ for j = 1:Model.nSpecies
     %% Remove data from outside interval, while keeping some extra data 
     % around edges. 
     % Amount of additional data depends on preprocessing distance:
-    if isempty(Model.preprocess{j,1}) || size(Model.preprocess{j,1},2)==1 
+    if isempty(Model.preprocsteps{j,1}) || size(Model.preprocsteps{j,1},2)==1 
         L = 0;
-    elseif isempty(cell2mat(Model.preprocess{j,1}(:,2))); % empty placeholder
+    elseif isempty(cell2mat(Model.preprocsteps{j,1}(:,2))); % empty placeholder
         L = 0;
     else
-        L = cell2mat(Model.preprocess{j,1}(:,2));
+        L = cell2mat(Model.preprocsteps{j,1}(:,2));
     end
     mask = rawdata(:,1)>=Model.dstart-L & rawdata(:,1)<=Model.dend+L;
     depth = rawdata(mask,1);
@@ -176,7 +176,7 @@ for j = 1:Model.nSpecies
     %% Preprocess data, downsample, and calculate derivatives:
     % If Model.dx is empty, the original resolution is kept.
     [data, depth, derivnoise, hfigpreproc(j), hfigderiv(j)] = ...
-        makedatafile(data0,depth,Model.preprocess(j,1),Model.derivatives,...
+        makedatafile(data0,depth,Model.preprocsteps(j,1),Model.derivatives,...
         Model.dx,Model.dx_center,Runtype.plotlevel,Model.species(j),layercounts);
     
     %% Remove extra data from edges: 
@@ -195,7 +195,7 @@ for j = 1:Model.nSpecies
     
     %% Save example of data:
     if Runtype.plotlevel>0
-        if ~isempty(Model.preprocess{j,1})
+        if ~isempty(Model.preprocsteps{j,1})
             figure(hfigpreproc(j))
             print([outputdir '/' filename '_data.jpeg'],'-djpeg','-r300')
         end
@@ -233,7 +233,7 @@ if nFlag>0
     Data_final.data(:,:,mask) = []; % Remove data in array
     Model.species = Model.species(~mask); % Remove name of species 
     Model.nSpecies = length(Model.species); % New total number of species
-    Model.preprocess = Model.preprocess(~mask,:); % Remove from preprocessing
+    Model.preprocsteps = Model.preprocsteps(~mask,:); % Remove from preprocessing
     Model.wSpecies = Model.wSpecies(~mask); % Remove from weighting
 end
 
@@ -244,8 +244,8 @@ if Runtype.plotlevel==1
 end
 end
 
-function outputdir = makepreprocfolder(icecore,species,preprocess,dx,Runtype)
-%% outputdir = makepreprocfolder(icecore,species,preprocess,dx,Runtype)
+function outputdir = makepreprocfolder(icecore,species,preprocsteps,dx,Runtype)
+%% outputdir = makepreprocfolder(icecore,species,preprocsteps,dx,Runtype)
 % This function creates a foldername corresponding to a specific 
 % preprocessed data series. The folder is created if it doesn't already 
 % exist. 
@@ -257,17 +257,17 @@ end
 
 %% Including the (ordered) preprocessing steps:
 preprocname = [];
-for i = 1:size(preprocess,1)
+for i = 1:size(preprocsteps,1)
     % Numeric values (distances etc.) used in preprocessing:
-    if size(preprocess,2)==1
+    if size(preprocsteps,2)==1
         specs = [];
     else
         % Distance value:
-        dists = num2str(preprocess{i,2});
+        dists = num2str(preprocsteps{i,2});
         % Additional specifications:
         values = [];
-        if size(preprocess(i,:),2)>2
-            numval = preprocess{i,3};
+        if size(preprocsteps(i,:),2)>2
+            numval = preprocsteps{i,3};
             for k=1:length(numval); 
                 values = [values ',' num2str(numval(k))]; 
             end
@@ -281,7 +281,7 @@ for i = 1:size(preprocess,1)
         end
     end
     % Append to filename:
-    preprocname = [preprocname preprocess{i} specs '_'];
+    preprocname = [preprocname preprocsteps{i} specs '_'];
 end
 preprocname = preprocname(1:end-1);
 

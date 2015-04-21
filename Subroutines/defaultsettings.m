@@ -1,10 +1,8 @@
 function Model = defaultsettings()
 
 %% Model = defaultsettings()
-% Provide default settings for layer detection algorithm.
-
-% Mai Winstrup
-% 2015-01-20: Small adjustments; definition of dx_center changed
+% Provide default settings for StratiCounter.
+% Copyright (C) 2015  Mai Winstrup
 
 %% Data files:
 Model.icecore = '';
@@ -41,7 +39,7 @@ Model.dx_center = 0;
 % be set as 0.5 (to avoid unnecessary interpolation). 
 
 % Preprocessing of each data series:
-Model.preprocess{1:Model.nSpecies,1:2} = []; 
+Model.preprocsteps{1:Model.nSpecies,1:2} = []; 
 % 1st row: Initial preprocessing
 % 2nd row: Batch preprocessing 
 
@@ -88,24 +86,24 @@ Model.ageUnitManual = '';
 % Depth interval used for determining the annual layer model based on 
 % preliminary manual layer counts:
 Model.manualtemplates = [];
-% Perhaps set "[]" if using a sinusoidal shape instead (not implemented).
+% Not implemented: "[]" should mean to not use manual counts for shape 
+% derivations, but to use e.g. a sinusoidal shape.
 
 % Calculation of the emission probabilities (b).
 Model.type = 'PCA';
 Model.order = 1;
-% Normalizing each layer individually before calculating probabilities? 
-% (and shapes)
+% Using polynomial approximations to principal components of order:
+Model.pcPolOrder = 5;
+
+% Normalize each layer individually before calculating probabilities?
 Model.normalizelayer = 'minusmean'; 
 % Options: 
 % 'none', 'minmax', 'zscore', 'minusmean'
 
-% Using polynomial approximations to principal components of order:
-Model.pcPolOrder = 5;
-
 % Method for calculating the probabilities:
 Model.bcalc = 'BLR'; % Bayesian Linear Regression
-% Possible options (to be made available)
-% 'BLR', 'BLR_wNaN', 'physical', 'hierachy', 'fourier'
+% Not implemented: Possible options to be made available:
+% 'BLR', 'BLR_wNaN', 'physical', 'hierachy', 'fourier', etc.
 
 % Timestep used for up/downsampling layers to stack:
 Model.dtstack = 1/64; %[year]
@@ -122,7 +120,10 @@ Model.nTemplateFull = 1;
 % Type of layer thickness distribution:
 Model.durationDist = 'logn';
 % Definition and treatment of tails of distribution:
-Model.tailType = 'evenly'; % Preferred: Evenly
+Model.tailType = 'evenly'; 
+% Options: 
+% 'Evenly' (remaining tails are evenly distributed; probably best option)
+% 'Spliced' (remaining tails spliced onto the respective ends)
 Model.tailPrc = 0.5; % Percent removed from each tail. 
 
 % Weighting of b relative to p(d):
@@ -135,7 +136,6 @@ Model.bweight = 1;
 % The initial set of layer parameters will be based on manual layer counts.
 % Depth interval used to estimate these:
 Model.initialpar = []; 
-% Using the first half of data.
 
 % Using the entire parameter covariance matrix?
 Model.covariance = 'none'; 
@@ -151,7 +151,7 @@ Model.derivnoise = 'analytical';
 % Options: 
 % 'analytical': Analytical values are used. 
 % 'manual': Values based on the manual counting are used. 
-% The value of wWhiteNoise can also be ascribed specific numbers. 
+% The value of derivnoise can also be ascribed specific numbers. 
 
 %% Iterations and convergence:
 % Maximum number of iterations per batch:
@@ -184,9 +184,6 @@ Model.batchOverlap = 5; % Measured in units of mean layer thicknesses
 %% Output of algorithm:
 % Percentiles for confidence intervals:
 Model.confInterval = [50 95]; 
-
-% Also computing results based on the Viterbi algorithm?
-Model.viterbi = 'no';
 
 % Interval(s) for determining average layer thicknesses:
 % Regular length intervals:

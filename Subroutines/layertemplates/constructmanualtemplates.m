@@ -60,7 +60,7 @@ Model.manualtemplates = newinterval;
 %% Set data pre-processing distances for templates: 
 % Convert from floating distances to numeric values. We use a fixed 
 % distance for the data series throughout the interval. 
-preprocessTemplate = setpreprocdist(Model.preprocess(:,2),meanLambda);
+preprocessTemplate = setpreprocdist(Model.preprocsteps(:,2),meanLambda);
 
 %% Load/compute layer templates for the various data records:
 for j = 1:Model.nSpecies
@@ -123,7 +123,7 @@ for j = 1:Model.nSpecies
             Data.depth(end)>=Model.manualtemplates(2)       
         
         % Finalize processing (necessary if floating distances):
-        preprocsteps=setpreprocdist(Model.preprocess(:,2),meanLambda);
+        preprocsteps=setpreprocdist(Model.preprocsteps(:,2),meanLambda);
         [DataProcessed.data, DataProcessed.depth] = makedatafile(Data.data(:,:,j),Data.depth,...
             preprocsteps,Model.derivatives); % No further downsampling or plotting
         

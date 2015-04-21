@@ -4,33 +4,25 @@ function [manualcounts, meanLambda, newinterval] = loadlayercounts(Model,interva
 % Load manually counted layers for the depth interval in consideration. 
 % If manual layer counts do not exist for the entire interval, they are 
 % provided for "newinterval" only. 
-
 % Copyright (C) 2015  Mai Winstrup
-% 2014-06-17 21:11: Updates to input and output of function
-% 2014-08-21 20:08: Major restructuring, a data file containting the manual 
-%                   counts are now assumed to exist beforehand.
-% 2014-08-22 16:30: Changes to what is "outside interval", ensure new
-%                   interval fits to our depthscale
-% 2014-08-23 13:20: Ensure layer counts are sorted
-% 2014-10-08 09:58: Layer counts are located halfway between data points.
-% 2015-01-21 11:24: Adjustments due to changes in definition of dx_center
 
 %% Import manual layer counts:
 manualcounts = importdata(Model.pathManualCounts);
 if isstruct(manualcounts); manualcounts = manualcounts.data; end
-% Ensure that they are sorted according to increasing depth: 
+
+% Ensure that these counts are sorted according to increasing depth: 
 manualcounts = sortrows(manualcounts,1);
 
-%% Remove layercounts from outside interval, and ensure layer positions to 
-% be located halfway between data points:
+%% Remove layercounts from outside interval, and ensure correct placement. 
+% Layer positions must always be located halfway between data points. 
 % Location of first and last data point:
 dstart = ceil((interval(1)-Model.dx_center*Model.dx)/Model.dx)*Model.dx+Model.dx_center*Model.dx; 
 dend = ceil((interval(2)-Model.dx_center*Model.dx)/Model.dx)*Model.dx+Model.dx_center*Model.dx;
 % Possible layer boundary locations:
-depth_px = dstart-Model.dx/2:Model.dx:dend+Model.dx/2;
-
+dlayer_px = dstart-Model.dx/2:Model.dx:dend+Model.dx/2;
 % Truncated locations:
-pos = interp1(depth_px,1:length(depth_px),manualcounts(:,1),'nearest',nan);
+pos = interp1(dlayer_px,1:length(dlayer_px),manualcounts(:,1),'nearest',nan);
+
 % Layers outside interval are nan, these are removed: 
 mask = isfinite(pos);
 manualcounts = manualcounts(mask,:);
@@ -44,7 +36,7 @@ if isempty(manualcounts)
 end
 
 % Replacing with truncated layer boundary locations in manualcounts:
-manualcounts(:,1) = depth_px(pos(mask));
+manualcounts(:,1) = dlayer_px(pos(mask));
 
 %% Mean layer thickness in interval:
 meanLambda = mean(diff(manualcounts(:,1)));

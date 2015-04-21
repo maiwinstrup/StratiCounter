@@ -3,17 +3,7 @@ function [outputdir,outputdir0,runID] = makeoutputfolder(Model,Runtype)
 %% [outputdir,outputdir0,runID] = makeoutputfolder(Model,Runtype)
 % Generate outputfolders for results. Outputdir0 is directory corresponding
 % to current model settings, while outputdir also includes runID. 
-
 % Copyright (C) 2015  Mai Winstrup
-% 2014-06-17 21:24: First independent version
-% 2014-08-14 13:32: modelnumber -> runnumber
-% 2014-08-19 16:18: Changes to runnumber, introduced runnumber=0, and 
-%                   remove content of folder.
-% 2014-08-21 20:01: Also works for SyntheticData, new name
-% 2014-08-23 12:48: Removed changes to Model for synthetic data
-% 2014-09-29 19:00: runnumber -> runID, outputdir0 for syn data changed.
-% 2014-10-07 14:57: Nolonger saving runID=0
-% 2015-01-21 11:08: Simplified name of output folders
 
 %% Find/generate output folder:
 % Running in development mode?

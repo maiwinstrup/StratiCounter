@@ -13,6 +13,10 @@
 %                   checksyntheticdata.m
 % 2014-08-21 20:09: Added info on "manual" counts
 
+%% Check Model.SynthData, and convert mean signal etc. to polynomial 
+% approximations:
+Model.SynthData = checksyntheticmodel(Model,outputdir,Runtype.plotlevel); % 2014-08-23
+
 %% Depth scale: 
 Data.depth = (Model.dstart:Model.dx:Model.dend)';
 Model.dend = Data.depth(end);

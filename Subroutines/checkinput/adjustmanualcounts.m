@@ -3,16 +3,10 @@ function [manualcounts, Model] = adjustmanualcounts(manualcounts,Model)
 %% [manualcounts, Model] = adjustmanualcounts(manualcounts,Model)
 % Check and adjust the format of the manual layer counts. Ages are 
 % converted to ageUnitOut. 
-
 % Copyright (C) 2015  Mai Winstrup
-% 2014-06-17 21:13: Changing ages to ageUnitOut
-% 2014-08-22 13:14: Layer boundaries are located to be between two data
-%                   points. 
-% 2014-08-23 13:33: Layer boundaries are not changed, these are corrected
-%                   earlier.
 
 %% No changes if no layer counts are given:
-if isempty(manualcounts); 
+if isempty(manualcounts);
     return; 
 end
 
@@ -80,8 +74,10 @@ end
 %% If we have uncertain years, manually counted ages may start at "x.5 yr". 
 % We do not wish our new timescale to start with a half year (all years 
 % would then be half years).
-% In this case, all ages are (subtracted) by 0.5: 
-% (5836.5b2k->5836 b2k; -3836.5AD->-3837AD; 277.5AD -> 277 AD)
+% In this case, all ages are (subtracted) by 0.5. 
+% Examples: 5836.5b2k -> 5836 b2k; 
+%           -3836.5AD -> -3837AD; 
+%           277.5AD -> 277 AD
 layerfraction = mod(manualcounts(first_certain_layer,2),1);
 if layerfraction ~= 0
     manualcounts(:,2) = manualcounts(:,2)-layerfraction;

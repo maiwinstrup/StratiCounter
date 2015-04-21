@@ -1,6 +1,10 @@
 function straticounter(sett_icecore)
+clc; close all;
+releasedate = '21-04-2015';
 
 %% StratiCounter: A layer counting algorithm
+% Developed by Mai Winstrup, mai@gfy.ku.dk
+
 % The algorithm is based on the principles of statistical inference of 
 % hidden states in semi-Markov processes. States, and their associated 
 % confidence intervals, are inferred by the Forward-Backward algorithm and 
@@ -8,34 +12,30 @@ function straticounter(sett_icecore)
 % algorithm is used to find the optimal set of layer parameters for each 
 % data batch. Confidence intervals do not account for the uncertainty in 
 % estimation of layer parameters.
-%
+
 % If (absolute) tiepoints are given, the algorithm is run between these,
 % while assuming constant annual layer signals between each pair. If no
 % tiepoints, the algorithm is run batch-wise down the core, with a slight 
 % overlap between consecutive batches.
-%
-% See Winstrup (2011) and Winstrup et al. (2012) for further documentation. 
-%
+
 % The algorithm was developed for visual stratigraphy data from the NGRIP
 % ice core (Winstrup (2011), Winstrup et al. (2012)). It has later been 
 % applied to other cores, and extended to parallel analysis of multi-
 % parameter data sets (e.g. Vallelonga et al. (2014), Sigl et al. (in prep, 
 % 2015)). For testing purposes, it can also be run on synthetic data. 
-%
-% Developed by Mai Winstrup. 
-% Contact: mai@gfy.ku.dk
-%
+
+% See Winstrup (2011) and Winstrup et al. (2012) for further documentation. 
+
 % When using this script, please provide release date of the algorithm, 
 % and cite: 
 % Winstrup et al., An automated approach for annual layer counting in
 % ice cores, Clim. Past. 8, 1881-1895, 2012.
-clc; close all;
-releasedate = '02-02-2015';
 
-% Copyright (C) 2015  Mai Winstrup
+%% Copyright (C) 2015  Mai Winstrup
 % Files associated with the matchmaker software (matchmaker.m, 
 % matchmaker_evaluate.m) is authored and copyrighted by Sune Olander 
 % Rasmussen. 
+
 % This program is free software; you can redistribute it and/or modify it 
 % under the terms of the GNU General Public License as published by the 
 % Free Software Foundation; either version 2 of the License, or (at your 
@@ -61,9 +61,9 @@ addpath(genpath('./Subroutines'))
 addpath(genpath('./Settings'))
 
 %% Select how to run the script:
-Runtype.develop = 'no'; 
+Runtype.develop = 'yes'; 
 % In development mode; will run as normal, but output will be put in the
-% ./Output/develop folder. Option to run for fewer batches. 
+% ./Output/develop folder. Option to run for only a few batches. 
 Runtype.reuse = 'yes'; 
 % If yes; use previously processed data and calculated layer templates.
 % If no, these are re-calculated. 
@@ -83,47 +83,42 @@ end
 
 %% Select model settings:
 % Import default settings:
-Model = defaultsettings; % 2015-01-20
+Model = defaultsettings; 
+% Add release date:
+Model.releasedate = releasedate;
 
 % Use core-specific settings:
 run(sett_icecore)
 
-% Add release date:
-Model.releasedate = releasedate;
-
 %% Ensure correct format of content in Model:
-Model = adjustmodel(Model); % 2015-01-21
+Model = adjustmodel(Model); 
 
 %% Make output folders:
-[outputdir, outputdir0, runID] = makeoutputfolder(Model, Runtype); % 2015-01-21
+[outputdir, outputdir0, runID] = makeoutputfolder(Model, Runtype);
 
 %% Load data and manual layer counts:
-if strcmp(Model.icecore,'SyntheticData')
-    % Check Model.SynthData, and convert mean signal etc. to polynomial 
-    % approximations:
-    Model.SynthData = checksyntheticmodel(Model,outputdir,Runtype.plotlevel); % 2014-08-23
-
+if strcmp(Model.icecore,'SyntheticData')   
     % Construct synthetic data: 
-    [Data, manualcounts, Model] = makesyntheticdata(Model,Runtype,outputdir); % 2014-08-21
+    [Data, manualcounts, Model] = makesyntheticdata(Model,Runtype,outputdir); % 21-08-2014
     
 else
-    % Load manually counted annual layers:
-    [manualcounts, meanLambda] = loadlayercounts(Model,[Model.dstart Model.dend]); % 2015-01-21
-    
+    % Load manually-counted annual layers:
+    [manualcounts, meanLambda] = loadlayercounts(Model,[Model.dstart Model.dend]); % 21-04-2015    
+   
     % Check format, and convert ages to ageUnitOut:
-    [manualcounts, Model] = adjustmanualcounts(manualcounts,Model); % 2014-08-23
+    [manualcounts, Model] = adjustmanualcounts(manualcounts,Model); % 21-04-2015
     
-    % Check preprocessing distances (Model.preprocess, Model.dx) relative 
-    % to manual layer thicknesses over interval:
-    checkpreprocessdist(Model,manualcounts); % 2014-10-01
+    % Check preprocessing distances relative to manual layer thicknesses 
+    % over interval:
+    checkpreprocdist(Model,manualcounts); % 21-04-2015
     
     % Load and preprocess data files:
-    [Data, Model] = loadormakedatafile(Model,manualcounts,Runtype); % 2014-10-01
+    [Data, Model] = loadormakedatafile(Model,manualcounts,Runtype); % 21-04-2015
     
     % Check for long sections without data:
     % long sections are in this context corresponding to 20 mean layer
     % thicknesses without much data: 
-    sectionswithoutdata(Data,20*meanLambda,Model.species);
+    sectionswithoutdata(Data,20*meanLambda,Model.species); % 21-04-2015
 end
 
 % If no manual counts are known, an empty array should be provided.
@@ -132,6 +127,7 @@ end
 
 %% Save an updated version of "Model" in output folder:
 save([outputdir '/Model.mat'],'Model')
+
 
 %% Initial layer templates and layer parameters:
 % These are based on manual layer counts in the data in the depth interval 
@@ -283,7 +279,7 @@ while iBatch < nBatch
     % estimated from previous batch.    
     % Preprocessing specs:
     [preprocsteps,preprocdist] = ...
-        setpreprocdist(Model.preprocess(:,2),meanLambda); 
+        setpreprocdist(Model.preprocsteps(:,2),meanLambda); 
     
     % Using an extended section around batch (extension depends on
     % maximum processing distance):

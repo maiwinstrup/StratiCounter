@@ -1,15 +1,12 @@
-function checkpreprocessdist(Model,manualcounts)
+function checkpreprocdist(Model,manualcounts)
 
-%% checkpreprocessdist(Model,manualcounts)
-% Check that the values of model.dx and preprocessing distance are chosen 
+%% checkpreprocdist(Model,manualcounts)
+% Check that the values of model.dx and preprocessing distances are chosen 
 % reasonably compared to the layer thicknesses in interval.
 % The following generally seems to work well: 
 % dx < 10*lambda, dist > 2*lambda
 
 % Copyright (C) 2015  Mai Winstrup
-% 2014-06-17 21:09: Initial version
-% 2014-06-19 17:00: Only performed when given manual counts
-% 2014-10-01 12:52: Floating distances accounted for separately
 
 %% Only performed if manual counts are provided:
 if isempty(manualcounts); return; end
@@ -36,18 +33,14 @@ if ~isempty(Model.dx)
 end
 
 %% Preprocessing distance (minimum value) relative to the layer thickness:
-% Processing distances:
+% Fixed preprocessing distances:
 preprocdist{Model.nSpecies,1}=[];
 for j = 1:Model.nSpecies
-    if ~isempty(Model.preprocess{j,1}) && size(Model.preprocess{j,1},2)>1
-        preprocdist{j,1} = cell2mat(Model.preprocess{j,1}(:,2)); %[m]
+    if ~isempty(Model.preprocsteps{j,1}) && size(Model.preprocsteps{j,1},2)>1
+        preprocdist{j,1} = cell2mat(Model.preprocsteps{j,1}(:,2)); %[m]
     end
 end
 minDist = min(cell2mat(preprocdist));
-% også tjekke hvis alle er empty -> []
-% if minDistFloat < 2
-%     disp('OBS: Floating distance is less than 2*lambda')
-% end
 
 if isfinite(minDist)
     % Average number of layers per this distance:
@@ -61,4 +54,17 @@ if isfinite(minDist)
     if Mmin < 1
         disp(['OBS: Minimum number of layers per preprocessing distance is small: ' num2str(Mmin)])
     end
+end
+
+% Adjustable preprocessing distances: 
+preprocdist_adj{Model.nSpecies,1}=[];
+for j = 1:Model.nSpecies
+    if ~isempty(Model.preprocsteps{j,2}) && size(Model.preprocsteps{j,2},2)>1
+        preprocdist_adj{j,1} = cell2mat(Model.preprocsteps{j,2}(:,2)); %[fractions of lambda]
+    end
+end
+minDist_adj = min(cell2mat(preprocdist_adj));
+
+if minDist_adj < 2
+     disp('OBS: Adjustable preprocessing distance(s) is small (less than 2*lambda)')
 end

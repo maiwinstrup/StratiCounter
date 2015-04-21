@@ -1,20 +1,20 @@
 function sectionswithoutdata(Data,sectionlength,species)
 
 %% Check for long sections without data:
-% "Long sections without data" is defined as sections larger than ~N years 
-% for which less than half of section contains data.
+% "Long sections without data" is defined as sections larger than 
+% "sectionlength" for which less than half of section contains data.
 % Copyright (C) 2015  Mai Winstrup
 
 %% Section length in pixels:
 dx = mean(diff(Data.depth)); % Using an average value for dx
 sectionlength_px = round(sectionlength/dx); %[pixel]
 
-%% Find nans in data (not looking at derivatives) 
-% And filter the resulting logical array
+%% Find nans in data (not considering derivatives) 
+% And filter the resulting logical array.
 nSpecies = size(Data.data,3);
 nanData = nan(length(Data.depth),nSpecies);
 for j = 1:nSpecies
-    mask = isnan(Data.data(:,1,j)); % not looking at derivatives
+    mask = isnan(Data.data(:,1,j)); % not considering derivatives
     nanData(:,j)=medfilt1(mask*1,sectionlength_px);
 end
 
