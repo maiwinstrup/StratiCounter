@@ -171,26 +171,7 @@ for j = 1:Model.nSpecies
     end
     mask = rawdata(:,1)>=Model.dstart-L & rawdata(:,1)<=Model.dend+L;
     depth = rawdata(mask,1);
-    data0 = rawdata(mask,2);
-    
-    %% Check for unnoticed breaks in data:
-    % A (likely) break in data can be observed as much larger sections 
-    % without a data point than "usual". However, this check is only
-    % performed if the data points are regularily spaced. If so, we select 
-    % as breaks those no-data sections which are wider than 1.8x the median 
-    % value. One depth value (and a data value of nan) corresponding to 
-    % this break is added to the data records.
-    
-    % Test for regularly spaced data: 
-    dx_old = diff(depth);
-    regularity_test = abs(median(dx_old)-min(dx_old))/mean(dx_old);
-    if regularity_test<0.01
-        [depth, data0, startofbreaks] = addbreaks(depth,data0,1.8*median(dx_old));
-        if ~isempty(startofbreaks)
-            disp('Breaks are added starting at the following depths:')
-            disp(startofbreaks)
-        end
-    end
+    data0 = rawdata(mask,2);   
 
     %% Preprocess data, downsample, and calculate derivatives:
     % If Model.dx is empty, the original resolution is kept.
