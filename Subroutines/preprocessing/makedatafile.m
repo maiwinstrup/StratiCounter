@@ -12,7 +12,12 @@ function [data_out,depth_out,derivnoise,hfigpreproc,hfigderiv] = ...
 % theoretical amount of white noise in the derivative data series relative 
 % to the original data profile. Preprocessed data and derivatives are 
 % plotted if plotlevel>0. Figure handles are provided as output. 
+
 % Copyright (C) 2015  Mai Winstrup
+% This program is free software; you can redistribute it and/or modify it 
+% under the terms of the GNU General Public License as published by the 
+% Free Software Foundation; either version 2 of the License, or (at your 
+% option) any later version.
 
 %% Set default: 
 if nargin<9; layercounts=[]; end % No plotting of layer counts

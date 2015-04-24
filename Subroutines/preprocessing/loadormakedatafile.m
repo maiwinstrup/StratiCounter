@@ -11,7 +11,12 @@ function [Data_final, Model] = loadormakedatafile(Model,layercounts,Runtype)
 %   actual values. 
 % - If missing data series: These are removed from Model array, including 
 %   their corresponding preprocessing steps etc. 
+
 % Copyright (C) 2015  Mai Winstrup
+% This program is free software; you can redistribute it and/or modify it 
+% under the terms of the GNU General Public License as published by the 
+% Free Software Foundation; either version 2 of the License, or (at your 
+% option) any later version.
 
 %% Flag is an indicator of missing impurity records:
 flag = nan(1,Model.nSpecies);
@@ -33,8 +38,17 @@ end
 for j = 1:Model.nSpecies
 
     %% Output folder for preprocessed data:
-    outputdir = makepreprocfolder(Model.icecore,Model.species{j},...
-        Model.preprocsteps{j,1},Model.dx,Runtype);
+    % Running in development mode?
+    if strcmp(Runtype.develop,'yes'); outputdir = './Output/develop';
+    else outputdir = './Output';
+    end
+    % Including the (ordered) preprocessing steps:
+    preprocname = makepreprocname(Model.preprocsteps{j,1}, Model.dx);
+
+    % Output folder for processed data:
+    outputdir = [outputdir '/' Model.icecore '/ProcessedData/' Model.species{j} '/' preprocname];
+    % Make folder (if doesn't exist):
+    if ~exist(outputdir,'dir'); mkdir(outputdir); end
     
     %% Does processed data exist? 
     % If so, these are loaded provided Runtype.reuse='yes'
@@ -167,7 +181,7 @@ for j = 1:Model.nSpecies
     elseif isempty(cell2mat(Model.preprocsteps{j,1}(:,2))); % empty placeholder
         L = 0;
     else
-        L = cell2mat(Model.preprocsteps{j,1}(:,2));
+        L = max(cell2mat(Model.preprocsteps{j,1}(:,2)));
     end
     mask = rawdata(:,1)>=Model.dstart-L & rawdata(:,1)<=Model.dend+L;
     depth = rawdata(mask,1);
@@ -241,65 +255,5 @@ end
 if Runtype.plotlevel==1
     close(hfigpreproc(isgraphics(hfigpreproc,'figure'))); 
     close(hfigderiv(isgraphics(hfigpreproc,'figure')));
-end
-end
-
-function outputdir = makepreprocfolder(icecore,species,preprocsteps,dx,Runtype)
-%% outputdir = makepreprocfolder(icecore,species,preprocsteps,dx,Runtype)
-% This function creates a foldername corresponding to a specific 
-% preprocessed data series. The folder is created if it doesn't already 
-% exist. 
-
-%% Running in development mode?
-if strcmp(Runtype.develop,'yes'); outputdir = './Output/develop';
-else outputdir = './Output';
-end
-
-%% Including the (ordered) preprocessing steps:
-preprocname = [];
-for i = 1:size(preprocsteps,1)
-    % Numeric values (distances etc.) used in preprocessing:
-    if size(preprocsteps,2)==1
-        specs = [];
-    else
-        % Distance value:
-        dists = num2str(preprocsteps{i,2});
-        % Additional specifications:
-        values = [];
-        if size(preprocsteps(i,:),2)>2
-            numval = preprocsteps{i,3};
-            for k=1:length(numval); 
-                values = [values ',' num2str(numval(k))]; 
-            end
-        end
-        if isempty(dists)
-            specs = values(2:end);
-        elseif isempty(values)
-            specs = dists;
-        else
-            specs = [dists ',' values];
-        end
-    end
-    % Append to filename:
-    preprocname = [preprocname preprocsteps{i} specs '_'];
-end
-preprocname = preprocname(1:end-1);
-
-%% Add resolution of data file:
-% Number of significant digits:
-if dx>=10^-2; 
-    res = [num2str(dx*100) 'cm'];
-else res = [num2str(dx*10^3) 'mm'];
-end
-if isempty(preprocname); preprocname = ['none_' res];
-else preprocname = [preprocname '_' res];
-end
-
-%% Output folder for processed data:
-outputdir = [outputdir '/' icecore '/ProcessedData/' species '/' preprocname];
-
-%% Make directory:
-if ~exist(outputdir,'dir')
-    mkdir(outputdir)
 end
 end

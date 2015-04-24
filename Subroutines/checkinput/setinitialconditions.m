@@ -1,13 +1,13 @@
-function [nBatch,batchStart,Layer0,Template,Prior,Layerpar,dDxLambda,logPobs,relweight,Result] = ...
-    setinitialconditions(Data,Model,manualcounts,meanLambda,Template0,Layerpar0,Runtype)
+function [nBatch,batchStart,Layer0,Template,Prior,Layerpar,dDxLambda,...
+    logPobs,relweight,Result] = setinitialconditions(Data,Model,...
+    manualcounts,meanLambda,Template0,Layerpar0)
 
-%% [nBatch,batchStart,Layer0,Template,Prior,Layerpar,dDxLambda,logPobs,relweight,Result] = ...
-% setinitialconditions(Data,Model,manualcounts,meanLambda,Template0,Layerpar0,Runtype)
+%% [nBatch,batchStart,Layer0,Template,Prior,Layerpar,dDxLambda,logPobs,...
+%    relweight,Result] = setinitialconditions(Data,Model,manualcounts,...
+%    meanLambda,Template0,Layerpar0)
 % Initialize matrices and set values corresponding to initial conditions.
 % Matrices for results are also initialized. 
-
 % Copyright (C) 2015  Mai Winstrup
-% 2014-10-08 20:41: First independent version
 
 %% Estimate number of batches within depth interval:
 if ~isempty(Model.tiepoints)
@@ -31,7 +31,6 @@ elseif isempty(manualcounts)||manualcounts(1,1)>Model.dstart+1;
     % If manual counts are not provided (for the entire interval, or for 
     % the first 1 meter of the data).
     batchStart(1) = 1;
-    
 else
     % Depth of the first (certain) layer in the manually counted chronology:
     firstcertainlayer = find(manualcounts(:,3)==0,1,'first');
@@ -115,25 +114,16 @@ Prior(1,1).nvar = Layerpar0.nvar;
 % For gibbs sampling:
 if sum(strcmp(Model.update,'gibbs')>0)
     % Prior for my: variance
-    Prior(1,1).kappa = 1/0.1^2; %/ my må varere ca med +/- 0.1. Sætter dette lig 1 std. variancen er så 0.1^2. 
-    % dette bør IKKE ændres til mindre værdier efterhnden, da det nemt kan
-    % ændre sig fra batch til batch.
+    Prior(1,1).kappa = 1/0.1^2; 
 
     % Prior for sigma: Gamma distribution
     Prior(1,1).alpha = 10;
-    Prior(1,1).beta = 0.4/1.5; % passer ikke super godt, men er heller ikke helt forkert!
-    % mean value of sig:
-    % meanvalue = (Prior(1,1).beta/(Prior(1,1).alpha-1))^0.5;
-    % mode value of sig:
-    % modevalue = (Prior(1,1).beta/(Prior(1,1).alpha+1))^0.5;
-    % resulting distribution of sigma:
-    % sig = 0.01:0.001:1;
-    % p=gampdf(1./sig.^2,Prior(1,1).alpha,1/Prior(1,1).beta);
+    Prior(1,1).beta = 0.4/1.5;
     
     % Precision matrix for parameter vector:    
     for j = 1:Model.nSpecies
         for i = 1:Model.order
-            Prior(1,1).Lambda(i,i,j) = abs(((Prior(1,1).u(i,j))/2)^-1); % very loose Prior (?)
+            Prior(1,1).Lambda(i,i,j) = abs(((Prior(1,1).u(i,j))/2)^-1); % very loose prior
         end
     end
 end

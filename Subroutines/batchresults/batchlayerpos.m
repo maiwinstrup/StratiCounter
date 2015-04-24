@@ -1,4 +1,4 @@
-function [LayerposDepth, logPobs_combined] = ...
+function [LayerposDepth, logPobs_final] = ...
     batchlayerpos(Layerpos,depth,tau,Layer0,postau,ntauTotal,d,pd,logb,Model,plotlevel)
 
 %% [LayerposDepth, logPobs_combined] = batchlayerpos(Layerpos,depth,...
@@ -31,13 +31,13 @@ LayerposDepth.fb_issues(:,1) = depth(Layerpos.fb_issues(:,1)-0.5)+0.5*Model.dx;
 LayerposDepth.fb_issues(:,2) = Layerpos.fb_issues(:,2);
 
 % According to the Viterbi algorithm:
-if isempty(Layerpos.viterbi)
-    LayerposDepth.viterbi = [];
-else
-    mask = Layerpos.viterbi>1 & Layerpos.viterbi<=tau;
-    Layerpos.viterbi = Layerpos.viterbi(mask);
-    LayerposDepth.viterbi = depth(Layerpos.viterbi-0.5)+0.5*Model.dx;
-end
+% if isempty(Layerpos.viterbi)
+%     LayerposDepth.viterbi = [];
+% else
+%     mask = Layerpos.viterbi>1 & Layerpos.viterbi<=tau;
+%     Layerpos.viterbi = Layerpos.viterbi(mask);
+%     LayerposDepth.viterbi = depth(Layerpos.viterbi-0.5)+0.5*Model.dx;
+% end
 
 %% An optimal set of layerboundaries: 
 % Found by using the viterbi algorithm, constrained by output of the
@@ -77,19 +77,18 @@ nLayerML = nLayerML-nLayer0ML;
 % Using tiepoints:
 tiepoints = '42'; % det er lige meget hvad der er heri, blot ikke er tom
 
-[layerpos_combined, logPobs_combined] = viterbi(tau,nLayerML,layer0_pos,d,dmax,D,...
+[layerpos_final, logPobs_final] = viterbi(tau,nLayerML,layer0_pos,d,dmax,D,...
     log(pd),logb(1:tau+dmax,:),tiepoints,lastlayerpx,plotlevel); % 2014-04-02 14:52
 
 % [pixel] - senere!% bør tjekke om det ikke bør være plus dx/2 istedet. er det start eller slutpunkter vi har her? 
 
 % Convert to depth:
-LayerposDepth.combined = depth(layerpos_combined-0.5)+0.5*Model.dx;
+LayerposDepth.final = depth(layerpos_final-0.5)+0.5*Model.dx;
 
 %% Compare resulting layer boundary positions:
 if plotlevel > 1
     figure;
     plot(LayerposDepth.fb,'-k')
     hold on
-    plot(LayerposDepth.viterbi,'-b')
-    plot(LayerposDepth.combined,'-r')
+    plot(LayerposDepth.final,'-r')
 end

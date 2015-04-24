@@ -4,9 +4,7 @@ function [batchStart,Layer0,Template,Prior,Layerpar,logPobs,relweight,Result]=..
 %% [batchStart,Layer0,Template,Prior,Layerpar,logPobs,relweight,Result]=...
 %    initializematrices(nBatch,Model)
 % Initialize empty matrices for results from nBatches. 
-
 % Copyright (C) 2015  Mai Winstrup
-% 2014-10-22 14:37
 
 %% Start pixel for batches:
 batchStart = nan(nBatch,1);
@@ -23,7 +21,7 @@ switch Model.type
     case 'PCA'
         Template(1:Model.nSpecies,1:nBatch,1:Model.nTemplateBatch+1) = ...
             struct('mean',[],'dmean',[],'traj',[],'dtraj',[]);
-    case 'FFTcomp'
+    case 'FFT'
         Template(1:Model.nSpecies,1:nBatch,1:Model.nTemplateBatch+1) = ...
             struct('dc',[],'phase',[],'amplitude',[]);
 end
@@ -49,7 +47,7 @@ relweight = nan(nBatch,Model.nTemplateBatch,Model.nIter);
 % Probability results:
 LayerDist = struct('d',[],'mode',[],'mean',[],'median',[],'prctile',[]);
 % Layer positions:
-Layerpos = struct('fb',[],'fb_issues',[],'viterbi',[],'combined',[]);
+Layerpos = struct('fb',[],'fb_issues',[],'final',[]);
 % Mean layer thickness within intervals:
 Lambda = struct('d',[],'ndist',[]);
 Lambda = repmat(Lambda,length(Model.dxLambda),1);

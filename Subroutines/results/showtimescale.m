@@ -99,18 +99,18 @@ hline(3)=plot(layerpos_1yr(1:dx:end),age_1yr(1:dx:end),'-','color',color*0.6,'li
 legendname{3} = 'Timescale1yr';
 
 %% Viterbi layer results:
-if ~isempty(Layerpos.viterbi)
-    % Corresponding ages: Starting at the same age as in "timescale"
-    switch Model.ageUnitOut
-        case 'AD'
-            age_vit = timescale(1,2)-(0:length(Layerpos.viterbi)-1);
-        otherwise
-            age_vit = timescale(1,2)+(1:length(Layerpos.viterbi));
-    end
-    [layerpos_viterbi, age_viterbi] = steplayerpos(Layerpos.viterbi,age_vit,Model);
-    hline(4)=plot(layerpos_viterbi,age_viterbi,'color',[0.5 0 0.5],'linewidth',0.7);
-    legendname{4} = 'Viterbi';
-end
+% if ~isempty(Layerpos.viterbi)
+%     % Corresponding ages: Starting at the same age as in "timescale"
+%     switch Model.ageUnitOut
+%         case 'AD'
+%             age_vit = timescale(1,2)-(0:length(Layerpos.viterbi)-1);
+%         otherwise
+%             age_vit = timescale(1,2)+(1:length(Layerpos.viterbi));
+%     end
+%     [layerpos_viterbi, age_viterbi] = steplayerpos(Layerpos.viterbi,age_vit,Model);
+%     hline(4)=plot(layerpos_viterbi,age_viterbi,'color',[0.5 0 0.5],'linewidth',0.7);
+%     legendname{4} = 'Viterbi';
+% end
 
 %% Mark the depths of batch boundaries:
 % If tiepoints: Batch boundaries are the location of tiepoints.

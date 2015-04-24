@@ -14,10 +14,10 @@ index = find(diffdepth>dx);
 %% Add extra depth entries onto the end:
 depths_nan = depth(index) + dx;
 startofbreaks = depths_nan; % Starting depth of breaks
-data_nan = NaN(size(depths_nan));
+data_nan = NaN(length(depths_nan),size(data,2),size(data,3));
 depth_new = [depth; depths_nan];
 data_new = [data; data_nan];
 
 %% Sorting them: 
 [depth_new, index] = sort(depth_new);
-data_new = data_new(index);
+data_new = data_new(index,:,:);

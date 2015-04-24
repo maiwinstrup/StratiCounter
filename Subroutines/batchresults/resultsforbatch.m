@@ -32,8 +32,6 @@ function [Result, Layer0_new, batchStart_new] = ...
 % Free Software Foundation; either version 2 of the License, or (at your 
 % option) any later version.
 
-% 2014-20-10 15:22: Updated version
-
 %% Select ending pixel for batch: 
 % We only consider the first part of data sequence (i.e. to and including 
 % pixel tau), as the annual layering in the last part can be better 
@@ -65,7 +63,7 @@ Result.LayerDist = LayerDist;
 % combining results from the Forward-Backward algorithm with the Viterbi
 % approach.
 % DET SIDSTE (layerpos.combined) ER IKKE RIGTIG SET IGENNEM. 
-[LayerposDepth, layerpos_combined] = batchlayerpos(Layerpos,depth,...
+[LayerposDepth, layerpos_final] = batchlayerpos(Layerpos,depth,...
     tau,Layer0,postau,ntauTotal,d,pd,logb,Model,Runtype.plotlevel);
 Result.Layerpos = LayerposDepth;
 

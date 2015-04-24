@@ -8,13 +8,7 @@ function [stack, dlayer] = stacklayers(depth,data,layercounts,unc_layercounts,dt
 % in which every second uncertain layer is removed. Certain layers will
 % hence occur twice in the final stack, while uncertain layers occur only 
 % once. 
-
 % Copyright (C) 2015  Mai Winstrup
-% 2014-04-21 21:31: Small adjustments
-% 2014-08-17 17:09: Moved option for normalizing, dt instead of Model.dt
-% 2014-08-19 23:23: Changes to makestack to reflect that layer boundaries
-%                   are located between pixels.
-% 2014-08-22 14:57: Changes to downsampling in makestack
 
 %% Removing data from outside the first and last certain annual layer mark:
 if ~isempty(unc_layercounts)
@@ -89,8 +83,8 @@ y = [NaN;y(:);NaN];
 tpx = interp1(dlayer,0:1:(length(dlayer)-1),d,'linear','extrap');
 
 % Up/downsample data to given dt:
-dt_center = 1/2; % Half way!
-[tnew, ynew]=downsampling(tpx,y,dt,dt_center); % 2014-08-21 22:33
+dt_center = 1/2; % Half way
+[tnew, ynew]=downsampling(tpx,y,dt,dt_center);
 
 %% Remove layer fractions at edges:
 % These are caused by the added NaNs earlier.

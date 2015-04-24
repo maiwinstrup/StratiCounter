@@ -6,6 +6,7 @@ function Model = defaultsettings()
 
 %% Data files:
 Model.icecore = '';
+% If using synthetic data, the name should be set as 'SyntheticData'.
 % Data existing for core:
 Model.species = '';
 Model.nSpecies = 0; 
@@ -91,6 +92,7 @@ Model.manualtemplates = [];
 
 % Calculation of the emission probabilities (b).
 Model.type = 'PCA';
+% Not implemented: Other options to be made available (e.g. 'FFT')
 Model.order = 1;
 % Using polynomial approximations to principal components of order:
 Model.pcPolOrder = 5;

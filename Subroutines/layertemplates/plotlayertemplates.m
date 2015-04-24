@@ -7,8 +7,6 @@ function hfig = plotlayertemplates(Template,TemplateInfo,Model,hfig,color,filena
 % used to plot the polynomial approximations to the templates. 
 
 % Copyright (C) 2015  Mai Winstrup
-% 2014-08-19 20:49: Revised
-% 2014-08-21 12:56: Added hfig as output
 
 %% Figure initialization: 
 % Only done if figure doesn't exist from previously.

@@ -49,13 +49,12 @@ nBatch = length(Result);
 % For Forward-Backward and the Viterbi algorithms: 
 Layerpos.fb = [];
 Layerpos.fb_issues = [];
-Layerpos.viterbi = [];
-Layerpos.combined = [];
+Layerpos.final = [];
 for iBatch = 1:nBatch
     Layerpos.fb = [Layerpos.fb; Result(iBatch).Layerpos.fb];
     Layerpos.fb_issues = [Layerpos.fb_issues; Result(iBatch).Layerpos.fb_issues];
-    Layerpos.viterbi = [Layerpos.viterbi; Result(iBatch).Layerpos.viterbi];
-    Layerpos.combined = [Layerpos.combined; Result(iBatch).Layerpos.combined];
+    %Layerpos.viterbi = [Layerpos.viterbi; Result(iBatch).Layerpos.viterbi];
+    Layerpos.final = [Layerpos.final; Result(iBatch).Layerpos.final];
 end
 
 % Give warning if the algorithm encountered problems converting from the
@@ -131,22 +130,22 @@ timescale = [LayerDist.d, LayerDist.mode, LayerDist.prctile];
 % order to eliminate uncertainties due to the exact boundary locations. 
 
 % Depth of boundaries, incl. initial layer position:
-timescale1yr(:,1) = [LayerDist.d(1); Layerpos.combined];
+timescale1yr(:,1) = [LayerDist.d(1); Layerpos.final];
 
 % Corresponding ages, incl. that of initial layer position:
 switch Model.ageUnitOut
     case 'AD'
 %        timescale1yr(:,2) = t0-(0:length(Layerpos.combined)-1);
-        timescale1yr(:,2) = t0-(-1:length(Layerpos.combined)-1);
+        timescale1yr(:,2) = t0-(-1:length(Layerpos.final)-1);
     otherwise
 %        timescale1yr(:,2) = t0+(1:length(Layerpos.combined));
-        timescale1yr(:,2) = t0+(0:length(Layerpos.combined));
+        timescale1yr(:,2) = t0+(0:length(Layerpos.final));
 end
 
 % Confindence interval estimates are taken at midpoints of layers:
 % In this way, we remove uncertainties related to the exact placement of 
 % the layer boundaries.
-layerpos_px = interp1(LayerDist.d,1:length(LayerDist.d),[LayerDist.d(1);Layerpos.combined-0.5*Model.dx]); % Last pixel in layers
+layerpos_px = interp1(LayerDist.d,1:length(LayerDist.d),[LayerDist.d(1);Layerpos.final-0.5*Model.dx]); % Last pixel in layers
 switch Model.ageUnitOut
     case 'AD'
         layercenter_px = round(layerpos_px-0.5*diff([1; layerpos_px]));

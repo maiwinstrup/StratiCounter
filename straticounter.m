@@ -7,11 +7,10 @@ releasedate = '21-04-2015';
 
 % The algorithm is based on the principles of statistical inference of 
 % hidden states in semi-Markov processes. States, and their associated 
-% confidence intervals, are inferred by the Forward-Backward algorithm and 
-% the Viterbi algorithm (optional). The EM (Expectation-Maximization) 
-% algorithm is used to find the optimal set of layer parameters for each 
-% data batch. Confidence intervals do not account for the uncertainty in 
-% estimation of layer parameters.
+% confidence intervals, are inferred by the Forward-Backward algorithm. 
+% The EM (Expectation-Maximization) algorithm is used to find the optimal 
+% set of layer parameters for each data batch. Confidence intervals do not 
+% account for the uncertainty in estimation of layer parameters.
 
 % If (absolute) tiepoints are given, the algorithm is run between these,
 % while assuming constant annual layer signals between each pair. If no
@@ -64,7 +63,7 @@ addpath(genpath('./Settings'))
 Runtype.develop = 'yes'; 
 % In development mode; will run as normal, but output will be put in the
 % ./Output/develop folder. Option to run for only a few batches. 
-Runtype.reuse = 'yes'; 
+Runtype.reuse = 'yes';
 % If yes; use previously processed data and calculated layer templates.
 % If no, these are re-calculated. 
 Runtype.plotlevel = 1;
@@ -128,7 +127,6 @@ end
 %% Save an updated version of "Model" in output folder:
 save([outputdir '/Model.mat'],'Model')
 
-
 %% Initial layer templates and layer parameters:
 % These are based on manual layer counts in the data in the depth interval 
 % given in "Model.manualtemplates". Layer templates are computed solely 
@@ -137,7 +135,7 @@ if isempty(Model.manualtemplates)
     disp('Could allow for using e.g. a sinusoidal layer template. Not implemented.')
 else
     [Template0,Template0Info] = ...
-        constructmanualtemplates(Data,Model,outputdir,Runtype); % 2014-10-01 13:21
+        constructmanualtemplates(Data,Model,outputdir,Runtype);
 end
 
 % Plot and save figure of initial layer templates:
@@ -145,10 +143,10 @@ if Runtype.plotlevel > 0
     % Color of mean signal and PCs:
     color = [0.5 0.5 0.5; 0 0 1; 0 1 0; 1 0 0];
     filename = [outputdir '/layertemplates.jpeg'];        
-    hfig_basis = plotlayertemplates(Template0,...
-            Template0Info,Model,nan,color,filename); % 2014-08-21 12:56 
+    hfig_template = plotlayertemplates(Template0,...
+            Template0Info,Model,nan,color(1:Model.order+1,:),filename);
     % Close figure?
-    if Runtype.plotlevel==1; close(hfig_basis); end
+    if Runtype.plotlevel==1; close(hfig_template); end
 end
 
 % Layer parameters:
@@ -156,47 +154,16 @@ if isfield(Model,'Layerpar0')
     % Using a prescribed set of initial parameters:
     Layerpar0 = Model.Layerpar0;
 else
-    % Layer parameters based on manual layer counts the above calculated 
-    % initial layer templates. Parameters are calculated based on data and 
-    % their derivatives. 
+    % Layer parameters based on manual layer counts and the layer templates 
+    % calculated above. Parameters are calculated based on data and their 
+    % derivatives. 
     Layerpar0 = constructmanualpar(Data,Template0,Model,outputdir,Runtype);
 end
-
-% If no parameter updates: Use the values from manual counts?
-noupdates = strcmp(Model.update,'none');
-index = find(noupdates==1);
-names = {'my','sigma','par','cov','nvar'};
-for i= 1:length(index)
-    disp(['The value of ' names{index(i)} ' will be held constant.'])
-    disp('Value corresponding to manual counts is: ');
-    disp(num2str(eval(['Layerpar0.' names{index(i)}])))
-    reply = input('Use this value? ','s');
-    if strcmp(reply,''); disp('yes'); end
-    
-    if ~ismember(reply,{'yes','y',''})
-        value = input('Select new value: ');
-        % Check for correct format:
-        while ~isequal(size(value),size(eval(['Layerpar0.' names{index(i)}])))
-            value = input('Incorrect format, please correct: ');
-        end
-        % Inset value in array:
-        if index(i) == 1; Layerpar0.my = value;
-        elseif index(i) == 2; Layerpar0.sigma = value;
-        elseif index(i) == 3; Layerpar0.par = value;
-        elseif index(i) == 4; Layerpar0.cov = value;
-        elseif index(i) == 5; Layerpar0.nvar = value;
-        end
-        disp('New value is: '); disp(value)
-    end
-end
-
-% Save Layerpar0 as output:
-save([outputdir '/Layerpar0'],'Layerpar0')
 
 %% Set initial conditions, and initialize arrays: 
 [nBatch,batchStart,Layer0,Template,Prior,Layerpar,dDxLambda,logPobs,...
     relweight,Result] = setinitialconditions(Data,Model,manualcounts,...
-    meanLambda,Template0,Layerpar0,Runtype); % 2014-10-08 20:41
+    meanLambda,Template0,Layerpar0);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% BATCHWISE DETECTION OF ANNUAL LAYERS
@@ -554,7 +521,7 @@ end
 %% Calculate new layer templates:
 % Based on data in complete interval.
 [TemplateNew,TemplateInfoNew]=layerstructure(data_batch,depth_batch,...
-    Layerpos.combined,[],Model,Runtype); % 2014-08-21 23:22
+    Layerpos.final,[],Model,Runtype); % 2014-08-21 23:22
 
 %% Clean-up: Remove preliminary datafiles and figures
 % Data files:

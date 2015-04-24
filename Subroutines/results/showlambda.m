@@ -135,17 +135,17 @@ hline(3) = plot(dplot,lambdaAutoBoundaries(:)*multiplyfactor,'--','color',color*
 legendtext{3} = 'Layers in timescale1yr';
 
 %% Layer thicknesses from Viterbi output:
-if ~isempty(Layerpos.viterbi)
-    nViterbi = nan(size(lambda,1),1);
-    for i = 1:size(lambda,1)
-        mask=Layerpos.viterbi>=lambda(i,1)&Layerpos.viterbi<lambda(i,2);
-        nViterbi(i) = sum(mask);
-    end
-    lambdaViterbi = L./nViterbi;
-    lambdaViterbi = [lambdaViterbi'; lambdaViterbi'];   
-    hline(4)=plot(dplot,lambdaViterbi(:)*multiplyfactor,'-m','linewidth',2);
-    legendtext{4} = 'Viterbi';
-end
+% if ~isempty(Layerpos.viterbi)
+%     nViterbi = nan(size(lambda,1),1);
+%     for i = 1:size(lambda,1)
+%         mask=Layerpos.viterbi>=lambda(i,1)&Layerpos.viterbi<lambda(i,2);
+%         nViterbi(i) = sum(mask);
+%     end
+%     lambdaViterbi = L./nViterbi;
+%     lambdaViterbi = [lambdaViterbi'; lambdaViterbi'];   
+%     hline(4)=plot(dplot,lambdaViterbi(:)*multiplyfactor,'-m','linewidth',2);
+%     legendtext{4} = 'Viterbi';
+% end
 
 %% Tiepoints as grey bars:
 ymin = min(lambda(:,3))*multiplyfactor;

@@ -5,21 +5,10 @@ function Layerpar0 = constructmanualpar(Data,Template,Model,outputdir,Runtype)
 % manual layer counts. Layer parameters are always recalculated to prevent 
 % troubles with matching to adjusted templates.
 % Copyright (C) 2015  Mai Winstrup
-   
-% ville det være smart at det ikke nødvnedigvis var baseret på man counts?   
-% de gemmes jo alligevel ikke. 
-% ønsker vi f.eks at benytte den i loop, hvor vi har udregnet nye counts,
-% og starter forfra, og vil gerne have et par gode parametre som passer til
-% vores nye template?
  
-% i virkeligheden: 2 fsk. een for manuelt,  som kalder en funktion som
-% udregner det baseret på data og "counts", for et givet interval. Denne
-% kan bruges senere. 
-
-
 %% Load manual layer counts for selected depth interval:
 [manualcounts,meanLambda,newinterval] = ...
-    loadlayercounts(Model,Model.initialpar); % 2014-08-22 16:30
+    loadlayercounts(Model,Model.initialpar);
 
 % Changes to depth interval?
 if newinterval(1)>Model.initialpar(1)
@@ -32,24 +21,29 @@ if newinterval(2)<Model.initialpar(2)
 end
 Model.initialpar = newinterval;
 
-%% Processed data for interval:
-% Initial parameter interval is assumed to always be within the depth range 
-% of our depth-interval, i.e. contained in Data. 
+%% Perform data preprocessing steps for distances given in layer thickness 
+% fractions:
+% It is here assumed that the layer thicknesses in the entire interval stay
+% relatively constant, so that we can use a fixed processing distance for 
+% the data throughout the interval. 
+preprocstepsFloat = setpreprocdist(Model.preprocsteps(:,2),meanLambda);
+
+% Initial parameter interval is assumed to always be within the depth range
+% of our depth-interval, and thus contained in Data. 
 % Data in interval:
 mask=Data.depth>=Model.initialpar(1)&Data.depth<=Model.initialpar(2);
 depth = Data.depth(mask);
 data = Data.data(mask,:,:);
        
-% Finalize the processing:
-preprocsteps=setpreprocdist(Model.preprocsteps(:,2),meanLambda);
-[DataProcessed.data, DataProcessed.depth] = makedatafile(data,depth,...
-    preprocsteps,Model.derivatives); % No further downsampling or plotting
+% Finalize the preprocessing steps:
+[DataPreproc.data, DataPreproc.depth] = makedatafile(data,depth,...
+    preprocstepsFloat,Model.derivatives); % No further downsampling etc.
 
 %% Compute layer parameters for the various data records:
 % Calculating both the maximum-Likelihood initial parameters (i.e. the best 
-% fitting parameters for each layer, based on both data and derivatives),
+% fitting parameters for each layer, based on both data and derivatives)
 % and the Maximum-a-Posteriori layer parameters: 
-[~,parML,parMAP,Layerpar0] = calclayerpar(Model,DataProcessed,manualcounts(:,1),...
+Layerpar0 = calclayerpar(Model,DataPreproc,manualcounts(:,1),...
     manualcounts(:,3),Template,Runtype);
 
 %% Not using full covariance matrix?
@@ -57,7 +51,34 @@ if strcmp(Model.covariance,'none')
     Layerpar0.cov = diag(diag(Layerpar0.cov));
 end
 
-%% Save the employed set of layerparameters in output folder for timescale:
-save([outputdir '/Layerpar0'],'Layerpar0')
+%% If no parameter updates: 
+% Ask user if desire to use the values from manual counts.
+noupdates = strcmp(Model.update,'none');
+index = find(noupdates==1);
+names = {'my','sigma','par','cov','nvar'};
+for i= 1:length(index)
+    disp(['The value of ' names{index(i)} ' will be held constant.'])
+    disp('Value corresponding to manual counts is: ');
+    disp(num2str(eval(['Layerpar0.' names{index(i)}])))
+    reply = input('Use this value? ','s');
+    if strcmp(reply,''); disp('yes'); end
+    
+    if ~ismember(reply,{'yes','y',''})
+        value = input('Select new value: ');
+        % Check for correct format:
+        while ~isequal(size(value),size(eval(['Layerpar0.' names{index(i)}])))
+            value = input('Incorrect format, please correct: ');
+        end
+        % Inset value in array:
+        if index(i) == 1; Layerpar0.my = value;
+        elseif index(i) == 2; Layerpar0.sigma = value;
+        elseif index(i) == 3; Layerpar0.par = value;
+        elseif index(i) == 4; Layerpar0.cov = value;
+        elseif index(i) == 5; Layerpar0.nvar = value;
+        end
+        disp('New value is: '); disp(value)
+    end
+end
 
-%         % OBS: hvad så med Model.w - er ok fra tidligere????
+%% Save the employed set of layerparameters in timescale output folder:
+save([outputdir '/Layerpar0'],'Layerpar0')

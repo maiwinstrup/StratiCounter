@@ -1,27 +1,18 @@
 function [Template, TemplateInfo] = ...
     layerstructure(data,depth,layercounts,unc_layercounts,Model,Runtype)
 
-%% [Template, TemplateInfo] = layerstructure(data,depth,layercounts,unc_layercounts,Model,Runtype)
+%% [Template, TemplateInfo] = ...
+%    layerstructure(data,depth,layercounts,unc_layercounts,Model,Runtype)
 % Calculating a template for an annual layer in the data file. Presently, 
 % layers can only be characterized by their principal components, other 
-% options may be added later. (A template based on FFT components is not 
-% yet fully implemented). Layers containing NaNs are removed from 
-% consideration when calculating the principal components. 
+% options may be added later. (A template based on FFT components is partly 
+% implemented). Layers containing NaNs are removed from consideration when 
+% calculating the principal components. 
 % All layers are first linearly upsampled to contain the same number of 
 % data points. All provided layer counts are used. Uncertain layers (if 
-% such exist) are weighted half. Inset an empty array if uncertain layers 
-% do not exist.
+% such exist) are weighted half. 
 
 % Copyright (C) 2015  Mai Winstrup
-% 2014-04-21 22:13: Small adjustments
-% 2014-08-17 19:29: General revisions, shapes->Template, removed PCA_minusmean 
-%                   as independent option, using pca instead of princomp
-% 2014-08-18 15:07: Data -> data, depth as input
-% 2014-08-19 23:24: Changes to title of plot when synthetic data, and
-%                   stacklayers
-% 2014-08-21 14:11: Changes to polyapprox
-% 2014-08-21 23:22: Added figure showing variance explained
-% 2014-08-22 15:25: Changes to stacklayers
 
 %% Initialize:
 switch Model.type
@@ -30,7 +21,7 @@ switch Model.type
             'traj',[],'dtraj',[]);
         TemplateInfo(1:Model.nSpecies) = struct('meansignal',[],...
             'pc',[],'score',[],'pcvar',[],'explained',[],'tsquare',[]); 
-    case 'FFTcomp'
+    case 'FFT'
         Template(1:Model.nSpecies) = struct('dc',[],'phase',[],'amplitude',[]);
         TemplateInfo(1:Model.nSpecies) = struct('meansignal',[],'meansignal_alt',[]);
 end
@@ -42,7 +33,7 @@ for j = 1:Model.nSpecies
     % Only original data series, not derivatives, is used for calculating
     % the layer templates. 
     stack = stacklayers(depth,data(:,1,j),layercounts,...
-        unc_layercounts,Model.dtstack); % 2014-08-22 14:57
+        unc_layercounts,Model.dtstack); 
 
     % Plot stack as boxplot:
     if Runtype.plotlevel > 1
@@ -72,7 +63,7 @@ for j = 1:Model.nSpecies
             stack = (stack-meanvalues)./stdvalues;
             
         case 'minusmean'
-            % Subtract the mean signal from layers:
+            % Subtract the mean signal from all layers:
             stack = stack-repmat(meansignal,size(stack,1),1);
     end
     
@@ -80,9 +71,9 @@ for j = 1:Model.nSpecies
     if ~strcmp(Model.normalizelayer,'none') && Runtype.plotlevel>1
         plotstack(stack,Model)
         if strcmp(Model.icecore,'SyntheticData')
-            title(['Normalized stack (' Model.normalizelayer '): Species #' num2str(j)],'fontweight','bold')    
+            title(['Stack (' Model.normalizelayer '): Species #' num2str(j)],'fontweight','bold')    
         else
-            title(['Normalized stack (' Model.normalizelayer '): ' Model.species{j}],'fontweight','bold')
+            title(['Stack (' Model.normalizelayer '): ' Model.species{j}],'fontweight','bold')
         end
     end
 
@@ -90,8 +81,8 @@ for j = 1:Model.nSpecies
     switch Model.type
         case 'PCA'
             %% Principal component analysis:
-            % Do not center the data first (i.e. subtract mean signal);
-            % this is already done if we wish to do so.
+            % Do not center the data first (i.e. subtract mean signal); if 
+            % we wish to do so, this has been done above.
             [pc,score,pcvar,tsquare,explained] = pca(stack,'Centered',false,'NumComponents',5);
             
             % If only nans in data series:
@@ -114,9 +105,9 @@ for j = 1:Model.nSpecies
             
             %% Polynomial approximations of mean layer signal and the 
             % principal components:
-            Template(j)=polyapprox(TemplateInfo(j).meansignal,TemplateInfo(j).pc,Model); % 2014-08-21 14:08
+            Template(j)=polyapprox(TemplateInfo(j).meansignal,TemplateInfo(j).pc,Model); 
             
-        case 'FFTcomp'
+        case 'FFT'
             %% Fourier components of layers:
             fftres = nan(size(stack,1),1/Model.dtstack);
             for i = 1:size(stack,1)
@@ -142,7 +133,7 @@ for j = 1:Model.nSpecies
             Template(j).amplitude = amplitude(1:KK);
             
             % Alternative mean layer shape:
-            t = 0:(1/K):(1-1/K);
+            t = (1/2*K):(1/K):(1-1/K);
             meansignal_alt = nan(1,K);
             for k = 1:K
                 meansignal_alt(k) = a0 + sum(amplitude(1:KK).*cos((1:KK).*2*pi*t(k)-phase(1:KK)));
@@ -153,7 +144,7 @@ for j = 1:Model.nSpecies
 end
 end
 
-%% Plotting function:
+%% Plotting subfunctions:
 function plotstack(stack,Model)
 figure;
 boxplot(stack); 

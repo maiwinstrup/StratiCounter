@@ -1,9 +1,13 @@
-function [layerpar, ParML, ParMAP, Layerpar0] = calclayerpar(Model,Data,layerpos,unc,Template,Runtype)
+function [Layerpar0, ParML, ParMAP, layerpar] = ...
+    calclayerpar(Model,Data,layerpos,layerunc,Template,Runtype)
 
-%% [layerpar,ParML, ParMAP, Layerpar0] = calclayerpar(Model,Data,layerpos,unc,Template,Runtype)
-% Computing maximum likelihood Model parameters for each layer individually, 
-% based on manually counted layer positions. 
-% If some layer boundaries are given as uncertain, we have:
+%% [Layerpar0,ParML,ParMAP,layerpar] = ...
+%    calclayerpar(Model,Data,layerpos,layerunc,Template,Runtype)
+% Computing maximum likelihood (ML) and maximum a posteriori (MAP) layer 
+% parameters, as well as ML layer parameters for each layer individually 
+% (layerpar), based on the given set of layer boundaries (layerpos). 
+% Layerpar0 provides the final best estimate of the layer parameters.
+% If some layer boundaries are given as uncertain, we have (in ):
 % 1st column: Composite of the below two data sets
 % 2nd column: All layers are considered as certain
 % 3rd column: All uncertain layers are removed
@@ -13,7 +17,6 @@ function [layerpar, ParML, ParMAP, Layerpar0] = calclayerpar(Model,Data,layerpos
 % likelihood estimate of the model parameters are calculated. 
 
 % Copyright (C) 2015  Mai Winstrup
-% 2014-10-01 16:43: New version
 
 %% Layer depths: 
 % In case of uncertain layer boundaries in data set, the array contains
@@ -22,15 +25,15 @@ function [layerpar, ParML, ParMAP, Layerpar0] = calclayerpar(Model,Data,layerpos
 % successive layers can be made. Furthermore, a composite data set is
 % configured. If no uncertain layer boundaries, only one set of layer
 % parameter values are made. 
-if sum(unc)>0
+if sum(layerunc)>0
     layerpos1 = layerpos;
     layerpos2 = layerpos;
-    layerpos2(unc==1)=[];
+    layerpos2(layerunc==1)=[];
     layerpos = [layerpos1; NaN; layerpos2];
 end
 
 % Depth of start of layers:
-if sum(unc)==0
+if sum(layerunc)==0
     layerpar(1).depth = layerpos(1:end-1);
 else
     layerpar(2).depth = layerpos1(1:end-1);
@@ -48,7 +51,7 @@ end
 lambda = layerpos(2:end)-layerpos(1:end-1); %[m]
 lambda = lambda(isfinite(lambda));
     
-if sum(unc)==0
+if sum(layerunc)==0
     layerpar(1).lambda = lambda;
 else
     N = length(layerpos1)-1;
@@ -61,12 +64,14 @@ end
 %% Converting layer boundaries to pixels: 
 T = size(Data.data,1);
 if ~isempty(Model.dx)
-    % layerpos_px is the first pixel of layer: 
-    layerpos_px = interp1([Data.depth(1)-Model.dx;Data.depth;Data.depth(end)+Model.dx],0:T+1,layerpos+Model.dx/2,'nearest',nan);
+    % layerpos_px is the first pixel which is part of a layer: 
+    layerpos_px = interp1([Data.depth(1)-Model.dx;Data.depth;...
+        Data.depth(end)+Model.dx],0:T+1,layerpos+Model.dx/2,'nearest',nan);
 else
     dx1 = Data.depth(2)-Data.depth(1);
     dx2 = Data.depth(end)-Data.depth(end-1);
-    layerpos_px = interp1([Data.depth(1)-dx1;Data.depth;Data.depth(end)+dx2],0:T+1,layerpos+Model.dx/2,'nearest',nan);
+    layerpos_px = interp1([Data.depth(1)-dx1;Data.depth;Data.depth(end)+dx2],...
+        0:T+1,layerpos+Model.dx/2,'nearest',nan);
 end
 layerpos_px(isnan(layerpos(:)))=nan;
 M = length(layerpos_px);
@@ -80,7 +85,8 @@ for j = 1:Model.nSpecies
     for i=1:M-1
         if isfinite(layerpos_px(i))&&isfinite(layerpos_px(i+1))
             % Selecting appropriate data series (species j):
-            datasegment=Data.data(layerpos_px(i):layerpos_px(i+1)-1,1:Model.derivatives.nDeriv+1,j);
+            datasegment=Data.data(layerpos_px(i):layerpos_px(i+1)-1,...
+                1:Model.derivatives.nDeriv+1,j);
             d=size(datasegment,1);
         
             if strcmp(Model.normalizelayer,'minusmean')
@@ -89,24 +95,26 @@ for j = 1:Model.nSpecies
                 clear datasegment_subtract
                 datasegment_subtract(:,1) = polyval(Template(j).mean,x)';
                 for k = 1:Model.derivatives.nDeriv
-                    datasegment_subtract(:,k+1) = polyval(Template(j).dmean(:,k),x)'/d^k;
+                    datasegment_subtract(:,k+1) = ...
+                        polyval(Template(j).dmean(:,k),x)'/d^k;
                 end
-                datasegment = datasegment - datasegment_subtract(:,1:Model.derivatives.nDeriv+1);
+                datasegment = datasegment - ...
+                    datasegment_subtract(:,1:Model.derivatives.nDeriv+1);
             end
             mask=isfinite(datasegment(:));
             datasegment = datasegment(mask);
  
             if sum(mask)>Model.order
                 X = designmatrix(Model,Template,d);
-                % Removing parts of X-matrix corresponding to other species and
-                % to NaNs in current data series:
+                % Removing parts of X-matrix corresponding to other species 
+                % and to NaNs in current data series:
                 X = X(mask,:,j);
             
                 % MLE of best fitting parameter values:
                 par_hat(:,i) = X\datasegment;
             
                 % Corresponding residuals:
-                % Divided into residuals of the data series and it derivatives.
+                % Divided into residuals of data and its derivatives.
                 data_hat = X*par_hat(:,i);
                 res = nan(1,d*(Model.derivatives.nDeriv+1));
                 res(mask) = datasegment-data_hat;
@@ -117,14 +125,15 @@ for j = 1:Model.nSpecies
                 end
                
                 if Runtype.plotlevel >= 2 && i<3
-                    plotlayerfit(datasegment,datasegment_subtract,X,par_hat(:,i),d,mask,j,Model)
+                    plotlayerfit(datasegment,datasegment_subtract,X,...
+                        par_hat(:,i),d,mask,j,Model)
                 end
             end
         end
     end
     
-    %% Add to layerpar array: 
-    if sum(unc)==0
+    % Add to layerpar array: 
+    if sum(layerunc)==0
         layerpar(1).par(:,:,j) = par_hat;
     else
         layerpar(2).par(:,:,j) = par_hat(:,1:N);
@@ -134,7 +143,7 @@ for j = 1:Model.nSpecies
     end
 
     % Mean of white noise variance:
-    if sum(unc)==0
+    if sum(layerunc)==0
         layerpar(1).nvar(:,:,j) = nvar_hat;
     else
         layerpar(2).nvar(:,:,j) = nvar_hat(:,1:N);
@@ -144,7 +153,7 @@ for j = 1:Model.nSpecies
     end
 
     % White noise:
-    if sum(unc)==0
+    if sum(layerunc)==0
         layerpar(1).eps(:,j) = eps;
     else
         layerpar(2).eps(:,j) = eps(1:N);
@@ -163,7 +172,8 @@ ParML.sigma = nanstd(log(layerpar(1).lambda(mask)));
 ParML.cov = zeros(Model.nSpecies,Model.nSpecies);
 for j = 1:Model.nSpecies
     ParML.par(:,j) = nanmean(layerpar(1).par(:,mask,j),2);
-    ParML.cov(Model.order*(j-1)+1:Model.order*j,Model.order*(j-1)+1:Model.order*j) = nancov(layerpar(1).par(:,mask,j)');
+    ParML.cov(Model.order*(j-1)+1:Model.order*j,Model.order*(j-1)+1:Model.order*j) = ...
+        nancov(layerpar(1).par(:,mask,j)');
     ParML.nvar(:,j) = nanmean(layerpar(1).nvar(:,mask,j),2);
 end
 
@@ -171,7 +181,8 @@ end
 if strcmp(Model.derivnoise,'manual')
     % Using the derived ML value for the w-values:
     Model.derivnoise = nan(Model.derivatives.nDeriv+1,Model.nSpecies);
-    Model.derivnoise(2:Model.derivatives.nDeriv+1,:)= ParML.nvar./repmat(ParML.nvar(1,:),2,1);
+    Model.derivnoise(2:Model.derivatives.nDeriv+1,:)= ...
+        ParML.nvar./repmat(ParML.nvar(1,:),2,1);
     ParML.nvar = ParML.nvar(1,:);
 else
     % If using analytical values:
@@ -179,7 +190,6 @@ else
         ParML.nvar(1,j) = 1/(Model.derivatives.nDeriv+1)*...
             sum(1./Model.derivnoise'.*ParML.nvar(:,j));
     end
-   % ParML.nvar(2,:) = [];
 end
 
 %% Using the EM-algorithm to find the MAP estimate for layer parameters:
@@ -199,14 +209,16 @@ for j = 1:Model.nSpecies
 
     % Initial parameter input:
     Par(1).par = ParML.par(:,j);
-    Par(1).cov = ParML.cov(Model.order*(j-1)+1:Model.order*j,Model.order*(j-1)+1:Model.order*j);
+    Par(1).cov = ParML.cov(Model.order*(j-1)+1:Model.order*j,...
+        Model.order*(j-1)+1:Model.order*j);
     Par(1).nvar = ParML.nvar(1,j); % not sure, only using 1st value
 
     for k = 1:nIter
         for i=1:M-1
             if isfinite(layerpos_px(i))&&isfinite(layerpos_px(i+1))
                 % Picking appropriate data segment and data series:
-                datasegment=Data.data(layerpos_px(i):layerpos_px(i+1)-1,1:Model.derivatives.nDeriv+1,j);
+                datasegment=Data.data(layerpos_px(i):layerpos_px(i+1)-1,...
+                    1:Model.derivatives.nDeriv+1,j);
                 d=size(datasegment,1);
             
                 if strcmp(Model.normalizelayer,'minusmean')
@@ -215,9 +227,11 @@ for j = 1:Model.nSpecies
                     clear datasegment_subtract
                     datasegment_subtract(:,1) = polyval(Template(j).mean,x)';
                     for kk = 1:Model.derivatives.nDeriv
-                        datasegment_subtract(:,kk+1) = polyval(Template(j).dmean(:,kk),x)'/d^kk;
+                        datasegment_subtract(:,kk+1) = ...
+                            polyval(Template(j).dmean(:,kk),x)'/d^kk;
                     end
-                    datasegment = datasegment - datasegment_subtract(:,1:Model.derivatives.nDeriv+1);
+                    datasegment = datasegment - ...
+                        datasegment_subtract(:,1:Model.derivatives.nDeriv+1);
                 end
                 mask=isfinite(datasegment(:));
                 datasegment = datasegment(mask);
@@ -230,14 +244,17 @@ for j = 1:Model.nSpecies
                     % Relative white noise levels:
                     diagonalvector = [];
                     for ii = 1:Model.derivatives.nDeriv+1
-                        diagonalvector = [diagonalvector Model.derivnoise(ii)*ones(1,d)];
+                        diagonalvector = ...
+                            [diagonalvector Model.derivnoise(ii)*ones(1,d)];
                     end
                     invW = diag(diagonalvector(mask).^-1);
             
                     % Expectation value of random component r:
-                    Er = (Par(k).nvar*eye(Model.order,Model.order)/Par(k).cov(:,:)+X'*invW*X)\(X'*invW*(datasegment-X*Par(k).par));
+                    Er = (Par(k).nvar*eye(Model.order,Model.order)/Par(k).cov(:,:)+X'*invW*X)\...
+                        (X'*invW*(datasegment-X*Par(k).par));
                     % Covariance of random component r:
-                    Cr = Par(k).nvar*eye(Model.order,Model.order)/(Par(k).nvar*eye(Model.order,Model.order)/Par(k).cov + X'*invW*X);
+                    Cr = Par(k).nvar*eye(Model.order,Model.order)/...
+                        (Par(k).nvar*eye(Model.order,Model.order)/Par(k).cov + X'*invW*X);
                     % Conditional expectation value of r*r' for this layer:
                     Err(:,:,i)=Er*Er'+Cr;
                 
@@ -271,7 +288,8 @@ for j = 1:Model.nSpecies
         EE = nan(M-1,1);
         for i = 1:M-1
             if ~isempty(oXr{i})
-                EE(i) = (oXr{i}-design{i}*Par(k+1).par)'*invW2{i}*(oXr{i}-design{i}*Par(k+1).par)+tr(i);
+                EE(i) = (oXr{i}-design{i}*Par(k+1).par)'*invW2{i}*...
+                    (oXr{i}-design{i}*Par(k+1).par)+tr(i);
             end
         end
     
@@ -283,45 +301,45 @@ for j = 1:Model.nSpecies
     end
     
     ParMAP.par(:,j) = Par(nIter+1).par;
-    ParMAP.cov(Model.order*(j-1)+1:Model.order*j,Model.order*(j-1)+1:Model.order*j) = Par(nIter+1).cov;
+    ParMAP.cov(Model.order*(j-1)+1:Model.order*j,...
+        Model.order*(j-1)+1:Model.order*j) = Par(nIter+1).cov;
     ParMAP.nvar(j) = Par(nIter+1).nvar;
 end
 
-%% Using this as initial Layerparameter estimate:
+%% Initial layerparameter estimate:
 Layerpar0.my = ParML.my;
 Layerpar0.sigma = ParML.sigma;
 Layerpar0.par = ParMAP.par;
 Layerpar0.cov = ParMAP.cov; 
-Layerpar0.nvar = ParMAP.nvar; % Denne er kun en enkelt v�rdi?? JA! 
-
+Layerpar0.nvar = ParMAP.nvar; 
 end
 
 %% Embedded plotting functions:
 function plotlayerfit(datasegment,datasegment_subtract,X,par_hat,d,mask,j,Model)   
 % Plot layer data and the obtained fit to layer. 
 
-fitresult = nan(1,d*length(Model.derivatives.deriv));
+fitresult = nan(1,d*(Model.derivatives.nDeriv+1));
 fitresult(mask) = X*par_hat;
-fitresult = reshape(fitresult,d,length(Model.derivatives.deriv));
-segment_plot = nan(1,d*length(Model.derivatives.deriv));
+fitresult = reshape(fitresult,d,Model.derivatives.nDeriv+1);
+segment_plot = nan(1,d*(Model.derivatives.nDeriv+1));
 segment_plot(mask)=datasegment;
-segment_plot = reshape(segment_plot,d,length(Model.derivatives.deriv));
+segment_plot = reshape(segment_plot,d,Model.derivatives.nDeriv+1);
 
 figure;
 clf
 if ismember(Model.type,'PCA')
-    for k = 1:length(Model.derivatives.deriv)
-        subplot(length(Model.derivatives.deriv),1,k)
+    for k = 1:Model.derivatives.nDeriv+1
+        subplot(Model.derivatives.nDeriv+1,1,k)
         if strcmp(Model.normalizelayer,'minusmean') 
-            plot(segment_plot(:,k)+datasegment_subtract(:,Model.derivatives.deriv(k)+1),'-k','linewidth',2)
+            plot(segment_plot(:,k)+datasegment_subtract(:,k),'-k','linewidth',2)
             hold on
-            plot(fitresult(:,k)+datasegment_subtract(:,Model.derivatives.deriv(k)+1),'-b','linewidth',2)
+            plot(fitresult(:,k)+datasegment_subtract(:,k),'-b','linewidth',2)
         else
             plot(segment_plot(:,k),'-k','linewidth',2)
             hold on
             plot(fitresult(:,k),'-b','linewidth',2)
         end
-        title(['Data series #' num2str(Model.derivatives.deriv(k))])
+        title(['Data series #' num2str(Model.derivatives.nDeriv-1)])
     end
     suptitle(['Fit to manual layers: ' Model.species{j}])    
 end
