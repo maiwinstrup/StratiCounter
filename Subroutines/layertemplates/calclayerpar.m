@@ -105,7 +105,7 @@ for j = 1:Model.nSpecies
             datasegment = datasegment(mask);
  
             if sum(mask)>Model.order
-                X = designmatrix(Model,Template,d);
+                X = designmatrix(Template,d,Model);
                 % Removing parts of X-matrix corresponding to other species 
                 % and to NaNs in current data series:
                 X = X(mask,:,j);
@@ -238,7 +238,7 @@ for j = 1:Model.nSpecies
 
                 if sum(mask)>Model.order
                     % Design matrix:
-                    X = designmatrix(Model,Template,d);
+                    X = designmatrix(Template,d,Model);
                     X = X(mask,:,j);
             
                     % Relative white noise levels:

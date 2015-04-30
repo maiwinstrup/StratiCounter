@@ -1,18 +1,17 @@
-function postau = lastlayerpos(FBprob,tau,d,zerolimit,plotlevel)
+function postau = lastlayerpos(FBprob,tau,d,zerolimit,tstart,plotlevel)
 
-%% postau = lastlayerpos(FBprob,tau,d,zerolimit,plotlevel)
+%% postau = lastlayerpos(FBprob,tau,d,zerolimit,tstart,plotlevel)
 % Calculating the probabilities corresponding to where ends the last layer 
 % before the layer in pixel tau (i.e. "layer j0" of next batch).
-
 % Copyright (C) 2015  Mai Winstrup
-% 2014-10-15 16:24: Separat script
-% 2014-10-20 11:45: Including data for pixels before start of data series
-% 2014-10-20 13:12: Added plot
 
 %% Duration parameters:
 dmin = min(d);
 dmax = max(d);
 D = length(d);
+
+%% Length of data batch:
+batchLength = size(FBprob.gamma,1);
 
 %% Assume layer 1 to be the most likely layer in pixel tau:
 [~,j1] = max(FBprob.gamma(tau,:)); % [layer index]
@@ -46,13 +45,16 @@ postau = postau/sum(postau);
 %% Plot:
 if plotlevel > 1
     plotlastlayerpos(FBprob.eta_bar,tau,postau)
+    if ~isempty(tstart) % We're dealing with the actual tau for batch
+        xlim([tstart batchLength])
+        legend({'sum_j(\eta_{j})','\tau','pos(\tau)'})
+    end
 end
 end
 
-%% PLOTTING FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function plotlastlayerpos(eta_bar,pxBounds,pos)
+function plotlastlayerpos(eta_bar,px,pospx)
 % Plot probabilities for ending position of the last layer relative to the
-% one in pixel pxBounds, and compare to the total probability of ending any
+% one in pixel px, and compare to the total probability of ending any
 % layer in this area. 
 
 %% Probability of ending any layer at given pixel:
@@ -62,11 +64,12 @@ eta_all = sum(eta_bar,2);
 figure;
 hline(1)=plot(eta_all,'.-b');
 hold on
-hline(2)=plot(pxBounds,eta_all(pxBounds),'.r','markersize',15);
-hline(3)=plot((pxBounds-length(pos)-1):pxBounds,[0;pos;0],'-r');
-xlim([pxBounds-length(pos)-10 pxBounds+10])
+hline(2)=plot(px,eta_all(px),'.r','markersize',15);
+hline(3)=plot((px-length(pospx)-1):px,[0;pospx;0],'-r');
+xlim([px-length(pospx)-10 px+10])
+
 xlabel('Pixel')
 ylabel('Probability')
 title('Probability of ending any layer j in given pixel')
-legend(hline,{'sum_j(\eta_{j})','Section boundary (pxBounds)','pos(pxBounds)'})
+legend(hline,{'sum_j(\eta_{j})',['Section boundary (px= ' num2str(px) ')'],'pos(px)'})
 end

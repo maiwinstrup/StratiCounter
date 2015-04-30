@@ -98,26 +98,26 @@ Model = adjustmodel(Model);
 %% Load data and manual layer counts:
 if strcmp(Model.icecore,'SyntheticData')   
     % Construct synthetic data: 
-    [Data, manualcounts, Model] = makesyntheticdata(Model,Runtype,outputdir); % 21-08-2014
+    [Data, manualcounts, Model] = makesyntheticdata(Model,Runtype,outputdir); 
     
 else
     % Load manually-counted annual layers:
-    [manualcounts, meanLambda] = loadlayercounts(Model,[Model.dstart Model.dend]); % 21-04-2015    
+    [manualcounts, meanLambda] = loadlayercounts(Model,[Model.dstart Model.dend]); 
    
     % Check format, and convert ages to ageUnitOut:
-    [manualcounts, Model] = adjustmanualcounts(manualcounts,Model); % 21-04-2015
+    [manualcounts, Model] = adjustmanualcounts(manualcounts,Model); 
     
     % Check preprocessing distances relative to manual layer thicknesses 
     % over interval:
-    checkpreprocdist(Model,manualcounts); % 21-04-2015
+    checkpreprocdist(Model,manualcounts); 
     
     % Load and preprocess data files:
-    [Data, Model] = loadormakedatafile(Model,manualcounts,Runtype); % 21-04-2015
+    [Data, Model] = loadormakedatafile(Model,manualcounts,Runtype); 
     
     % Check for long sections without data:
     % long sections are in this context corresponding to 20 mean layer
     % thicknesses without much data: 
-    sectionswithoutdata(Data,20*meanLambda,Model.species); % 21-04-2015
+    sectionswithoutdata(Data,20*meanLambda,Model.species); 
 end
 
 % If no manual counts are known, an empty array should be provided.
@@ -145,8 +145,6 @@ if Runtype.plotlevel > 0
     filename = [outputdir '/layertemplates.jpeg'];        
     hfig_template = plotlayertemplates(Template0,...
             Template0Info,Model,nan,color(1:Model.order+1,:),filename);
-    % Close figure?
-    if Runtype.plotlevel==1; close(hfig_template); end
 end
 
 % Layer parameters:
@@ -181,11 +179,13 @@ iBatch = 0;
 while iBatch < nBatch
     %% Batch number:
     iBatch = iBatch+1;
-    if mod(iBatch,1)==0
-        disp(['Batch ' num2str(iBatch) ': ' num2str(Data.depth(batchStart(iBatch))) 'm'])
+    if nBatch<10; dispBatch = 1; else dispBatch = 5; end
+    if mod(iBatch,dispBatch)==0
+        disp(['Batch ' num2str(iBatch) ': ' ...
+            num2str(Data.depth(batchStart(iBatch))) 'm'])
     end
     
-    %% 1: Select data corresponding to current batch
+    %% 1a: Select data corresponding to current batch:
     % And provide an upper-bound estimate of the number of layers in batch.
     
     if isempty(Model.tiepoints)
@@ -199,7 +199,7 @@ while iBatch < nBatch
         batchLength = round(Model.nLayerBatch*meanLambda/Model.dx); 
         batchEnd = min(batchStart(iBatch)+batchLength-1,length(Data.depth));            
         % Upper-bound estimate of years (incl. uncertainties) in batch:
-        nLayerMax = round(1.2*Model.nLayerBatch);
+        nLayerMax = round(1.3*Model.nLayerBatch);
         % If indications arise that this value should be larger, it will be 
         % increased with each batch iteration.
         
@@ -211,12 +211,13 @@ while iBatch < nBatch
             batchLength = batchEnd-batchStart(iBatch)+1;
             
             % Maximum number of layers in batch is then: 
-            nLayer = (Data.depth(end)-Data.depth(batchStart(iBatch)))/meanLambda;
-            nLayerMax = round(2*nLayer);
+            nLayerMean = (Data.depth(end)-Data.depth(batchStart(iBatch)))/meanLambda;
+            nLayerMax = round(1.3*nLayerMean);
 
             % Do not use any overlap section for the last data batch:
             Model.batchOverlap = 0;
-            disp(['Stopping at batch ' num2str(iBatch) ', ' num2str(Data.depth(batchEnd)) 'm'])
+            disp(['Stopping at batch ' num2str(iBatch) ', ' ...
+                num2str(Data.depth(batchEnd)) 'm'])
         end
         
     else
@@ -235,13 +236,16 @@ while iBatch < nBatch
     % layer parameter re-estimation (may e.g. occur when using closely 
     % spaced tiepoints):
     if nLayerMax <= 50
-        disp(['Note: nLayerMax for batch is small (' num2str(nLayerMax) ')'])
+        disp(['Note: Batch only contains few layers (nLayerMax = ' ...
+            num2str(nLayerMax) ')'])
+        disp(['For reliable layer parameter re-estimation it is recommended '...
+            'to use a larger batch size.'])
     end
     
     % Depth scale for batch:
     depth_batch = Data.depth(batchStart(iBatch):batchEnd);
               
-    %% Preprocess batch data (25/2-2015)
+    %% 1b: Preprocess batch data:
     % Data in batch is preprocessed relative to the mean layer thickness as 
     % estimated from previous batch.    
     % Preprocessing specs:
@@ -277,7 +281,7 @@ while iBatch < nBatch
         % Iterations over layer parameters:
         iIter = 1;
         while iIter <= Model.nIter
-            if nBatch < 5; disp(['Iteration #' num2str(iIter)]); end
+            if nBatch < 5; disp(['  > Iteration #' num2str(iIter)]); end
 
             %% 2a: Select model parameters
             if iIter == 1
@@ -293,77 +297,96 @@ while iBatch < nBatch
                 Layerpar(iBatch,iTemplateBatch,iIter) = Layerpar_new;
             end
             
-            %% 2b: Run layer detection algorithm
-            [Layerpos_new, FBprob_new, ExpVal_new, logPobs_new, d, pd, logb_new, bweight,nLayerMaxNew] = ...
+            %% 2b: Run layer detection algorithm:
+            [Layerpos_new, FBprob_new, ExpVal_new, logPobs_new, d, pd, ...
+                logb_new, nLayerMax_new] = ...
                 layerdetection(data_batch,Template(:,iBatch,iTemplateBatch),...
                 Layerpar(iBatch,iTemplateBatch,iIter),Layer0(iBatch),...
-                nLayerMax,batchLength,Model,Runtype); % 2014-10-10 16:37
+                nLayerMax,Model,Runtype.plotlevel); 
             
-            %% 2c: New estimates for layer parameters
-            [Layerpar_new, relweight(iBatch,iTemplateBatch,iIter)] = ...
+            %% 2c: New estimates for layer parameters:
+            [Layerpar_new, relweight_new] = ...
                 updatelayerpar(ExpVal_new,FBprob_new,Prior(iBatch),...
-                Layerpar(iBatch,iTemplateBatch,iIter),d,pd,batchLength,...
-                logb_new,bweight,Model);
-            Layerpar(iBatch,iTemplateBatch,iIter) = Layerpar_new;
+                Layerpar(iBatch,iTemplateBatch,iIter),d,pd,logb_new,...
+                Model);
             
-            % In case of Bayesian estimates, logPobs is re-calculated
-            % to account for prior knowledge of layer parameters:
+            % log(P_obs): In case of Bayesian estimates, this value is 
+            % re-calculated to account for prior probability of obtained 
+            % layer parameters:
             logPobs_new = calclogPobs(logPobs_new,Layerpar_new,Prior,Model);
-            logPobs(iBatch,iTemplateBatch,iIter+1,:) = logPobs_new;
-
-             % Save resulting set of layer positions, potentially both 
-             % from Forward-Backward and Viterbi algorithms: 
-    %        Layerpos(iBatch,iTemplateBatch,iIter) = Layerpos_new;
             
-            %% 2d: Stopping criteria reached?
-            % Using logPobs from FB algorithm to test for convergence:
-            if abs(logPobs_new(1)-logPobs(iBatch,iTemplateBatch,iIter,1))>Model.eps && ...
+            %% 2d: Save results for iteration:
+            % New set of layer parameters:
+            Layerpar(iBatch,iTemplateBatch,iIter+1) = Layerpar_new;
+            % Relative weighting factor:
+            relweight(iBatch,iTemplateBatch,iIter+1) = relweight_new;
+            % Value of log(P_obs):
+            logPobs(iBatch,iTemplateBatch,iIter+1) = logPobs_new;
+            
+            % New estimate for maximum numbers of layer in batch:
+            nLayerMax = nLayerMax_new;
+
+            %% 2e: Stopping criteria reached?
+            % Using log(P_obs) to test for convergence:
+            if abs(logPobs(iBatch,iTemplateBatch,iIter)-...
+                    logPobs(iBatch,iTemplateBatch,iIter+1))>Model.eps && ...
                     iIter<=Model.nIter;
-                iIter = iIter+1;          
+                iIter = iIter+1;
             else
-                % Actual number of iterations for this batch and template:
+                % Convergence or maximum iteration value has been reached. 
+                % Number of iterations performed:
                 nIter = iIter;
-                if abs(logPobs_new(1)-logPobs(iBatch,iTemplateBatch,iIter,1))<Model.eps
+                if abs(logPobs(iBatch,iTemplateBatch,nIter)-...
+                        logPobs(iBatch,iTemplateBatch,nIter+1))<=Model.eps
                     flag = 1; break % Convergence reached
                 else flag = 2; break % Maximum number of iterations reached
                 end
             end
-            nLayerMax = nLayerMaxNew;
+
        end
            
-       %% 2e: Check that log(Pobs) is always growing (as it should)
+       %% 2f: Check that log(Pobs) is always growing (as it should)
        if Runtype.plotlevel>1
-           if ~exist('hfig_logPobs','var'); hfig_logPobs = figure; end
-           if iTemplateBatch == 1; clf(hfig_logPobs); end
+           if iTemplateBatch==1; 
+              if iBatch == 1; 
+                  hfig_logPobs = figure;
+              else close(hfig_logPobs); % Close figure from previous batch
+              end
+           end
            figure(hfig_logPobs)
-           plot(squeeze(logPobs(iBatch,iTemplateBatch,2:end,1)),'.-k'); 
+           plot(squeeze(logPobs(iBatch,iTemplateBatch,2:end)),'.-','color',[1 1 1]*(iTemplateBatch-1)/Model.nTemplateBatch); 
            hold on
            title(['Batch: ' num2str(iBatch)],'fontweight','bold')
-           for i = 1:iTemplateBatch; legendname{i} = ['template iteration: ' num2str(i)]; end
-           legend(legendname,'location','best')
+           xlabel('Iteration number')
            ylabel('log(P_{obs})')
+           if iTemplateBatch > 1
+               for i = 1:iTemplateBatch; 
+                   legendname{i} = ['Template iteration: ' num2str(i)]; 
+               end
+               legend(legendname,'location','best')
+           end
+       end             
+       
+       %% 3: Improve the layertemplates:
+       layercounts_new = Data.depth(Layerpos_new.fb+batchStart(iBatch)-1.5)+Model.dx/2;  
+       ModelTemplate = Model;
+       ModelTemplate.layerCharInterval = [depth_batch(1) depth_batch(end)];
+       [Template_new, TemplateInfo_new] = layerstructure(data_batch,...
+           depth_batch,layercounts_new,[],ModelTemplate,Runtype); 
+       % Save the new layer templates: 
+       Template(:,iBatch,iTemplateBatch+1)=Template_new; 
+
+       % Plot new layer templates (and compare to original ones):
+       if Runtype.plotlevel > 0
+           color = [1 0 1; 1 1 0; 1 0.5 0.5; 0 0 1];
+           filename = [outputdir '/layertemplates_new'];
+           plotlayertemplates(Template_new,TemplateInfo_new,Model,hfig_template,color,filename);       
        end
        
-       %% 3a: Find new layertemplates
-       layercounts_new = Data.depth(Layerpos_new.fb+batchStart(iBatch)-1.5)+Model.dx/2;  
-       Model_template = Model;
-       Model_template.layerCharInterval = [depth_batch(1) depth_batch(end)];
-       [Template_new, TemplateInfo_new] = layerstructure(data_batch,...
-           depth_batch,layercounts_new,[],Model_template,Runtype); % 2014-08-21 23:22
-       
-       % Plot new layer templates (and compare to original ones):
-       %color = [1 0 1; 1 1 0; 1 0.5 0.5; 0 0 1];
-       %filename = [outputdir '/layertemplates_new'];
-       %plotlayertemplates(Template_new,TemplateInfo_new,Model,hfig_basis,color,filename);       
-       %if Runtype.plotlevel < 1; close(hfig_basis2); end
-       
-       %% 3b: Update layer templates: 
-       Template(:,iBatch,iTemplateBatch+1)=Template_new; 
-       % (But first template for each batch is always the same)
-
-%        % With updates:
+%        % Possibility for updating the layer templates:
+%        % (Currently, the initial template for each batch is always the same)
 %        Template(:,iBatch,iTemplateBatch+1)=Template_new;
-%        % Only updating the mean trajectory: 
+%        % Or: Only updating the mean trajectory: 
 %        for j = 1:Model.nSpecies
 %            Template(j,iBatch,iTemplateBatch+1) = Template(j,1,1);
 %            Template(j,iBatch,iTemplateBatch+1).mean = Template_new(j).mean;
@@ -371,15 +394,17 @@ while iBatch < nBatch
     end
 
     %% 4: When all iterations have converged: 
-    % Results for batch:
+    % Results for batch: layer probability distribution, the most likely 
+    % layer boundaries, and initial conditions for next batch. 
     [Result(iBatch),Layer0(iBatch+1),batchStart(iBatch+1)] = ...
         resultsforbatch(depth_batch,FBprob_new,Layerpos_new,...
-        Layer0(iBatch),d,pd,logb_new,meanLambda,batchStart(iBatch),dDxLambda,...
-        iIter,Model,Runtype);
+        Layer0(iBatch),d,pd,logb_new,meanLambda,batchStart(iBatch),...
+        dDxLambda,iIter,Model,Runtype.plotlevel);
     
     % Calculate log(P_obs) for entire data series, up and including this one:
     logPobs_alldata = logPobs_alldata + logPobs(iBatch,iTemplateBatch,iIter,1); 
-    % (up to tau in this batch) - no to T? if so, there is an overlap...
+    % (OBS: Does this go up to tau in this batch, or to T? If so, the
+    % probabilities for ending sections are counted twice.) 
     
     % Prior for next batch:
     Prior(iBatch+1) = updatepriors(Prior(iBatch),Layerpar_new,Model);
@@ -387,9 +412,9 @@ while iBatch < nBatch
     %% 5: Visualize results and compare to manual layer counts:
     if mod(iBatch,5)==0
         % Combine results from batches, and convert from layers to ages:
-        [Layerpos_prelim,~,~,timescale_prelim,timescale1yr_prelim,~,...
+        [~,~,~,timescale_prelim,timescale1yr_prelim,~,...
              markerConf_prelim,lambda_prelim] = ...
-             combinebatches(Result(1:iBatch),manualcounts,Model); % 2014-08-12 21:58
+             combinebatches(Result(1:iBatch),manualcounts,Model); 
             
         % Save preliminary output:
         save([outputdir '/timescale1yr_prelim'],'timescale1yr_prelim')
@@ -401,8 +426,8 @@ while iBatch < nBatch
             if exist('hfig_timescale','var'); close(hfig_timescale); end
             filename = [outputdir '/timescale_prelim.jpeg'];
             hfig_timescale = showtimescale(timescale_prelim,...
-                timescale1yr_prelim,Layerpos_prelim,manualcounts,...
-                Data.depth(batchStart(1:iBatch)),Model,filename); % 2014-08-21 23:32
+                timescale1yr_prelim,manualcounts,...
+                Data.depth(batchStart(1:iBatch)),Model,filename);
             
             % Mean layer thicknesses:
             if exist('hfig_lambda','var')
@@ -412,7 +437,7 @@ while iBatch < nBatch
             for idx = 1:length(Model.dxLambda)                
                 filename = [outputdir '/lambda_' num2str(Model.dxLambda(idx)) 'm_prelim.jpeg'];
                 hfig_lambda(idx) = showlambda(lambda_prelim{idx},...
-                   Layerpos_prelim,timescale1yr_prelim,manualcounts,Model,filename); % 2014-08-15 11:12               
+                   timescale1yr_prelim,manualcounts,Model,filename);        
             end
         end
     end
@@ -429,7 +454,7 @@ while iBatch < nBatch
         
         % Estimate remaining number of batches:
         meanLambda = exp(Prior(iBatch).m+Prior(iBatch).sigma^2/2); %[m]
-        nBatchRest = ceil(1.1*depthinterval/(meanLambda*Model.nLayerBatch));
+        nBatchRest = ceil(1.3*depthinterval/(meanLambda*Model.nLayerBatch));
         % New value of nBatch:
         nBatchNew = nBatch+nBatchRest;
         
@@ -468,16 +493,16 @@ batchStart = batchStart(1:nBatch);
 Result = Result(1:nBatch);
  
 % Combine batches:
-[Layerpos,LayerDist,centralEst,timescale,timescale1yr,markerProb,...
-    markerConf,lambdaResults] = combinebatches(Result,manualcounts,Model); % 2014-08-12 21:58 
+[Layerpos,LayerProbDist,centralEst,timescale,timescale1yr,markerProb,...
+    markerConf,lambdaResults] = combinebatches(Result,manualcounts,Model); 
 
 %% Save output:
 % Timescale:
 save([outputdir '/timescale.mat'],...
-    'timescale','timescale1yr','Layerpos','LayerDist','centralEst','Model')
+    'timescale','timescale1yr','Layerpos','LayerProbDist','centralEst','Model')
 % Save timescale1yr as textfile with metadata:
 filename = [outputdir '/' Model.icecore '_timescale1yr.txt'];
-savetimescaleastxt(timescale1yr,filename,Model) % 2014-08-14 14:41
+savetimescaleastxt(timescale1yr,filename,Model) 
 
 % Confidence interval for marker horizons:
 if ~isempty(Model.dMarker)
@@ -485,7 +510,7 @@ if ~isempty(Model.dMarker)
         'markerProb','markerConf','Model')
     % As txt file:
     filename = [outputdir '/' Model.icecore '_markerconf'];
-    savemarkerastxt(markerConf,filename,Model) % 2014-10-22 18:03
+    savemarkerastxt(markerConf,filename,Model)
 end
 
 % Layer thicknesses:
@@ -501,8 +526,8 @@ if Runtype.plotlevel>0
     % Timescale:
     if exist('hfig_timescale','var'); close(hfig_timescale); end
     filename = [outputdir '/timescale.jpeg'];
-    hfig_timescale = showtimescale(timescale,timescale1yr,Layerpos,...
-        manualcounts,Data.depth(batchStart),Model,filename); % 2014-08-21 23:32
+    hfig_timescale = showtimescale(timescale,timescale1yr,...
+        manualcounts,Data.depth(batchStart),Model,filename); 
     
     % Mean layer thicknesses:
     if exist('hfig_lambda','var');
@@ -513,15 +538,33 @@ if Runtype.plotlevel>0
     hfig_lambda = gobjects(length(Model.dxLambda),1); % Initialize handles
     for idx = 1:length(Model.dxLambda)
         filename = [outputdir '/lambda_' num2str(Model.dxLambda(idx)) 'm.jpeg'];
-        hfig_lambda(idx) = showlambda(lambdaResults{idx},Layerpos,...
-            timescale1yr,manualcounts,Model,filename); % 2014-08-15 11:12
+        hfig_lambda(idx) = showlambda(lambdaResults{idx},timescale1yr,...
+            manualcounts,Model,filename); 
     end
 end
    
 %% Calculate new layer templates:
 % Based on data in complete interval.
-[TemplateNew,TemplateInfoNew]=layerstructure(data_batch,depth_batch,...
-    Layerpos.final,[],Model,Runtype); % 2014-08-21 23:22
+
+% In case of floating preprocessing steps, this must be done first, and is
+% then based on an average value of lambda over interval. 
+% Preprocessing specs:
+meanLambda = mean(diff(Layerpos.final));
+[preprocsteps,preprocdist] = ...
+    setpreprocdist(Model.preprocsteps(:,2),meanLambda);    
+% Preprocess batch data:
+data_out = makedatafile(Data.data,Data.depth,preprocsteps,Model.derivatives); 
+
+% Derived layer templates:
+[Template_New,TemplateInfo_New] = ...
+    layerstructure(data_out,Data.depth,Layerpos.final,[],Model,Runtype);
+
+% Plot new layer templates (and compare to original ones):
+if Runtype.plotlevel > 0
+    color = [1 0 1; 1 1 0; 1 0.5 0.5; 0 0 1]*0.5;
+    filename = [outputdir '/layertemplates_new'];
+    plotlayertemplates(Template_new,TemplateInfo_new,Model,hfig_template,color,filename); 
+end
 
 %% Clean-up: Remove preliminary datafiles and figures
 % Data files:

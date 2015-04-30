@@ -7,7 +7,7 @@ function checkinmatchmaker(outputdir,Model)
 
 %% 1a: Manual layer counts
 % Convert layer counts to format used in matchmaker:
-manualcounts = loadlayercounts(Model,[Model.dstart Model.dend]); % 2014-10-08 09:58
+manualcounts = loadlayercounts(Model,[Model.dstart Model.dend]);
 
 mp(:,1) = manualcounts(:,1);
 mp(:,2) = 1; % Certain years
@@ -84,9 +84,10 @@ for iCore = 2:nCore
 
     % Save layer counts and tiepoints:
     if iCore == 2
-        filename = ['./Output/matchfiles/' Model.icecore 'layers_auto.mat']; % We may compare two results from the same ice core
+        filename = ['./Output/matchfiles/' Model.icecore 'layers_auto.mat']; ...
+            % We may compare two results from the same ice core
     else
-        filename = ['./Output/matchfiles/' Model.icecore 'layers_auto' num2str(iCore-1) '.mat']; % We may compare two results from the same ice core
+        filename = ['./Output/matchfiles/' Model.icecore 'layers_auto' num2str(iCore-1) '.mat'];...
     end
     save(filename,'mp')
     

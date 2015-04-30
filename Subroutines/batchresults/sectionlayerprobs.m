@@ -1,8 +1,9 @@
-function [distSections,layer0new_no,dSectionBounds] = ...
-    layerdistsection(depth,FBprob,dSectionBounds,layer0_no,tau,ntau,d,pd,logb,plotlevel)
+function [probdistSections,layer0new_no,dSectionBounds] = ...
+    sectionlayerprobs(depth,FBprob,dSectionBounds,layer0_no,tau,ntau,...
+    d,pd,logb,plotlevel)
 
-%% [distSections,layer0new_no,dSectionBounds] = layerdistsection(depth,...
-% FBprob,dSectionBounds,layer0_no,tau,ntau,d,pd,logb,plotlevel)
+%% [probdistSections,layer0new_no,dSectionBounds] = sectionlayerprobs(depth,...
+%    FBprob,dSectionBounds,layer0_no,tau,ntau,d,pd,logb,plotlevel)
 % Calculate mumber of layers and associated uncertainties for sections of
 % data. Depth boundaries of the individual sections are given in the 
 % variable "dSectionBounds", and sections may both be regular (as used for 
@@ -11,8 +12,8 @@ function [distSections,layer0new_no,dSectionBounds] = ...
 % marker horizons).
 
 % Output:
-% distSections(:,1): Layer numbers
-% distSections(:,2:M+1): Corresponding probabilities for the M sections
+% probdistSections(:,1): Layer numbers
+% probdistSections(:,2:M+1): Corresponding probabilities for the M sections
 % dSectionBounds: Section bounds ending within current batch (in meters)
 % layer0new_no: Layer number probability distribution by end of batch (tau)
 % (used for calculating results for next batch)
@@ -42,10 +43,11 @@ if isempty(pxSectionBounds)
     % Calculate resulting probabilities for pixel tau, and save these for 
     % initialization of the next batch:
     zerolimit = 10^-4;
-    layer0new_no = convolvelayerdist(layer0_no,[(0:ntau(end,1))',FBprob.gamma(tau,1:ntau(end,1)+1)'],zerolimit);
+    layer0new_no = convolveprobdist(layer0_no,...
+        [(0:ntau(end,1))',FBprob.gamma(tau,1:ntau(end,1)+1)'],zerolimit);
     
     % No results for the non-existing section boundaries within interval:
-    distSections = []; 
+    probdistSections = []; 
     return
 end
 
@@ -58,33 +60,32 @@ yrmin = 0;
 yrmax = layer0_no(end,1)+ntau(end,1); 
 
 % Layer number distributions for all sections in batch:
-distSections(:,1)=yrmin:yrmax; 
-distSections(:,2:nSections+1)=0;
+probdistSections(:,1)=yrmin:yrmax; 
+probdistSections(:,2:nSections+1)=0;
 
 %% First section in batch is special: 
 % Simply convolve the calculated probability distribution at first boundary 
 % with the probabilities corresponding to pixel 1.
 
 % Probabilities for batch at first boundary (pxSectionBounds(1)): 
-layerdist1 = [(0:ntau(end,1))',FBprob.gamma(pxSectionBounds(1),1:ntau(end,1)+1)'];
+probdist1 = [(0:ntau(end,1))',FBprob.gamma(pxSectionBounds(1),1:ntau(end,1)+1)'];
 % Combine the layer distributions:
 zerolimit = 10^-4; 
 % Less accuracy is needed than for timescale results: We may use a higher 
 % cut-off value.
-distSection1 = convolvelayerdist(layer0_no,layerdist1,zerolimit); % 2014-10-16 18:04
+probdistSection1 = convolveprobdist(layer0_no,probdist1,zerolimit); 
 
 % Inset in layer probability array for all intervals:
-distSections(distSection1(:,1)+1,2) = distSection1(:,2);
+probdistSections(probdistSection1(:,1)+1,2) = probdistSection1(:,2);
 
 % Probability corresponding to the location of last layer boundary (i.e. 
 % the layer previous to the one in pixel pxSectionBounds(1)):
 zerolimit = 10^-3;
-layerX_pos = lastlayerpos(FBprob,pxSectionBounds(1),d,zerolimit,plotlevel); % 2014-10-20 11:45
+layerX_pos = lastlayerpos(FBprob,pxSectionBounds(1),d,zerolimit,[],plotlevel); 
 
 %% Remaining sections in batch:
 % Layer thickness parameters:
 dmax = max(d);
-dmin = min(d);
 D = length(d);
 % Total length of batch:
 batchLength = size(FBprob.gamma,1);
@@ -98,23 +99,21 @@ for iSection = 2:nSections+1 % Also for the last section, that runs until end of
     layer0section_pos = zeros(dmax,1);
     layer0section_pos(end-length(layerX_pos)+1:end)=layerX_pos;
     
-    %% 
-    % if 2 options: selecting the most likely location of the layer
+    %% If 2 options: selecting the most likely location of the layer
     % boundary?
-     
-    % genudregning af logb i starten
-    %logb_test = likelihood_BLR(data_batch,d,Model,layershape,layerpar,i0,T)    
-    %    [~,~,~,~,gamma_section,~,~] = ...
-    %        ForwardBackward(T-t0+1,Nmax,layer0_pos,d,dmax,D,log(pd),logb(t0:end,:),[]);
     
     %% Obtain layering (and associated uncertainties) within section:
     % Length of section:
-%    sectionLength = t1-t0+1; 
-    sectionLength = batchLength-t0+1; % Using all rest of batch, so that all subsequent data is used
+    % Using all rest of batch, so that all subsequent data is used
+    sectionLength = batchLength-t0+1; 
+    % Alternatively, could also use: 
+    % sectionLength = t1-t0+1; 
+    
     % Maximum number of layers in section:
     nMinStart = find(FBprob.gamma(t0,:)>0,1,'first');
-%    nMaxEnd = find(FBprob.gamma(t1,:)>0,1,'last');
     nMaxEnd = find(FBprob.gamma(end,:)>0,1,'last');
+    % If using other definition of sectionLength, then here use: 
+    % nMaxEnd = find(FBprob.gamma(t1,:)>0,1,'last');
     nLayerMaxSection = nMaxEnd-nMinStart+1;
     
     % Run Forward-Backward with the above as input:
@@ -128,15 +127,15 @@ for iSection = 2:nSections+1 % Also for the last section, that runs until end of
         t1 = pxSectionBounds(iSection);
         
         % Use the calculated gamma distribution at t1: 
-        clear layerdist
-        layerdist(:,1) = 0:nLayerMaxSection-1; 
-        layerdist(:,2) = gammasection(t1-t0+1,:);
+        clear layerprob
+        layerprob(:,1) = 0:nLayerMaxSection-1; 
+        layerprob(:,2) = gammasection(t1-t0+1,:);
         % Compact distribution: 
         zerolimit = 10^-3;
-        layerdist = compactdist(layerdist,zerolimit);
+        layerprob = compactprobdist(layerprob,zerolimit);
         
         % Inset in layer probability array for all intervals:
-        distSections(layerdist(:,1)+1,1+iSection) = layerdist(:,2);
+        probdistSections(layerprob(:,1)+1,1+iSection) = layerprob(:,2);
 
         if t1 == tau
             % This is the last section in batch; next section starts in 
@@ -147,7 +146,7 @@ for iSection = 2:nSections+1 % Also for the last section, that runs until end of
         else
             % New layerX_pos to be used as input for subsequent section:
             zerolimit = 10^-3;
-            layerX_pos = lastlayerpos(FBprob,t1,d,zerolimit,plotlevel); % 2014-10-20 11:45
+            layerX_pos = lastlayerpos(FBprob,t1,d,zerolimit,[],plotlevel); 
         end
         
     elseif iSection==nSections+1
@@ -163,7 +162,7 @@ for iSection = 2:nSections+1 % Also for the last section, that runs until end of
         
         % Remove tails of distribution etc:
         zerolimit = 10^-3;
-        ntausection = compactdist(ntausection,zerolimit);
+        ntausection = compactprobdist(ntausection,zerolimit);
        
         % Inset as initial condition for next batch:
         layer0new_no = ntausection; 
@@ -171,6 +170,6 @@ for iSection = 2:nSections+1 % Also for the last section, that runs until end of
 end
     
 %% Remove zero entries:
-index1 = find(sum(distSections(:,2:end),2)>0,1,'first');
-index2 = find(sum(distSections(:,2:end),2)>0,1,'last');
-distSections = distSections(index1:index2,:);
+index1 = find(sum(probdistSections(:,2:end),2)>0,1,'first');
+index2 = find(sum(probdistSections(:,2:end),2)>0,1,'last');
+probdistSections = probdistSections(index1:index2,:);

@@ -1,15 +1,12 @@
-function hfig = showlambda(lambda,Layerpos,timescale1yr,manualcounts,Model,filename)
+function hfig = showlambda(lambda,timescale1yr,manualcounts,Model,filename)
 
-%% hfig = showlambda(lambda,Layerpos,timescale1yr,manualcounts,Model,filename)
-% Plot mean annual layer thicknesses as averaged over a given equidistant 
-% depth intervals. Layerthicknesses derived from both manual and 
-% automatically layer-counted timescales are plotted. The resulting plot is 
-% saved under "filename". 
+%% hfig = showlambda(lambda,timescale1yr,manualcounts,Model,filename)
+% Calculate and plot mean layer thicknesses as averaged over a given 
+% equidistant depth intervals. Layerthicknesses derived from both manual 
+% and automatically layer-counted timescales are plotted. The resulting 
+% plot is saved under "filename". 
 
 % Copyright (C) 2015  Mai Winstrup
-% 2014-08-13 22:30: Using new version of lambda array
-% 2014-08-14 11:13: Adjusted multiplyfactor
-% 2014-08-15 11:12: Removed .jpeg from filename
 
 %% If lambda is empty (or very small)
 % hfig is empty, and return to main. 
@@ -90,7 +87,8 @@ lambdaManualMax = lambdaManualMax(:);
 yvalues = [lambdaManualMin(:); lambdaManualMax(end:-1:1)];
 color_gicc  = [1 1 1]*0.5;
 alpha_gicc = 0.7;
-fill(xvalues(:),yvalues(:)*multiplyfactor,color_gicc,'edgecolor',color_gicc,'facealpha',alpha_gicc,'edgealpha', alpha_gicc)
+fill(xvalues(:),yvalues(:)*multiplyfactor,color_gicc,'edgecolor',...
+    color_gicc,'facealpha',alpha_gicc,'edgealpha', alpha_gicc)
 hold on
 % Most likely layer thickness:
 lambdaManualML = [lambdaManual(:,1)'; lambdaManual(:,1)']; 
@@ -116,7 +114,8 @@ for i = 1:nConf
     yvalues = [lambdaFBmin(:); lambdaFBmax(end:-1:1)];
     color = [1 0.3 0.3];
     alpha = 0.5;
-    fill(xvalues(:),yvalues(:)*multiplyfactor,color,'edgecolor',color,'facealpha',alpha,'edgealpha',0)
+    fill(xvalues(:),yvalues(:)*multiplyfactor,color,'edgecolor',color,...
+        'facealpha',alpha,'edgealpha',0)
 end
 legendtext{2} = 'Forward-Backward';
 
@@ -131,21 +130,9 @@ end
 L = lambda(:,2)-lambda(:,1);
 lambdaAutoBoundaries = L./nAuto;
 lambdaAutoBoundaries = [lambdaAutoBoundaries'; lambdaAutoBoundaries'];   
-hline(3) = plot(dplot,lambdaAutoBoundaries(:)*multiplyfactor,'--','color',color*0.6,'linewidth',1.2);
+hline(3) = plot(dplot,lambdaAutoBoundaries(:)*multiplyfactor,'--',...
+    'color',color*0.6,'linewidth',1.2);
 legendtext{3} = 'Layers in timescale1yr';
-
-%% Layer thicknesses from Viterbi output:
-% if ~isempty(Layerpos.viterbi)
-%     nViterbi = nan(size(lambda,1),1);
-%     for i = 1:size(lambda,1)
-%         mask=Layerpos.viterbi>=lambda(i,1)&Layerpos.viterbi<lambda(i,2);
-%         nViterbi(i) = sum(mask);
-%     end
-%     lambdaViterbi = L./nViterbi;
-%     lambdaViterbi = [lambdaViterbi'; lambdaViterbi'];   
-%     hline(4)=plot(dplot,lambdaViterbi(:)*multiplyfactor,'-m','linewidth',2);
-%     legendtext{4} = 'Viterbi';
-% end
 
 %% Tiepoints as grey bars:
 ymin = min(lambda(:,3))*multiplyfactor;
@@ -153,12 +140,14 @@ ymax = max(lambda(:,end))*multiplyfactor;
 K = length(legendtext);
 if ~isempty(Model.tiepoints)
     % Find tiepoints within selected depth interval:
-    mask = Model.tiepoints(:,1)>=lambda(1,1)&Model.tiepoints(:,1)<=lambda(end,2);
+    mask = Model.tiepoints(:,1)>=lambda(1,1)&...
+        Model.tiepoints(:,1)<=lambda(end,2);
     dtiepoints = Model.tiepoints(mask,1);
     if ~isempty(dtiepoints)
         legendtext{K+1} = 'Tiepoints';
         for i = 1:length(dtiepoints)
-            hline(K+1)=plot(dtiepoints(i)*[1 1],[ymin ymax],'--','color',[1 1 1]*0.8,'linewidth',4);
+            hline(K+1)=plot(dtiepoints(i)*[1 1],[ymin ymax],'--',...
+                'color',[1 1 1]*0.8,'linewidth',4);
         end
     end
 end
@@ -168,12 +157,14 @@ K = length(legendtext);
 if ~isempty(Model.dMarker)
     for iMarkerSet = 1:length(Model.dMarker)
         % Find horizons within selected depth interval:
-        mask = Model.dMarker{iMarkerSet}>=lambda(1,1)&Model.dMarker{iMarkerSet}<=lambda(end,2);
+        mask = Model.dMarker{iMarkerSet}>=lambda(1,1)&...
+            Model.dMarker{iMarkerSet}<=lambda(end,2);
         dMarker = Model.dMarker{iMarkerSet}(mask);
         if ~isempty(dMarker)
             legendtext{K+1} = 'Marker horizons';
             for i = 1:length(dMarker)
-                hline(K+1) = plot(dMarker(i)*[1 1],[ymin ymax],'-','color',[1 1 1]*0.4*i/length(dMarker));
+                hline(K+1) = plot(dMarker(i)*[1 1],[ymin ymax],'-',...
+                    'color',[1 1 1]*0.4*i/length(dMarker));
             end
         end
     end
@@ -189,9 +180,11 @@ xlabel('Depth [m]','fontweight','bold')
 % Title:
 dxText = mode(L);
 if dxText < 1
-    title(['Calculated over ' num2str(dxText*100) 'cm sections'],'fontweight','bold')
+    title(['Calculated over ' num2str(dxText*100) 'cm sections'],...
+        'fontweight','bold')
 else
-    title(['Calculated over ' num2str(dxText) 'm sections'],'fontweight','bold')
+    title(['Calculated over ' num2str(dxText) 'm sections'],...
+        'fontweight','bold')
 end
 
 %% Add timescale on top (based on auto counts)

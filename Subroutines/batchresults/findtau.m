@@ -12,17 +12,13 @@ function [tau, postau] = findtau(FBprob,meanLambda,d,batchLength,Model,plotlevel
 % before the one in pixel tau (postau).
 
 % Copyright (C) 2015  Mai Winstrup
-% 2014-10-13 20:03: Cleaned up as separate script
-% 2014-10-14 14:56: Plot added, using tnext (previously: tmax+dmax)
-% 2015-10-15 16:24: Added calculation of postau
-% 2014-10-20 11:47: New version of lastlayerpos
 
 %% Sometimes we wish to use the entire data section: 
 % If we have tiepoints, or if batchOverlap is equal to zero. 
 if Model.batchOverlap == 0 || ~isempty(Model.tiepoints)
     tau = batchLength; % Using the entire data section
     zerolimit = 10^-3;
-    postau = lastlayerpos(FBprob,tau,d,zerolimit,plotlevel); % 2014-10-20 11:45
+    postau = lastlayerpos(FBprob,tau,d,zerolimit,plotlevel);
     return
 end
 
@@ -68,20 +64,4 @@ end
 %% Probabilities corresponding to ending location of last layer:
 % "Last layer" is the layer previous to the one in pixel tau.
 zerolimit = 10^-3;
-postau = lastlayerpos(FBprob,tau,d,zerolimit,plotlevel); % 2014-10-20 11:45
-
-%% Plot selected value of tau:
-if plotlevel>1
-    figure;
-    hline(1)=plot(eta_all,'-b');
-    hold on
-    plot(tmax, eta_all(tmax),'ob')
-    plot(tnext, eta_all(tnext),'ob')
-    hline(2)=plot(tau,eta_all(tau),'.r','markersize',15);
-    hline(3)=plot((tau-length(postau)-1):tau,[0;postau;0],'-r');
-    xlim([tstart batchLength])
-    xlabel('Pixel')
-    ylabel('Probability')
-    title('Probability of ending any layer j in given pixel')
-    legend(hline,{'sum_j(\eta_{j})','\tau','pos(\tau)'})
-end
+postau = lastlayerpos(FBprob,tau,d,zerolimit,tstart,plotlevel);

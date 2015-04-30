@@ -1,18 +1,14 @@
-function hfig = showtimescale(timescale,timescale1yr,Layerpos,manualcounts,dbatch,Model,filename)
+function hfig = showtimescale(timescale,timescale1yr,manualcounts,dbatch,...
+    Model,filename)
 
-%% hfig = showtimescale(timescale,timescale1yr,Layerpos,manualcounts,dbatch,Model,filename)
+%% hfig = showtimescale(timescale,timescale1yr,manualcounts,dbatch,...
+%   Model,filename)
 % Plot the resulting timescale, and its associated uncertainties, as 
 % function of depth. If manual counts exist, these are plotted along with 
 % their estimated uncertainties. In this way, the automated layer-counted 
 % timescale can easily be compared to the manual counts. 
 
 % Copyright (C) 2015  Mai Winstrup
-% 2014-07-24 22:36: Major revisions, and started check of timescales.
-% 2014-08-11 15:50: Plot of optimized layer boundaries, stepping function introduced
-% 2014-08-12 21:29: Timescales checked
-% 2014-08-14 11:18: Color of timescale1yr changed
-% 2014-08-15 11:10: .jpeg removed from filename
-% 2014-08-21 23:32: manTimescaleName -> manCountsName
 
 %% Initialize figure: 
 hfig=figure;
@@ -25,17 +21,20 @@ set(hfig, 'DefaultAxesUnits','normalized')
 %% Plot manual layer counts (if exist): 
 if ~isempty(manualcounts)
     % Remove manual counts from outside plotting range: 
-    mask = manualcounts(:,1)>=Model.dstart & manualcounts(:,1)<=timescale(end,1);
+    mask = manualcounts(:,1)>=Model.dstart & ...
+        manualcounts(:,1)<=timescale(end,1);
     manualcounts = manualcounts(mask,:);
 end
 
 % Counts in current interval?
 if ~isempty(manualcounts)
     % Convert layer counts into stepped data files:
-    [layerpos_manual, age_manual] = steplayerpos(manualcounts(:,1),manualcounts(:,2),Model);
+    [layerpos_manual, age_manual] = ...
+        steplayerpos(manualcounts(:,1),manualcounts(:,2),Model);
     
     % Stepped version of accumulated uncertainty from beginning of section:
-    unc_manual = [manualcounts(1,4) manualcounts(1:end,4)'; manualcounts(1,4) manualcounts(1:end,4)'];
+    unc_manual = [manualcounts(1,4) manualcounts(1:end,4)'; ...
+        manualcounts(1,4) manualcounts(1:end,4)'];
     unc_manual = unc_manual(:);
     unc_manual = unc_manual - unc_manual(1);
 else
@@ -88,29 +87,17 @@ for i = 1:nConf
 end
 
 % Plot most likely solution, i.e. mode of the distribution:
-hline(2)=plot(timescale(1:dx:end,1),timescale(1:dx:end,2),'color',[0.9 0 0],'linewidth',1.5);
+hline(2)=plot(timescale(1:dx:end,1),timescale(1:dx:end,2),...
+    'color',[0.9 0 0],'linewidth',1.5);
 legendname{2} = 'Forward-Backward';
 
 %% Results from timescale1yr:
 % Convert layer positions into stepped files:
 [layerpos_1yr, age_1yr] = steplayerpos(timescale1yr(:,1),timescale1yr(:,2),Model);
 % And plot these:
-hline(3)=plot(layerpos_1yr(1:dx:end),age_1yr(1:dx:end),'-','color',color*0.6,'linewidth',1.2);
+hline(3)=plot(layerpos_1yr(1:dx:end),age_1yr(1:dx:end),'-',...
+    'color',color*0.6,'linewidth',1.2);
 legendname{3} = 'Timescale1yr';
-
-%% Viterbi layer results:
-% if ~isempty(Layerpos.viterbi)
-%     % Corresponding ages: Starting at the same age as in "timescale"
-%     switch Model.ageUnitOut
-%         case 'AD'
-%             age_vit = timescale(1,2)-(0:length(Layerpos.viterbi)-1);
-%         otherwise
-%             age_vit = timescale(1,2)+(1:length(Layerpos.viterbi));
-%     end
-%     [layerpos_viterbi, age_viterbi] = steplayerpos(Layerpos.viterbi,age_vit,Model);
-%     hline(4)=plot(layerpos_viterbi,age_viterbi,'color',[0.5 0 0.5],'linewidth',0.7);
-%     legendname{4} = 'Viterbi';
-% end
 
 %% Mark the depths of batch boundaries:
 % If tiepoints: Batch boundaries are the location of tiepoints.
@@ -145,9 +132,11 @@ if ~isempty(Model.dMarker)
                 ymin = interp1(timescale(:,1),timescale(:,indexmin),dMarker);
                 ymax = interp1(timescale(:,1),timescale(:,indexmax),dMarker);
             else
-                ymin = nanmin(interp1(manualcounts(:,1),manualcounts(:,2)-manualcounts(:,4),dMarker,'linear',nan),...
+                ymin = nanmin(interp1(manualcounts(:,1),...
+                    manualcounts(:,2)-manualcounts(:,4),dMarker,'linear',nan),...
                     interp1(timescale(:,1),timescale(:,indexmin),dMarker));
-                ymax = nanmax(interp1(manualcounts(:,1),manualcounts(:,2)+manualcounts(:,4),dMarker,'linear',nan),...
+                ymax = nanmax(interp1(manualcounts(:,1),...
+                    manualcounts(:,2)+manualcounts(:,4),dMarker,'linear',nan),...
                     interp1(timescale(:,1),timescale(:,indexmax),dMarker));
             end
             

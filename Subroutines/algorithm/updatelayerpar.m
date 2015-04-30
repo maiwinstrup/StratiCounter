@@ -1,15 +1,14 @@
 function [Layerpar_new, relweight] = ...
-    updatelayerpar(ExpVal,FBprob,Prior,Layerpar,d,pd,T,logb,bweight,Model)
+    updatelayerpar(ExpVal,FBprob,Prior,Layerpar,d,pd,logb,Model)
 
-%% updatelayerpar(ExpVal,FBprob,Prior,Layerpar,d,pd,T,logb,bweight,Model)
-% Calculating 1) a new, optimized set of layer parameters, 2) an estimate 
-% for logPobs, which in case of Bayesian estimates also accounts for prior 
-% knowledge of layer parameters, and 3) average relative probability of 
-% layer thickness and layer shape when calculating layer likelihoods.  
-% "rel_weight" is the value of bweight, which will make layer shape and
-% layer thicknesses to be perfectly balanced. 
+%% [Layerpar_new, relweight] = updatelayerpar(ExpVal,FBprob,Prior,...
+%    Layerpar,d,pd,logb,bweight,Model)
+% Calculating 1) a new, optimized set of layer parameters, and 2) average 
+% relative probability of layer thickness and layer shape when calculating 
+% layer likelihoods. The variable "relweight" is the value of bweight, 
+% which will make layer shape and layer thicknesses to be weighted equally. 
 
-% The parameters may be updated in one out of the following ways:
+% The layer parameters may be updated in one out of the following ways:
 % a) No updates (for one or several layer parameter components)
 
 % b) Maximum likelihood layer parameters:
@@ -26,7 +25,7 @@ function [Layerpar_new, relweight] = ...
 % only my and par are allowed to vary, all remaining parameters are assumed
 % known.
 
-% d) Gibbs sampling using either of the two above:
+% d) Gibbs sampling using either of the two above (not fully implemented):
 % The new layer parameters are found by drawing randomly from resulting
 % parameter distributions, assuming these to be normal distributed. This is 
 % a blocked Gibbs sampler since all parameters are updated at once. By 
@@ -34,22 +33,8 @@ function [Layerpar_new, relweight] = ...
 % parameters we obtain better (larger) uncertainty distributions on the
 % resulting timescale.
 
-% Gibb's sampling:
-% Using blocked Gibbs sampling to explore the probability 
-% space of the layer parameters, and to obtain the full 
-% uncertainty distribution on the resulting layer counts.
-% DRAW from resulting distribution!
-% (blocked gibbs sampler). resultatet af draw lægges i
-% Layerpar_new
-% Vi skal så efterfølgende midle resultaterne for at få den
-% fulde tidsskala, med uncertainties korrekt              
-
-% e) If new values are nan: Use the old version of layerpar as substitute.
-
-% Average relative probability weighting of layer templates 
-% vs. thicknesses is also calculated: "rel_weight" is the 
-% value of bweight, which will make layer template and layer 
-% thicknesses to be Perfectly balanced:           
+% e) If new parameter values are nan (due to nan in data): Use the original 
+% version of layerpar as substitute.
 
 % Copyright (C) 2015  Mai Winstrup
 % This program is free software; you can redistribute it and/or modify it 
@@ -57,11 +42,11 @@ function [Layerpar_new, relweight] = ...
 % Free Software Foundation; either version 2 of the License, or (at your 
 % option) any later version.
 
-% 2014-04-02 14:56
-
 %% Duration parameters:
 dmax = max(d);
 D = length(d);
+% Length of data batch:
+T = length(ExpVal)-dmax;
 
 %% Layer probabilities:
 % As all layer parameter probabilities are independent of layer number, the 
@@ -92,16 +77,20 @@ for j = 1:Model.nSpecies
 end
 
 %% Expectation value of b and p(d):
-% logb was previously multiplied by bweight. Original values: 
+% logb was previously multiplied by bweight, given by: 
+nEff = (Model.derivatives.nDeriv+1)*sum(Model.wSpecies);
+bweight = Model.bweight/nEff;
+% Original values: 
 logb_raw = logb/bweight;
 
 % Expectation value of b:
 matrix1 = eta_sumj.*exp(logb_raw); 
-expValb = nansum(matrix1(:))/sumeta;
+expvalb = nansum(matrix1(:))/sumeta;
 % Expectation value of logb:
-expValLogb = log(expValb);
+expvalLogb = log(expvalb);
 
 % Expectation value of p(d)
+matrix2 = nan(size(eta_sumj,1),D);
 for i = 1:D
     matrix2(:,i) = eta_sumj(:,i).*pd(i);
 end
@@ -110,10 +99,10 @@ expValpd = nansum(matrix2(:))/sumeta;
 expVallogpd = log(expValpd);
 
 % Relative values of the two: 
-relweight = expVallogpd/expValLogb;
+relweight = expVallogpd/expvalLogb;
 
 %% If no updating of any model parameters:
-if sum(~strcmp(Model.update,'none'))==0
+if sum(~strcmp(Model.update,'none'))==0 % No updating of any parameter
     Layerpar_new = Layerpar;
     return
 end
@@ -126,18 +115,20 @@ switch Model.update{1}
     case 'ML'
         Layerpar_new.my = sum(sum(eta_sumj,1).*log(d*Model.dx))/sumeta;
     case 'QB'
-        Layerpar_new.my = (Prior.v*sum(sum(eta_sumj,1).*log(d*Model.dx))+Model.rho*Prior.sigma^2*Prior.m)/...
+        Layerpar_new.my = (Prior.v*sum(sum(eta_sumj,1).*log(d*Model.dx))+...
+            Model.rho*Prior.sigma^2*Prior.m)/...
             (Prior.v*sumeta+Model.rho*Prior.sigma^2);
     case 'gibbs'
-        % gibbs sampling (with priors) 
+        % Gibbs sampling (with priors) 
         n = sumeta;
         ymean = sum(sum(eta_sumj,1).*log(d*Model.dx))/n;
-        m_post = (Prior.m*Prior.kappa*Layerpar.sigma^2+n*ymean)/(Prior.kappa*Layerpar.sigma^2+n);
+        m_post = (Prior.m*Prior.kappa*Layerpar.sigma^2+n*ymean)/...
+            (Prior.kappa*Layerpar.sigma^2+n);
         kappa_post = Prior.kappa+n/Layerpar.sigma^2;
     
         % Draw new value for my from this distribution:
         my = m_post+kappa_post^-2*randn(1,1);
-        Layerpar_new.my = my+randn(1,1)*(Prior(1).v)^0.5; % ikke korrekt med sigma!!!
+        Layerpar_new.my = my+randn(1,1)*(Prior(1).v)^0.5; % OBS: not correct
 end
 
 % Sigma:
@@ -145,15 +136,18 @@ switch Model.update{2}
     case 'none'
         Layerpar_new.sigma = Layerpar.sigma;
     case 'ML'
-        Layerpar_new.sigma = sqrt(sum(sum(eta_sumj,1).*(log(d*Model.dx)-Layerpar_new.my).^2)/sumeta);
+        Layerpar_new.sigma = sqrt(sum(sum(eta_sumj,1).*...
+            (log(d*Model.dx)-Layerpar_new.my).^2)/sumeta);
     case 'gibbs'
-        % gibbs sampling. prior - of sigma^2 - is inverse-gamma distribution.
+        % Gibbs sampling: 
+        % Prior of sigma^2 is an inverse-gamma distribution.
         alpha_post = Prior.alpha + n/2;
-        beta_post = Prior.beta+0.5*sum(sum(eta_sumj,1).*(log(d*Model.dx)-Layerpar_new.my).^2);   
-        %beta_post = prior.beta+0.5*sum( (log(lambda)-Layerpar_new.my)   .^2) %
-        %hvorfor bliver denne værdi dobbelt så stor??
+        beta_post = Prior.beta+0.5*sum(sum(eta_sumj,1).*...
+            (log(d*Model.dx)-Layerpar_new.my).^2);   
+        %beta_post = prior.beta+0.5*sum( (log(lambda)-Layerpar_new.my).^2) 
+        %not correct: hvorfor bliver denne værdi dobbelt så stor?
         sigma = sqrt(1./random('gam',alpha_post,1/beta_post));
-        Layerpar_new.sigma = sigma; % ikke korrekt!!! 
+        Layerpar_new.sigma = sigma; % not correct 
 end
 
 %% Parameter values and their covariance:
@@ -197,13 +191,14 @@ switch Model.update{3}
                 end
             end
             XWX_rhonvarinvU = XWX+Prior.nvar(:,j)*Prior.invU(:,:,j)*Model.rho;
-            Layerpar_new.par(:,j) = XWX_rhonvarinvU\(XWoXr+Model.rho*Prior.nvar(:,j)*Prior.invU(:,:,j)*Prior.u(:,j));
+            Layerpar_new.par(:,j) = XWX_rhonvarinvU\...
+                (XWoXr+Model.rho*Prior.nvar(:,j)*Prior.invU(:,:,j)*Prior.u(:,j));
         end
     
     case 'gibbs'
-        %% Gibbs sampling:
-    
+        %% Gibbs sampling:    
         % Sample mean: 
+        par_mean = nan(Model.order,Model.nSpecies);
         for j = 1:Model.nSpecies
             XWXmatrix = reshape([ExpVal(:,:,j).XWX],Model.order,Model.order,T+dmax,D);
             XWoXrmatrix = reshape([ExpVal(:,:,j).XWoXr],Model.order,T+dmax,D);
@@ -221,8 +216,10 @@ switch Model.update{3}
             end
             par_mean(:,j) = XWX\XWoXr; % sample mean
         
-            C = inv(Layerpar.cov((j-1)*Model.order+1:j*Model.order,(j-1)*Model.order+1:j*Model.order));
-            %par_post(:,j)=(prior.Lambda(:,:,j)+n*C)\(prior.Lambda(:,:,j)*prior.u(:,j)+n*prior.Lambda(:,:,j)*par_mean(:,j));
+            C = inv(Layerpar.cov((j-1)*Model.order+1:j*Model.order,...
+                (j-1)*Model.order+1:j*Model.order));
+            %par_post(:,j)=(prior.Lambda(:,:,j)+n*C)\(prior.Lambda(:,:,j)...
+            % *prior.u(:,j)+n*prior.Lambda(:,:,j)*par_mean(:,j));
 
             S0 = inv(Prior.Lambda(:,:,j));
             my0 = Prior.u(:,j);
@@ -306,7 +303,7 @@ switch Model.update{5}
         end
         
     case 'gibbs'
-        
+        % Not implemented.
 end
 
 %% If any of the layer parameters come up as NaN, we use the old version of 

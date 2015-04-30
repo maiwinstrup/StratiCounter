@@ -133,4 +133,4 @@ Layerpar(1,1,1) = Layerpar0;
 
 %% Initialize matrices for performance evaluation: 
 % Evolution of log(Pobs) with iterations:
-logPobs(:,:,1,:) = -inf;
+logPobs(1,1,1) = -inf;

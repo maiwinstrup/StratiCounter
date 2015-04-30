@@ -1,43 +1,31 @@
-function [LayerposDepth, logPobs_final] = ...
-    batchlayerpos(Layerpos,depth,tau,Layer0,postau,ntauTotal,d,pd,logb,Model,plotlevel)
+function [LayerposDepth, logPobs_final] = batchlayerpos(Layerpos,depth,...
+    tau,Layer0,postau,ntauTotal,d,pd,logb,dx,plotlevel)
 
-%% [LayerposDepth, logPobs_combined] = batchlayerpos(Layerpos,depth,...
-% tau,Layer0,postau,ntau,d,pd,logb,Model,plotlevel)
+%% [LayerposDepth, logPobs_final] = batchlayerpos(Layerpos,depth,...
+% tau,Layer0,postau,ntauTotal,d,pd,logb,dx,plotlevel)
 % Converting the entries in Layerpos from pixel to depth, and computing an
 % optimal set of layer boundaries based on a Forward-Backward constrained 
-% version of the viterbi algorithm.  
+% version of the Viterbi algorithm.
 % 
 % Copyright (C) 2015  Mai Winstrup
 % This program is free software; you can redistribute it and/or modify it 
 % under the terms of the GNU General Public License as published by the 
 % Free Software Foundation; either version 2 of the License, or (at your 
 % option) any later version.
-% 2014-10-15 11:22: Separat script, added optimal layer boundaries
 
-%% ForwardBackward and/or Viterbi layering within considered interval:
-% Boundaries located in pixel 1 are defined to be part of the previous 
-% batch.
-
+%% ForwardBackward layering within considered interval:
 % Layering according to the Forward-Backward algorithm, converted to
-% depths:
+% depths. Boundaries located in pixel 1 are defined to be part of the 
+% previous batch.
 mask = Layerpos.fb(:,1)>1 & Layerpos.fb(:,1)<=tau;
 Layerpos.fb = Layerpos.fb(mask);
-LayerposDepth.fb = depth(Layerpos.fb-0.5)+0.5*Model.dx;
+LayerposDepth.fb = depth(Layerpos.fb-0.5)+0.5*dx;
 
 % Locations with layer location issues:
 mask = Layerpos.fb_issues(:,1)>1 & Layerpos.fb_issues(:,1)<=tau;
 Layerpos.fb_issues = Layerpos.fb_issues(mask,:);
-LayerposDepth.fb_issues(:,1) = depth(Layerpos.fb_issues(:,1)-0.5)+0.5*Model.dx;
+LayerposDepth.fb_issues(:,1) = depth(Layerpos.fb_issues(:,1)-0.5)+0.5*dx;
 LayerposDepth.fb_issues(:,2) = Layerpos.fb_issues(:,2);
-
-% According to the Viterbi algorithm:
-% if isempty(Layerpos.viterbi)
-%     LayerposDepth.viterbi = [];
-% else
-%     mask = Layerpos.viterbi>1 & Layerpos.viterbi<=tau;
-%     Layerpos.viterbi = Layerpos.viterbi(mask);
-%     LayerposDepth.viterbi = depth(Layerpos.viterbi-0.5)+0.5*Model.dx;
-% end
 
 %% An optimal set of layerboundaries: 
 % Found by using the viterbi algorithm, constrained by output of the
@@ -74,16 +62,13 @@ nLayer0ML = Layer0.no(imax,1);
 % Most likely number of layers in this batch:
 nLayerML = nLayerML-nLayer0ML;
 
-% Using tiepoints:
-tiepoints = '42'; % det er lige meget hvad der er heri, blot ikke er tom
-
-[layerpos_final, logPobs_final] = viterbi(tau,nLayerML,layer0_pos,d,dmax,D,...
-    log(pd),logb(1:tau+dmax,:),tiepoints,lastlayerpx,plotlevel); % 2014-04-02 14:52
-
-% [pixel] - senere!% bør tjekke om det ikke bør være plus dx/2 istedet. er det start eller slutpunkter vi har her? 
+% Tiepoints must be non-empty, but value is not used (?)
+tiepoints = 'not empty';  
+[layerpos_final, logPobs_final] = viterbi(tau,nLayerML,layer0_pos,d,...
+    dmax,D,log(pd),logb(1:tau+dmax,:),tiepoints,lastlayerpx,plotlevel); 
 
 % Convert to depth:
-LayerposDepth.final = depth(layerpos_final-0.5)+0.5*Model.dx;
+LayerposDepth.final = depth(layerpos_final-0.5)+0.5*dx;
 
 %% Compare resulting layer boundary positions:
 if plotlevel > 1
@@ -91,4 +76,8 @@ if plotlevel > 1
     plot(LayerposDepth.fb,'-k')
     hold on
     plot(LayerposDepth.final,'-r')
+    hleg = legend({'FB agescale','Final agescale'});
+    set(hleg,'location','northwest')
+    xlabel('Age')
+    ylabel('Depth')
 end

@@ -1,25 +1,29 @@
 function [Result, Layer0_new, batchStart_new] = ...
     resultsforbatch(depth,FBprob,Layerpos,Layer0,d,pd,logb,meanLambda,...
-    batchStart,dDxLambda,iIter,Model,Runtype)
+    batchStart,dDxLambda,iIter,Model,plotlevel)
 
 %% [Result, Layer0_new, batchStart_new] = resultsforbatch(depth,FBprob,...
-% Layerpos,Layer0,d,pd,logb,meanLambda,batchStart,dDxLambda,iIter,Model,Runtype)
-% Calculate results for the current batch, and initial conditions for the
-% next. 
+%    Layerpos,Layer0,d,pd,logb,meanLambda,batchStart,dDxLambda,iIter,...
+%    Model,plotlevel)
+% Calculating the results (layer probability distribution and most likely 
+% layer boundaries) for the current batch, and setting initial conditions 
+% for the next. Also calculated are probability distributions between 
+% marker horizons, and for regular intervals (later used for calculating 
+% mean layer thicknesses within these). 
 
 % Output:
 % batchStart_new: Start pixel for next batch
 % Layer0_new.pos: Probability of where the next "layer0" is starting 
 % Layer0_new.no: Layer number distribution at tau 
-% Layer0_new.noDx, Layer0_new.noMarker: Same, for layer thickness intervals 
-% and for marker horisons.  
+% Layer0_new.noDx, Layer0_new.noMarker: Same, but for layer thickness 
+% intervals and for marker horisons.  
 % Result.LayerDist.d: depth scale
 % Result.LayerDist.mode: mode of timescale
 % Result.LayerDist.mean: mean of timescale
 % Result.LayerDist.quantile: quantiles of timescale
 % Result.Layerpos.fb: layer positions according to FB algorithm [m]
-% Result.Layerpos.vit: layer positions according to Viterbi [m]
-% Result.Layerpos.combined: a "best" set of layer boundaries
+% Result.Layerpos.final: a "best" set of layer boundaries (using FB and 
+% Viterbi algorithms combined)
 % Result.Lambda.ndist: Probability distribution of layers in section 
 % Result.Lambda.d: ending depth of corresponding lambda sections
 % Result.Marker.ndist: Probability distribution of layer numbers in section
@@ -41,7 +45,7 @@ function [Result, Layer0_new, batchStart_new] = ...
 % Also calculating the ending location of the layer previous to the one in 
 % pixel tau. 
 batchLength = size(FBprob.gamma,1);
-[tau, postau] = findtau(FBprob,meanLambda,d,batchLength,Model,Runtype.plotlevel); % 2014-10-20 11:47
+[tau, postau] = findtau(FBprob,meanLambda,d,batchLength,Model,plotlevel); 
 % Note: tau is included in both batches
 
 % Use for initialization of next batch:
@@ -51,43 +55,37 @@ batchStart_new = batchStart+tau-1; %[pixel from start of data series]
 
 %% Resulting layer number distribution along batch:
 % This is calculated up to and including pixel tau.
-[ntau, ntauTotal, LayerDist] = ...
-    batchlayerdist(depth,FBprob,tau,Layer0,Model,Runtype.plotlevel); % 2014-10-20 11:49
+[ntau, ntauTotal, LayerProbDist] = ...
+    batchlayerprobs(depth,FBprob,tau,Layer0,Model.prctile,plotlevel); 
 
-% Save:
+% Save: Results for current batch, and initial conditions for next
 Layer0_new.no = ntauTotal;
-Result.LayerDist = LayerDist;
+Result.LayerProbDist = LayerProbDist;
 
 %% The most likely layer boundaries:
 % Converting to depth, and computing an optimal set of layer boundaries by 
 % combining results from the Forward-Backward algorithm with the Viterbi
 % approach.
-% DET SIDSTE (layerpos.combined) ER IKKE RIGTIG SET IGENNEM. 
-[LayerposDepth, layerpos_final] = batchlayerpos(Layerpos,depth,...
-    tau,Layer0,postau,ntauTotal,d,pd,logb,Model,Runtype.plotlevel);
+% OBS: Layerpos.final has not been checked!
+[LayerposDepth, ~] = batchlayerpos(Layerpos,depth,...
+    tau,Layer0,postau,ntauTotal,d,pd,logb,Model.dx,plotlevel);
 Result.Layerpos = LayerposDepth;
 
-%% Mean layer thickness in batch:
-% For batch: Mode and associated uncertainties
-%Result.lambdaBatch = ...
-%    calclambdafromdist(ntau,depth(tau)-depth(1),Model.prctile);
-
-% Også gemme ntau -> nye lambda værdier: måske er det enkelte batches som
-% udregningen er forkert på. 
-
+%% Mean layer thickness within sections in batch:
 % Layer number probability distributions for predetermined sections; these 
 % are later to be used for calculating mean layer thickness:
 for ix = 1:length(Model.dxLambda)
     % Layer number distributions within sections:
-    [distSections,Layer0_new.noDx{ix},dSectionBounds] = layerdistsection(depth,FBprob,...
-        dDxLambda{ix},Layer0.noDx{ix},tau,ntau,d,pd,logb,Runtype.plotlevel);
+    [probdistSections,Layer0_new.noDx{ix},dSectionBounds] = ...
+        sectionlayerprobs(depth,FBprob,dDxLambda{ix},Layer0.noDx{ix},...
+        tau,ntau,d,pd,logb,plotlevel);
    
     % Save: 
     Result.Lambda(ix).d=[];
     Result.Lambda(ix).ndist=[];
-    if ~isempty(distSections)
+    if ~isempty(probdistSections)
         Result.Lambda(ix).d = dSectionBounds; 
-        Result.Lambda(ix).ndist = distSections;
+        Result.Lambda(ix).ndist = probdistSections;
     end
 end
 
@@ -96,14 +94,15 @@ end
 % horizons:
 for ix = 1:length(Model.dMarker)
     % Layer number distributions within sections:
-    [distMarker,Layer0_new.noMarker{ix},dMarkerBounds] = layerdistsection(depth,FBprob,...
-        Model.dMarker{ix},Layer0.noMarker{ix},tau,ntau,d,pd,logb,Runtype.plotlevel);
+    [probdistMarker,Layer0_new.noMarker{ix},dMarkerBounds] = ...
+        sectionlayerprobs(depth,FBprob,Model.dMarker{ix},...
+        Layer0.noMarker{ix},tau,ntau,d,pd,logb,plotlevel);
    
     % Save: 
     Result.Marker(ix).d = dMarkerBounds; 
-    Result.Marker(ix).ndist = distMarker;
+    Result.Marker(ix).ndist = probdistMarker;
 end
 
 %% Number of iterations performed:
-% Final iteration number: 
+% Total iteration number: 
 Result.nIter = iIter;

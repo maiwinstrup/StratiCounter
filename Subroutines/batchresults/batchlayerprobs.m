@@ -1,17 +1,15 @@
-function [ntau, ntauTotal, LayerDist] = ...
-    batchlayerdist(depth,FBprob,tau,Layer0,Model,plotlevel)
+function [ntau, ntauTotal, LayerProbDist] = ...
+    batchlayerprobs(depth,FBprob,tau,Layer0,prctile,plotlevel)
 
-%% [ntau, ntauTotal, LayerDist] = batchlayerdist(depth,FBprob,tau,Layer0,Model,plotlevel)
+%% [ntau, ntauTotal, LayerProbDist] = batchlayerprobs(depth,FBprob,tau,...
+%   Layer0,prctile,plotlevel)
 % Calculating the probability distribution of number of layers in current 
 % batch (ntau) and total number of layers in data series up to end of 
 % current batch (ntauTotal), along with various properties of the changing 
 % probability distribution along batch of total number of layers in the 
-% data series (LayerDist).
+% data series (LayerProbDist).
 
 % Copyright (C) 2015  Mai Winstrup
-% 2014-10-15 11:19: separat script
-% 2014-10-16 18:23: Convolution of layer probabilities in separate script
-% 2014-10-20 11:49: Layer0.number -> Layer0.no
 
 %% Resulting number of annual layers in current data batch:
 % Probability distribution of annual layer number (j) in pixel tau (i.e. in 
@@ -33,11 +31,11 @@ ntau(:,2)=FBprob.gamma(tau,:);
 % Compact the distribution (remove tails, incl. entries of zero, and 
 % re-normalize the resulting distribution):
 zerolimit = 10^-5;
-ntau = compactdist(ntau,zerolimit); % 2014-10-16 13:51
+ntau = compactprobdist(ntau,zerolimit); 
 
 % Plot the layer distribution in pixel tau: 
 if plotlevel>=2
-    plotlayerdistfortau(ntau)
+    plotlayerprobfortau(ntau)
     title(['Layer probability for \tau=' num2str(tau) 'px'],'fontweight','bold')
 end
 
@@ -58,8 +56,8 @@ zerolimit = 10^-6;
 layerprob = zeros(tau,yrmax-yrmin+1);
 for t = 1:tau
     % Resulting probability distribution:
-    probdist = convolvelayerdist(Layer0.no,...
-        [(0:ntau(end,1))',FBprob.gamma(t,1:ntau(end,1)+1)'],zerolimit); % 2014-10-16 18:04
+    probdist = convolveprobdist(Layer0.no,...
+        [(0:ntau(end,1))',FBprob.gamma(t,1:ntau(end,1)+1)'],zerolimit); 
     
     % Inset in layer probability array:
     layerprob(t,probdist(:,1)-yrmin+1) = probdist(:,2);
@@ -74,11 +72,11 @@ ntauTotal(:,1)=yrmin:yrmax;
 ntauTotal(:,2)=layerprob(tau,:);
 % Compact the distribution (remove tails, renormalize etc):
 zerolimit = 10^-5;
-ntauTotal = compactdist(ntauTotal,zerolimit); % 2014-10-16 13:51
+ntauTotal = compactprobdist(ntauTotal,zerolimit); 
 
 % Plot the layer distribution in pixel tau: 
 if plotlevel>=2
-    plotlayerdistfortau(ntauTotal)
+    plotlayerprobfortau(ntauTotal)
     title('Layer probability for \tau (all batches)','fontweight','bold')
 end
 
@@ -88,34 +86,35 @@ end
 % Calculated for t<=tau.
 
 % Corresponding depthscale:
-LayerDist.d = depth(1:tau);
+LayerProbDist.d = depth(1:tau);
 
 % Mode of distribution:
-[~, LayerDist.mode]=max(layerprob,[],2);
-LayerDist.mode = LayerDist.mode(:)+yrmin-1; % The '-1' is due to indexing
+[~, LayerProbDist.mode]=max(layerprob,[],2);
+LayerProbDist.mode = LayerProbDist.mode(:)+yrmin-1; % The '-1' is due to indexing
 
 % Calculating running mean, median and percentiles:
-LayerDist.mean=nan(tau,1);
-LayerDist.median=nan(tau,1);
-LayerDist.prctile=nan(tau,length(Model.prctile));
+LayerProbDist.mean=nan(tau,1);
+LayerProbDist.median=nan(tau,1);
+LayerProbDist.prctile=nan(tau,length(prctile));
 
 for t = 1:tau
     % Mean of distribution at t:
-    LayerDist.mean(t) = sum(layerprob(t,:).*(yrmin:yrmax));
+    LayerProbDist.mean(t) = sum(layerprob(t,:).*(yrmin:yrmax));
     % Median:
-    LayerDist.median(t) = prctileofprobdist((yrmin:yrmax)',(layerprob(t,:))',0.5);
+    LayerProbDist.median(t) = prctileofprobdist((yrmin:yrmax)',(layerprob(t,:))',0.5);
     % Percentiles: 
-    LayerDist.prctile(t,:)=prctileofprobdist((yrmin:yrmax)',(layerprob(t,:))',Model.prctile);
+    LayerProbDist.prctile(t,:)=prctileofprobdist((yrmin:yrmax)',(layerprob(t,:))',prctile);
 end
 
 if plotlevel>=2
-    plotlayerdist(LayerDist)
+    plotlayerprobdist(LayerProbDist)
 end
 end
 
-%% Subfunctions for plotting %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function plotlayerdistfortau(ntau)    
-%% Plot layer number distribution (ntau) in pixel tau.
+%% Subfunctions for plotting
+function plotlayerprobfortau(ntau)
+%% plotlayerprobfortau(ntau)
+% Plot layer number distribution (ntau) in pixel tau.
 
 % Stepped probabilities:
 [nstep, pstep] = stepit([ntau(1,1)-1;ntau(:,1);ntau(end,1)+1],[0;ntau(:,2);0]);
@@ -126,26 +125,40 @@ xlabel('Layer number')
 ylabel('Probability')
 end
 
-function plotlayerdist(LayerDist)
-%% Plot layerdistribution along current batch, using various definitions of
+function plotlayerprobdist(LayerProbDist)
+%% plotlayerprobdist(LayerProbDist)
+% Plot layerdistribution along current batch, using various definitions of
 % the most likely layer (mean, median, mode), and the percentiles of the
 % distribution. 
 
 figure;
 % Mode:
-hline(1)=plot(LayerDist.d,LayerDist.mode, '-k','linewidth',2);
+hline(1)=plot(LayerProbDist.d,LayerProbDist.mode, '-k','linewidth',2);
 hold on
 % Percentiles of distribution:
-for i = 1:size(LayerDist.prctile,2)
-    hline(2)=plot(LayerDist.d,LayerDist.prctile(:,i), 'color',[1 1 1]*0.5,'linewidth',1);
+for i = 1:size(LayerProbDist.prctile,2)
+    hline(2)=plot(LayerProbDist.d,LayerProbDist.prctile(:,i), 'color',[1 1 1]*0.5,'linewidth',1);
 end
 % Median: 
-hline(3)=plot(LayerDist.d,LayerDist.median(:,1), '-b');
+hline(3)=plot(LayerProbDist.d,LayerProbDist.median(:,1), '-b');
 % Mean:
-hline(4)=plot(LayerDist.d,LayerDist.mean(:,1), '-g');
+hline(4)=plot(LayerProbDist.d,LayerProbDist.mean(:,1), '-g');
 title('Mode, mean and median of layer number distribution','fontweight','bold')
 hlegend = legend(hline,{'Mode','Percentiles','Median','Mean'});
 set(hlegend,'location','best');
 xlabel('Depth')
 ylabel('Layer number')
+end
+
+function [xstep, ystep]=stepit(x,y)
+%% [xstep, ystep]=stepit(x,y)
+% A function to step data for plotting purposes
+% Sune Olander Rasmussen
+
+dx = (diff(x))';
+x = [x(1)-mean(dx)/2,x(2:end)'-dx/2; x(1:end-1)'+dx/2, x(end)+mean(dx)/2];
+xstep = x(:);
+
+y = [y(:)'; y(:)'];
+ystep = y(:);
 end

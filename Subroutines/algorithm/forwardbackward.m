@@ -1,10 +1,14 @@
-function [logalpha_bar,logbeta,eta2,eta2_bar,gamma2,layerpos,layerpos_issues,logPobs] = ...
-    forwardbackward(logb,logpd,layer0_pos,T,d,dmax,D,nLayerMax,tiepoints,plotlevel)
+function [logalpha_bar,logbeta,eta2,eta2_bar,gamma2,layerpos,...
+    layerpos_issues,logPobs] = forwardbackward(logb,logpd,layer0_pos,...
+    T,d,dmax,D,nLayerMax,tiepoints,plotlevel)
 
-%% forwardbackward(logb,logpd,layer0_pos,T,d,dmax,D,nLayerMax,tiepoints,plotlevel)
+%% [logalpha_bar,logbeta,eta2,eta2_bar,gamma2,layerpos,layerpos_issues,...
+%    logPobs] = forwardbackward(logb,logpd,layer0_pos,T,d,dmax,D,...
+%    nLayerMax,tiepoints,plotlevel)
 % Maximum a posteriori (MAP) estimation of the most likely state in a given
 % pixel and corresponding uncertainties, determined using the generalized
-% Forward-Backward algorithm.
+% Forward-Backward algorithm. Layer boundary positions are given as located 
+% midway between datapoints belonging to two layers. 
 
 % Variables:
 % T: length of observational data
@@ -15,10 +19,10 @@ function [logalpha_bar,logbeta,eta2,eta2_bar,gamma2,layerpos,layerpos_issues,log
 % D: number of possible durations
 % logpd: corresponding log-probabilities
 % logb: log-likelihood of data segments to span exactly one year
-% layerpos: pixels in which the layers end
+% layerpos: pixel values corresponding to mid-way between two layers, i.e. 
+% do not have integer values. 
 
 % Copyright (C) 2015  Mai Winstrup
-% 2014-10-10 16:13: Clean-up
 
 %% Default is no plotting:
 if nargin<10; plotlevel = 0; end
@@ -176,7 +180,8 @@ end
 end
 
 %% Forward part:
-function [logalpha, logalpha_bar] = forward(T,nLayerMax,layer0_pos,d,dmax,D,logpd,logb)
+function [logalpha, logalpha_bar] = ...
+    forward(T,nLayerMax,layer0_pos,d,dmax,D,logpd,logb)
 
 %% [logalpha, logalpha_bar] = forward(T,nLayerMax,layer0_pos,d,dmax,D,logpd,logb)
 % Calculating the forward-variable alpha:
@@ -198,8 +203,6 @@ function [logalpha, logalpha_bar] = forward(T,nLayerMax,layer0_pos,d,dmax,D,logp
 % D: number of possible durations
 % logpd: log-probability distribution of possible durations
 % logb(t,d): log-likelihood of o(t-d+1:t) being an annual layer 
-
-% Mai Winstrup, 2010-13
 
 %% Initialization:
 nLayerMax = nLayerMax+1; % Including data for layer 0

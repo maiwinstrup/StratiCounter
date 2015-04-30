@@ -14,8 +14,6 @@ function [layerpos,layerpos_issues] = findlayerposfrommode(modevalue)
 % to the two layers. 
 
 % Copyright (C) 2015  Mai Winstrup
-% 2014-08-08 20:21
-% 2014-08-09 14:36: Corrected part when issues
 
 %% Find locations with a change in ML layer number:
 % Jumps occurring in modevalue:

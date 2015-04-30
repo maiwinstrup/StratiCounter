@@ -7,7 +7,6 @@ function q = prctileofprobdist(x,p,prc)
 % distributions for the x-values.
 
 % Copyright (C) 2015  Mai Winstrup
-% 2014-08-08 10:52
 
 %% Normalize probabilities: 
 p = p./repmat(sum(p,1),size(p,1),1);

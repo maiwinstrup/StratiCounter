@@ -31,17 +31,17 @@ Prior(1:nBatch,1:Model.nTemplateBatch) = ...
     struct('m',[],'v',[],'sigma',[],'u',[],'invU',[],'cov',[],'nvar',[]);
 
 %% Layer parameters:
-Layerpar(1:nBatch,1:Model.nTemplateBatch,1:Model.nIter)=...
+Layerpar(1:nBatch,1:Model.nTemplateBatch,1:Model.nIter+1)=...
     struct('my',nan,'sigma',nan,'par',nan(Model.nSpecies,Model.order),...
     'cov',nan(Model.nSpecies*Model.order,Model.nSpecies*Model.order),...
     'nvar',nan(Model.nSpecies,1)); 
 
 %% Initialize matrices for performance evaluation: 
 % Evolution of log(Pobs) with iterations:
-logPobs = nan(nBatch,Model.nTemplateBatch,Model.nIter+1,2);
+logPobs = nan(nBatch,Model.nTemplateBatch,Model.nIter+1);
 
 % Relative weighting of layer shape vs. layer thickness:
-relweight = nan(nBatch,Model.nTemplateBatch,Model.nIter);     
+relweight = nan(nBatch,Model.nTemplateBatch,Model.nIter+1);     
 
 %% Initialize matrices containing batch results: 
 % Probability results:
@@ -56,9 +56,9 @@ Marker = struct('d',[],'ndist',[]);
 Marker = repmat(Marker,length(Model.dMarker),1);
 % Gathering all in the array "Result": 
 if isempty(Model.dMarker)
-    Result(1:nBatch) = struct('LayerDist',LayerDist,'Layerpos',Layerpos,...
+    Result(1:nBatch) = struct('LayerProbDist',LayerDist,'Layerpos',Layerpos,...
         'Lambda',Lambda,'nIter',[]);
 else
-    Result(1:nBatch) = struct('LayerDist',LayerDist,'Layerpos',Layerpos,...
+    Result(1:nBatch) = struct('LayerProbDist',LayerDist,'Layerpos',Layerpos,...
         'Lambda',Lambda,'Marker',Marker,'nIter',[]);
 end

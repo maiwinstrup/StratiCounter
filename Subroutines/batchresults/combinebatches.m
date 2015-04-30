@@ -1,7 +1,7 @@
-function [Layerpos,LayerDist,centralEst,timescale,timescale1yr,...
-    markerProb,markerConf,lambda] = combinebatches(Result,manualcounts,Model)
+function [Layerpos,LayerProbDist,centralEst,timescale,timescale1yr,markerProb,...
+    markerConf,lambda] = combinebatches(Result,manualcounts,Model)
 
-%% [Layerpos,LayerDist,centralEst,timescale,timescale_1yr,markerProb,...
+%% [Layerpos,LayerProbDist,centralEst,timescale,timescale_1yr,markerProb,...
 %       markerConfInt,lambda] = combinebatches(Result,manualcounts,Model)
 % Combining results from the individual batches, converting to timescales
 % using the selected age unit (ageUnitOut), computing results from number
@@ -13,9 +13,9 @@ function [Layerpos,LayerDist,centralEst,timescale,timescale1yr,...
 %           Layerpos.viterbi: Viterbi results, Layerpos.combined = Improved 
 %           location of layer boundaries; found using viterbi algorithm 
 %           when constrained by the Forward-Backward results. 
-% LayerDist: Layer probability distribution in "ageUnitOut" for all data 
-%           LayerDist.d: Depth, LayerDist.mode, LayerDist.mean, 
-%           LayerDist.median, LayerDist.prctile (all from FB results)
+% LayerProbDist: Layer probability distribution in "ageUnitOut" for all data 
+%           LayerProbDist.d: Depth, LayerProbDist.mode, LayerProbDist.mean, 
+%           LayerProbDist.median, LayerProbDist.prctile (all from FB results)
 % centralEst: [depth, mode, mean, median] for all depths, in "ageUnitOut"
 %           (derived from FB results).
 % timescale: [depth, mode, percentiles] for all depths, in "ageUnitOut"
@@ -36,11 +36,6 @@ function [Layerpos,LayerDist,centralEst,timescale,timescale1yr,...
 %           [dstart, dend, lambda_ML, confidence interval for lambda]
 
 % Copyright (C) 2015  Mai Winstrup
-% 2014-08-08 20:22: Major updates, incl. changes in output format
-% 2014-08-09 15:57: Changes in dealing with issues in Layerpos.fb
-% 2014-08-11 20:20: Introducing the combined FB/viterbi results.
-% 2014-08-12 21:58: Solved problem when only one marker horizon. 
-% 2014-10-21 15:50: computation of t0 added
 
 %% Number of batches:
 nBatch = length(Result);
@@ -53,7 +48,6 @@ Layerpos.final = [];
 for iBatch = 1:nBatch
     Layerpos.fb = [Layerpos.fb; Result(iBatch).Layerpos.fb];
     Layerpos.fb_issues = [Layerpos.fb_issues; Result(iBatch).Layerpos.fb_issues];
-    %Layerpos.viterbi = [Layerpos.viterbi; Result(iBatch).Layerpos.viterbi];
     Layerpos.final = [Layerpos.final; Result(iBatch).Layerpos.final];
 end
 
@@ -74,25 +68,25 @@ end
 % Probability distributions are summarized using their mode, median and 
 % mean, and confidence intervals are provided using percentiles of the 
 % layer distributions for each data point. 
-LayerDist = struct('d',[],'mode',[],'mean',[],'median',[],'prctile',[]);
+LayerProbDist = struct('d',[],'mode',[],'mean',[],'median',[],'prctile',[]);
 for iBatch = 1:nBatch
-    LayerDist.d = [LayerDist.d; Result(iBatch).LayerDist.d(1:end-1)];
-    LayerDist.mode = [LayerDist.mode; Result(iBatch).LayerDist.mode(1:end-1)];
-    LayerDist.mean = [LayerDist.mean; Result(iBatch).LayerDist.mean(1:end-1)];
-    LayerDist.median = [LayerDist.median; Result(iBatch).LayerDist.median(1:end-1)];
-    LayerDist.prctile = [LayerDist.prctile; Result(iBatch).LayerDist.prctile(1:end-1,:)];
+    LayerProbDist.d = [LayerProbDist.d; Result(iBatch).LayerProbDist.d(1:end-1)];
+    LayerProbDist.mode = [LayerProbDist.mode; Result(iBatch).LayerProbDist.mode(1:end-1)];
+    LayerProbDist.mean = [LayerProbDist.mean; Result(iBatch).LayerProbDist.mean(1:end-1)];
+    LayerProbDist.median = [LayerProbDist.median; Result(iBatch).LayerProbDist.median(1:end-1)];
+    LayerProbDist.prctile = [LayerProbDist.prctile; Result(iBatch).LayerProbDist.prctile(1:end-1,:)];
 end
 % And the last data point:
-LayerDist.d = [LayerDist.d; Result(iBatch).LayerDist.d(end)];
-LayerDist.mode = [LayerDist.mode; Result(iBatch).LayerDist.mode(end)];
-LayerDist.mean = [LayerDist.mean; Result(iBatch).LayerDist.mean(end)];
-LayerDist.median = [LayerDist.median; Result(iBatch).LayerDist.median(end)];
-LayerDist.prctile = [LayerDist.prctile; Result(iBatch).LayerDist.prctile(end,:)];
+LayerProbDist.d = [LayerProbDist.d; Result(iBatch).LayerProbDist.d(end)];
+LayerProbDist.mode = [LayerProbDist.mode; Result(iBatch).LayerProbDist.mode(end)];
+LayerProbDist.mean = [LayerProbDist.mean; Result(iBatch).LayerProbDist.mean(end)];
+LayerProbDist.median = [LayerProbDist.median; Result(iBatch).LayerProbDist.median(end)];
+LayerProbDist.prctile = [LayerProbDist.prctile; Result(iBatch).LayerProbDist.prctile(end,:)];
 
 %% Convert to ages instead of layer number:
 % Estimate/find age of the first autocounted annual layer boundary 
 % (according to the manual counts):
-t0 = initialage(manualcounts,[LayerDist.d(:),LayerDist.mode(:)],Model);
+t0 = initialage(manualcounts,[LayerProbDist.d(:),LayerProbDist.mode(:)],Model);
 % While t0 can often be inferred directly, only an estimate can be provided 
 % if manual counts do not cover the first layer boundary. 
         
@@ -100,24 +94,24 @@ t0 = initialage(manualcounts,[LayerDist.d(:),LayerDist.mode(:)],Model);
 % (measured in appropriate age unit). 
 switch Model.ageUnitOut
     case 'AD'
-        LayerDist.mode = t0-LayerDist.mode;
-        LayerDist.mean = t0-LayerDist.mean;
-        LayerDist.median = t0-LayerDist.median;
-        LayerDist.prctile = t0-LayerDist.prctile;
+        LayerProbDist.mode = t0-LayerProbDist.mode;
+        LayerProbDist.mean = t0-LayerProbDist.mean;
+        LayerProbDist.median = t0-LayerProbDist.median;
+        LayerProbDist.prctile = t0-LayerProbDist.prctile;
     otherwise
-        LayerDist.mode = t0+LayerDist.mode; 
-        LayerDist.mean = t0+LayerDist.mean;
-        LayerDist.median = t0+LayerDist.median;
-        LayerDist.prctile = t0+LayerDist.prctile;   
+        LayerProbDist.mode = t0+LayerProbDist.mode; 
+        LayerProbDist.mean = t0+LayerProbDist.mean;
+        LayerProbDist.median = t0+LayerProbDist.median;
+        LayerProbDist.prctile = t0+LayerProbDist.prctile;   
 end
 
 %% Combining results into various arrays:
 % Central estimates: Mode, mean, median
-centralEst = [LayerDist.d, LayerDist.mode, LayerDist.mean, LayerDist.median];
+centralEst = [LayerProbDist.d, LayerProbDist.mode, LayerProbDist.mean, LayerProbDist.median];
 
 % Combined timescale output: 
 % Mode and confidence intervals (percentiles of distribution)
-timescale = [LayerDist.d, LayerDist.mode, LayerDist.prctile];
+timescale = [LayerProbDist.d, LayerProbDist.mode, LayerProbDist.prctile];
 
 %% Produce timescale array in 1-yr resolution: 
 % The layer boundaries are found using a combined approach: The viterbi 
@@ -130,32 +124,32 @@ timescale = [LayerDist.d, LayerDist.mode, LayerDist.prctile];
 % order to eliminate uncertainties due to the exact boundary locations. 
 
 % Depth of boundaries, incl. initial layer position:
-timescale1yr(:,1) = [LayerDist.d(1); Layerpos.final];
+timescale1yr(:,1) = [LayerProbDist.d(1); Layerpos.final];
 
 % Corresponding ages, incl. that of initial layer position:
 switch Model.ageUnitOut
     case 'AD'
-%        timescale1yr(:,2) = t0-(0:length(Layerpos.combined)-1);
         timescale1yr(:,2) = t0-(-1:length(Layerpos.final)-1);
     otherwise
-%        timescale1yr(:,2) = t0+(1:length(Layerpos.combined));
         timescale1yr(:,2) = t0+(0:length(Layerpos.final));
 end
 
 % Confindence interval estimates are taken at midpoints of layers:
 % In this way, we remove uncertainties related to the exact placement of 
 % the layer boundaries.
-layerpos_px = interp1(LayerDist.d,1:length(LayerDist.d),[LayerDist.d(1);Layerpos.final-0.5*Model.dx]); % Last pixel in layers
+layerpos_px = interp1(LayerProbDist.d,1:length(LayerProbDist.d),...
+    [LayerProbDist.d(1);Layerpos.final-0.5*Model.dx]); % Last pixel in layers
 switch Model.ageUnitOut
     case 'AD'
         layercenter_px = round(layerpos_px-0.5*diff([1; layerpos_px]));
     otherwise 
-        layercenter_px = round(layerpos_px+0.5*diff([layerpos_px; length(LayerDist.d)]));
+        layercenter_px = round(layerpos_px+0.5*diff([layerpos_px; length(LayerProbDist.d)]));
 end
 % Confidence interval(s):
-timescale1yr(:,3:2+size(LayerDist.prctile,2)) = LayerDist.prctile(layercenter_px,:);
+timescale1yr(:,3:2+size(LayerProbDist.prctile,2)) = ...
+    LayerProbDist.prctile(layercenter_px,:);
 % Correct for initial layer boundary:
-timescale1yr(1,3:2+size(LayerDist.prctile,2)) = timescale1yr(1,2);
+timescale1yr(1,3:2+size(LayerProbDist.prctile,2)) = timescale1yr(1,2);
 
 %% Layer number distributions between marker horizons:
 % Several sets of marker horizons may exist, the probabilities of these are
@@ -171,7 +165,7 @@ for iMarkerSet = 1:length(Model.dMarker)
             % End depth:
             markerProb{iMarkerSet}(k+j).d = Result(iBatch).Marker(iMarkerSet).d(j);
             % Distribution:
-            markerProb{iMarkerSet}(k+j).ndist = compactdist(...
+            markerProb{iMarkerSet}(k+j).ndist = compactprobdist(...
                 [Result(iBatch).Marker(iMarkerSet).ndist(:,1), ...
                 Result(iBatch).Marker(iMarkerSet).ndist(:,j+1)],zerolimit);
         end
@@ -188,7 +182,8 @@ markerConf = cell(1,length(Model.dMarker));
 
 for iMarkerSet = 1:length(Model.dMarker)
     % Remove marker horizons outside interval:
-    mask = Model.dMarker{iMarkerSet}>=LayerDist.d(1) & Model.dMarker{iMarkerSet}<=LayerDist.d(end);
+    mask = Model.dMarker{iMarkerSet}>=LayerProbDist.d(1) & ...
+        Model.dMarker{iMarkerSet}<=LayerProbDist.d(end);
     markerhorizons = Model.dMarker{iMarkerSet}(mask);
     % Number of horizons within interval:
     nMarker = length(markerhorizons); 
@@ -205,11 +200,13 @@ for iMarkerSet = 1:length(Model.dMarker)
     
     for iMarker = 1:nMarker-1
         % Maximum likelihood layer number, and its associated probability:
-        [probML(iMarker),indexML] = max(markerProb{iMarkerSet}(iMarker+1).ndist(:,2));
+        [probML(iMarker),indexML] = ...
+            max(markerProb{iMarkerSet}(iMarker+1).ndist(:,2));
         nML(iMarker) = markerProb{iMarkerSet}(iMarker+1).ndist(indexML,1);
         % Confidence intervals:
-        confInt(iMarker,:) = prctileofprobdist(markerProb{iMarkerSet}(iMarker+1).ndist(:,1),...
-            markerProb{iMarkerSet}(iMarker+1).ndist(:,2),Model.prctile)'; % 2014-08-08 10:52
+        confInt(iMarker,:) = ...
+            prctileofprobdist(markerProb{iMarkerSet}(iMarker+1).ndist(:,1),...
+            markerProb{iMarkerSet}(iMarker+1).ndist(:,2),Model.prctile)'; 
     end
     
     % Combine to array:
@@ -221,7 +218,7 @@ lambda = cell(1,length(Model.dxLambda));
 
 for idx = 1:length(Model.dxLambda)    
     % Combine results from batches:
-    nMode = []; prc = []; dstart = LayerDist.d(1);        
+    nMode = []; prc = []; dstart = LayerProbDist.d(1);        
     for iBatch = 1:nBatch
         if isempty(Result(iBatch).Lambda(idx).ndist)
             continue
