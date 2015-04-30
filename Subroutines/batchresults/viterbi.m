@@ -74,7 +74,7 @@ logdelta_bar = logdelta_bar(dmax+1:end,2:end);
 psi = psi(dmax+1:end,2:end);
 % Data for layer 0 is also removed.
 
-if plotlevel>=2
+if plotlevel>2
     figure;
     plot(logdelta_bar)
     title('log(\delta(t,j))','fontweight','bold')

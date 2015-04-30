@@ -44,7 +44,7 @@ logbeta = backward(T,d,dmax,logpd,logb,tiepoints,nLayerMax);
 % The last part, corresponding to t > T, is kept.
 
 % Plotting:
-if plotlevel>=2
+if plotlevel>2
     % Alpha_bar:
     figure;
     subplot(2,1,1)
@@ -96,7 +96,7 @@ eta2 = exp(logeta-logPobs);
 eta2_bar = exp(logeta_bar-logPobs);
 
 % Plotting:
-if plotlevel>=2
+if plotlevel>1
     % Probability of ending any layer at time t:
     eta2_all = sum(eta2_bar,2);
     
@@ -158,7 +158,7 @@ end
 [layerpos,layerpos_issues] = findlayerposfrommode(modevalue);
 
 % Plotting these layer boundaries onto previous plots:
-if plotlevel>=2
+if plotlevel>2
     for name = [hax_alpha, hax_beta]
         for j = 1:length(layerpos)
             plot(name,layerpos(j,1)*[1 1],[min(logbeta(:)) 0],'-k')
@@ -167,6 +167,8 @@ if plotlevel>=2
             plot(name,layerpos_issues(j,1)*[1 1],[min(logbeta(:)) 0],'--r')
         end
     end
+end
+if plotlevel>1
     for name = [hax_eta, hax_gamma]
         hold on
         for j = 1:length(layerpos)

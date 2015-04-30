@@ -38,10 +38,10 @@ Layerpar(1:nBatch,1:Model.nTemplateBatch,1:Model.nIter+1)=...
 
 %% Initialize matrices for performance evaluation: 
 % Evolution of log(Pobs) with iterations:
-logPobs = nan(nBatch,Model.nTemplateBatch,Model.nIter+1);
+logPobs = ones(nBatch,Model.nTemplateBatch,Model.nIter+1)*-inf;
 
 % Relative weighting of layer shape vs. layer thickness:
-relweight = nan(nBatch,Model.nTemplateBatch,Model.nIter+1);     
+relweight = nan(nBatch,Model.nTemplateBatch,Model.nIter+1);
 
 %% Initialize matrices containing batch results: 
 % Probability results:

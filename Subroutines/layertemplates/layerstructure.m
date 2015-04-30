@@ -36,7 +36,7 @@ for j = 1:Model.nSpecies
         unc_layercounts,Model.dtstack); 
 
     % Plot stack as boxplot:
-    if Runtype.plotlevel > 1
+    if Runtype.plotlevel > 2
         plotstack(stack,Model)
         if strcmp(Model.icecore,'SyntheticData')
             title(['Stack: Species #' Model.species{j}],'fontweight','bold')    
@@ -68,7 +68,7 @@ for j = 1:Model.nSpecies
     end
     
     % Plot normalized stack as boxplot:
-    if ~strcmp(Model.normalizelayer,'none') && Runtype.plotlevel>1
+    if ~strcmp(Model.normalizelayer,'none') && Runtype.plotlevel>2
         plotstack(stack,Model)
         if strcmp(Model.icecore,'SyntheticData')
             title(['Stack (' Model.normalizelayer '): Species #' num2str(j)],'fontweight','bold')    

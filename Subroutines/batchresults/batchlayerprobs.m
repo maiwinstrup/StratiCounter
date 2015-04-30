@@ -106,8 +106,8 @@ for t = 1:tau
     LayerProbDist.prctile(t,:)=prctileofprobdist((yrmin:yrmax)',(layerprob(t,:))',prctile);
 end
 
-if plotlevel>=2
-    plotlayerprobdist(LayerProbDist)
+if plotlevel>2
+    plotlayerstats(LayerProbDist)
 end
 end
 
@@ -125,8 +125,8 @@ xlabel('Layer number')
 ylabel('Probability')
 end
 
-function plotlayerprobdist(LayerProbDist)
-%% plotlayerprobdist(LayerProbDist)
+function plotlayerstats(LayerProbDist)
+%% plotlayerstats(LayerProbDist)
 % Plot layerdistribution along current batch, using various definitions of
 % the most likely layer (mean, median, mode), and the percentiles of the
 % distribution. 

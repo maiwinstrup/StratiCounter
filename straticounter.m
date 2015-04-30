@@ -1,6 +1,6 @@
 function straticounter(sett_icecore)
 clc; close all;
-releasedate = '21-04-2015';
+releasedate = '30-04-2015';
 
 %% StratiCounter: A layer counting algorithm
 % Developed by Mai Winstrup, mai@gfy.ku.dk
@@ -66,7 +66,7 @@ Runtype.develop = 'yes';
 Runtype.reuse = 'yes';
 % If yes; use previously processed data and calculated layer templates.
 % If no, these are re-calculated. 
-Runtype.plotlevel = 1;
+Runtype.plotlevel = 2;
 % Options: 0: 'none' (no plots), 1: 'info' (few plots), 2: 'debug' (all plots)
 
 % Display info messages if different from standard settings:
@@ -330,8 +330,8 @@ while iBatch < nBatch
             % Using log(P_obs) to test for convergence:
             if abs(logPobs(iBatch,iTemplateBatch,iIter)-...
                     logPobs(iBatch,iTemplateBatch,iIter+1))>Model.eps && ...
-                    iIter<=Model.nIter;
-                iIter = iIter+1;
+                    iIter<Model.nIter;
+                    iIter = iIter+1;
             else
                 % Convergence or maximum iteration value has been reached. 
                 % Number of iterations performed:

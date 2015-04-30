@@ -81,7 +81,7 @@ d = dmin:1:dmax;
 D = length(d);
 
 % Plot duration distribution:
-if plotlevel>=2
+if plotlevel>2
     figure;
     plot(d*Model.dx*100,pd)
     title('Duration probability function','fontweight','bold')
@@ -198,7 +198,9 @@ if plotlevel>=2
     title('log(b_{tot}^{w}*p(d))','fontweight','bold')
     
     % Plot estimated layer parameters:
-    plotlayerpar(ExpVal,Layerpar,Model,d,dmax,D,T);
+    if plotlevel > 2
+        plotlayerpar(ExpVal,Layerpar,Model,d,dmax,D,T);
+    end
 end
 
 %% The Forward-Backward algorithm:

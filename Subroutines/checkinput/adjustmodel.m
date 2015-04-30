@@ -41,6 +41,15 @@ if Model.initialpar(1)>=Model.initialpar(2)
     disp('Check depth interval for initial layer parameter estimation')
 end
 
+%% Format preprocessing steps:
+for j = 1:Model.nSpecies
+    for k = 1:2
+        if size(Model.preprocsteps{j,k},2)==1
+            Model.preprocsteps{j,k} = {Model.preprocsteps{j,k}{1,1},[]};
+        end
+    end
+end
+
 %% Sort ordering of data species:
 [Model.species, index] = sort(Model.species);
 
