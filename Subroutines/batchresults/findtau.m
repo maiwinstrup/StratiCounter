@@ -18,7 +18,7 @@ function [tau, postau] = findtau(FBprob,meanLambda,d,batchLength,Model,plotlevel
 if Model.batchOverlap == 0 || ~isempty(Model.tiepoints)
     tau = batchLength; % Using the entire data section
     zerolimit = 10^-3;
-    postau = lastlayerpos(FBprob,tau,d,zerolimit,plotlevel);
+    postau = lastlayerpos(FBprob,tau,d,zerolimit,[],plotlevel);
     return
 end
 

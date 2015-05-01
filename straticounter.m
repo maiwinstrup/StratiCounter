@@ -60,13 +60,13 @@ addpath(genpath('./Subroutines'))
 addpath(genpath('./Settings'))
 
 %% Select how to run the script:
-Runtype.develop = 'yes'; 
+Runtype.develop = 'no'; 
 % In development mode; will run as normal, but output will be put in the
 % ./Output/develop folder. Option to run for only a few batches. 
 Runtype.reuse = 'yes';
 % If yes; use previously processed data and calculated layer templates.
 % If no, these are re-calculated. 
-Runtype.plotlevel = 2;
+Runtype.plotlevel = 1;
 % Options: 0: 'none' (no plots), 1: 'info' (few plots), 2: 'debug' (all plots)
 
 % Display info messages if different from standard settings:
