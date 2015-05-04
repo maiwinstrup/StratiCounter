@@ -501,7 +501,7 @@ Result = Result(1:nBatch);
 save([outputdir '/timescale.mat'],...
     'timescale','timescale1yr','Layerpos','LayerProbDist','centralEst','Model')
 % Save timescale1yr as textfile with metadata:
-filename = [outputdir '/' Model.icecore '_timescale1yr.txt'];
+filename = [outputdir '/' Model.icecore '_timescale.txt'];
 savetimescaleastxt(timescale1yr,filename,Model) 
 
 % Confidence interval for marker horizons:
