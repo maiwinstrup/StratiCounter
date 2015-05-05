@@ -8,4 +8,4 @@ Contact: mai@gfy.ku.dk
 
 When using this script please cite: 
 Winstrup et al., An automated approach for annual layer counting in ice cores, Clim. Past. 8, 1881-1895, 2012.
-and provide release date of the algorithm: 21-04-2015
+and provide release date of the algorithm: 30-04-2015

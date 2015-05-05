@@ -1,5 +1,5 @@
 %% Example of settings for an ice core record
-% Mai Winstrup, 2014
+% Mai Winstrup, 2015
 
 %% Data files:
 Model.icecore = 'ExampleIceCore';
@@ -35,7 +35,8 @@ Model.dx_center = 0;
 
 % Preprocessing of each data series:
 for j = 1:Model.nSpecies
-    Model.preprocess{j} = {'zscore',0.5};
+    Model.preprocsteps{j,1} = {'zscore',0.5};
+    Model.preprocsteps{j,2} = [];
 end
 % 1st row: Initial preprocessing
 % 2nd row: Batch preprocessing 
