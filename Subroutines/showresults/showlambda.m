@@ -10,7 +10,7 @@ function hfig = showlambda(lambda,timescale1yr,manualcounts,Model,filename)
 
 %% If lambda is empty (or very small)
 % hfig is empty, and return to main. 
-if size(lambda,1)<=2; hfig = nan; return; end
+if size(lambda,1)<=2; hfig = gobjects(1,1); return; end
 
 %% Initialize figure: 
 hfig = figure;

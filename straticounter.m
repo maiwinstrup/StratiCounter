@@ -255,6 +255,7 @@ while iBatch < nBatch
     % Using an extended section around batch (extension depends on
     % maximum processing distance):
     L = max(cell2mat(preprocdist));
+    if isempty(L); L = 0; end
     istart = find(Data.depth>=depth_batch(1)-L/2,1,'first');
     iend = find(Data.depth<=depth_batch(end)+L/2,1,'last');
     data_in = Data.data(istart:iend,:,:);
@@ -518,6 +519,10 @@ if ~isempty(Model.dxLambda)
     save([outputdir '/lambda.mat'],'lambdaResults','Model')
 end
    
+% Save all results from iterations (!):
+save([outputdir '/results.mat'],'Result','relweight','logPobs',...
+    'Layerpar','Prior','Template')
+            
 % Save run number:
 save([outputdir0 '/runID.mat'],'runID')
  
