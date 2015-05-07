@@ -77,7 +77,8 @@ lambdaManual(:,3) = Lman./(nManual+mce); % Maximum value
 % If no layer boundaries, the mean layer thickness is NaN
 
 % Plot onto figure:
-dplot = [lambda_man(:,1)'; lambda_man(:,2)'];
+dplot = [lambda_man(:,1)'+Model.dx; lambda_man(:,2)'-Model.dx];
+% dx is added/subtracted only for plotting purposes
 dplot = dplot(:);
 % Uncertainty bands:
 xvalues = [dplot; dplot(end:-1:1)];
@@ -99,7 +100,7 @@ legendtext{1} = 'Manual';
 %% Mean layer thicknesses from Forward-Backward algorithm as run for each 
 % section individually:
 lambdaFBmode = [lambda(:,3)'; lambda(:,3)']; 
-dplot = [lambda(:,1)'; lambda(:,2)'];
+dplot = [lambda(:,1)'+Model.dx; lambda(:,2)'-Model.dx];
 dplot = dplot(:);
 hline(2)=plot(dplot,lambdaFBmode(:)*multiplyfactor,'-r','linewidth',2);
 hold on
@@ -108,6 +109,7 @@ hold on
 nConf = length(Model.prctile)/2;
 for i = 1:nConf
     lambdaFBmin = [lambda(:,3+i)'; lambda(:,3+i)'];
+    lambdaFBmin = lambdaFBmin(:);
     lambdaFBmax = [lambda(:,4+2*nConf-i)'; lambda(:,4+2*nConf-i)'];
     lambdaFBmax = lambdaFBmax(:);
     xvalues = [dplot; dplot(end:-1:1)];
