@@ -1,0 +1,29 @@
+To create a shared library, run the command from the root of StratiCounter:
+
+mcc -W lib:straticounter -T link:lib -d out -v straticounter.m
+
+This will create a shared object file along with a C source and C header in the
+out/ directory. Right now, the main routine takes no arguments and uses a hard-coded
+set of parameters. From what I can tell, when the top-level function takes an argument,
+then the types of those parameters are of a type mxArray, which appears to be the general
+Matlab C datastructure.
+
+Matlab supplies a builtin function that will test whether or not the code is
+running in a deployed environment (i.e. a compiled shared object, as opposed to
+in the interpreter).  This function is called `ismcc`. This is used as a
+guard around code sections which are not supported, and uneeded, by the
+compiler. Example:
+
+if ~ismcc
+    addpath(genpath('./Subroutines'))
+    addpath(genpath('./Settings'))
+end
+
+Indeed, most, if not all, of the plotting should be guarded. So it is not
+called in the compiled form.
+
+
+Finally, the shared object will need to loaded by Python at runtime and the C
+function called. There may be the need to add another wrapper around the shared
+object for when parameters are passed to it. This is to translate between the
+python PyObject type to the mxMatrix type.
