@@ -1,4 +1,4 @@
-function straticounter(sett_icecore)
+function straticounter()
 clc; close all;
 releasedate = '30-04-2015';
 
@@ -50,14 +50,16 @@ releasedate = '30-04-2015';
 % 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 %% Check that settings file exist:
-if ~exist(['./Settings/' sett_icecore '.m'],'file')
-    disp('Settings file unknown, please correct')
-    return
-end
+%if ~exist(['./Settings/' sett_icecore '.m'],'file')
+%    disp('Settings file unknown, please correct')
+%    return
+%end
 
 %% Add paths to subroutines and settings folders:
-addpath(genpath('./Subroutines'))
-addpath(genpath('./Settings'))
+if ~isdeployed
+    addpath(genpath('./Subroutines'))
+    addpath(genpath('./Settings'))
+end
 
 %% Select how to run the script:
 Runtype.develop = 'no'; 
@@ -87,7 +89,7 @@ Model = defaultsettings;
 Model.releasedate = releasedate;
 
 % Use core-specific settings:
-run(sett_icecore)
+sett_NEEMS1_example; % just use the example core for now
 
 %% Ensure correct format of content in Model:
 Model = adjustmodel(Model); 
