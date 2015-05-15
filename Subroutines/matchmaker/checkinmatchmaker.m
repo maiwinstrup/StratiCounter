@@ -57,7 +57,7 @@ for iCore = 2:nCore
 
     %% Load timescale and model:
     load([dir{iCore} '/Model.mat'])
-    timescale = importdata([dir{iCore} '/' Model.icecore '_timescale1yr.txt']);
+    timescale = importdata([dir{iCore} '/' Model.icecore '_timescale.txt']);
     timescale1yr = timescale.data;
    
     % Convert layer counts to format used in matchmaker:
