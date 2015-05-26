@@ -6,6 +6,7 @@ matchfiles/
 Mai's stuff/
 *.mat
 *.asv
-StratiCounter_UserGuide.docx
-files_main.m
+*.docx
 *.xlsx
+files_main.m
+
