@@ -11,7 +11,7 @@ manualcounts = loadlayercounts(Model,[Model.dstart Model.dend]);
 
 mp(:,1) = manualcounts(:,1);
 mp(:,2) = 1; % Certain years
-mask = manualcounts(:,2)==1;
+mask = manualcounts(:,3)==1;
 mp(mask,2) = 2; % Uncertain years
 
 % Save layer counts:

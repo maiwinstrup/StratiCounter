@@ -130,7 +130,7 @@ function open_request(datafiles, fileno, NN)
     
     dummyax = axes('position', [0 0 1 1], 'xlim', [0 1], 'ylim', [0 1], 'visible', 'off', 'nextplot', 'add');
 
-    handles.title = text(dx, 0.4*y0, 'MATCHMAKER', 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left', 'Fontsize', font2, 'fontweight', 'bold', 'parent', dummyax);
+    %handles.title = text(dx, 0.4*y0, 'MATCHMAKER', 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left', 'Fontsize', font2, 'fontweight', 'bold', 'parent', dummyax);
     handles.save = uicontrol('units', 'normalized', 'position', [x0+x1+3*dx 0.4*y0 1.6*x0 eh], 'string', 'Save', 'style', 'pushbutton', 'callback', ['matchmaker(''save_Callback'',gcbo,[],guidata(gcbo))'], 'fontname', 'default', 'fontsize', font1, 'fontweight', 'bold', 'horizontalalignment', 'center', 'enable', 'off');
     handles.accordianize = uicontrol('units', 'normalized', 'position', [3*x0+x1+3*dx 0.4*y0 1.6*x0 eh], 'string', 'Accordianize', 'style', 'pushbutton', 'callback', ['matchmaker(''accordianize_Callback'',gcbo,[],guidata(gcbo))'], 'fontname', 'default', 'fontsize', font1, 'fontweight', 'bold', 'horizontalalignment', 'center');
     handles.masterno = uicontrol('units', 'normalized', 'position', [5*x0+x1+3*dx 0.4*y0 0.6*x0 eh], 'string', '1', 'style', 'edit', 'callback', ['matchmaker(''masterno_Callback'',gcbo,[],guidata(gcbo))'], 'fontname', 'default', 'fontsize', font1, 'fontweight', 'bold', 'horizontalalignment', 'center');

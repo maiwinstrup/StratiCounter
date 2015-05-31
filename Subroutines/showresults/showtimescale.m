@@ -46,8 +46,10 @@ end
 % Plot uncertainty band:
 color_manual  = [1 1 1]*0.5;
 alpha_manual = 0.7;
-xvalues = [layerpos_manual; layerpos_manual(end:-1:1)];
-yvalues_unc = [age_manual+unc_manual; age_manual(end:-1:1)-unc_manual(end:-1:1)];
+xvalues = [layerpos_manual+Model.dx/10; layerpos_manual(end:-1:1)];
+% dx is added only for plotting purposes
+yvalues_unc = [age_manual-unc_manual-0.01; age_manual(end:-1:1)+unc_manual(end:-1:1)+0.01];
+% 0.01 is added/subtracted only for plotting purposes
 % Number of points used to create line (forth and back):
 N = min(length(xvalues),2000); % Maximum ~2000 points
 dx = round(length(xvalues)/N);
@@ -70,8 +72,8 @@ nConf = (size(timescale,2)-2)/2;
 for i = 1:nConf
     unc_lowerbound = timescale(:,2+i);
     unc_upperbound = timescale(:,2+2*nConf-i+1);    
-    xvalues = [timescale(:,1); timescale(end:-1:1,1)];
-    yvalues = [unc_upperbound; unc_lowerbound(end:-1:1)];
+    xvalues = [timescale(:,1)+Model.dx/10; timescale(end:-1:1,1)];
+    yvalues = [unc_lowerbound-0.01; unc_upperbound(end:-1:1)+0.01];
 
     % Reduce array to only include those points where yvalues change:
     mask = diff(yvalues)~=0;

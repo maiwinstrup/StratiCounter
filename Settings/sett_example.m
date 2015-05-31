@@ -101,9 +101,10 @@ Model.update = {'ML', 'ML', 'ML', 'ML', 'ML'};
 Model.dxLambda = [1 5]; % [m]
 % If empty, lambda values are not determined.
 
-% Specific depth sections for mean layer thickness calculations:
+% Depth sections for calculation of confidence intervals of the number of 
+% layers between these marker horizons:
 Model.dMarker = [];
-% Several sections can be included as follows:
+% Multiple sets of sections can be included as follows:
 % Model.dMarker{1} = [101, 152.5, 204];
 % Model.dMarker{2} = [121, 142, 201];
 

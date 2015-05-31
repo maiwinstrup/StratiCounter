@@ -60,10 +60,10 @@ for i= 1:length(index)
     disp(['The value of ' names{index(i)} ' will be held constant.'])
     disp('Value corresponding to manual counts is: ');
     disp(num2str(eval(['Layerpar0.' names{index(i)}])))
-    reply = input('Use this value? ','s');
+    reply = input('Use this value? (y/n) ','s');
     if strcmp(reply,''); disp('yes'); end
     
-    if ~ismember(reply,{'yes','y',''})
+    if ~ismember(reply,{'yes','y','Y','YES',''})       
         value = input('Select new value: ');
         % Check for correct format:
         while ~isequal(size(value),size(eval(['Layerpar0.' names{index(i)}])))
