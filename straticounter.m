@@ -1,5 +1,9 @@
 function straticounter(sett_icecore)
-clc; close all;
+
+if ~isdeployed
+    clc; close all;
+end
+
 releasedate = '30-04-2015';
 
 %% StratiCounter: A layer counting algorithm
@@ -50,14 +54,16 @@ releasedate = '30-04-2015';
 % 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 %% Check that settings file exist:
-if ~exist(['./Settings/' sett_icecore '.m'],'file')
+if ~exist(['Settings/' sett_icecore '.m'],'file')
     disp('Settings file unknown, please correct')
     return
 end
 
 %% Add paths to subroutines and settings folders:
-addpath(genpath('./Subroutines'))
-addpath(genpath('./Settings'))
+if ~isdeployed
+    addpath(genpath('./Subroutines'))
+    addpath(genpath('./Settings'))
+end
 
 %% Select how to run the script:
 Runtype.develop = 'no';
@@ -66,7 +72,12 @@ Runtype.develop = 'no';
 Runtype.reuse = 'yes';
 % If yes; use previously processed data and calculated layer templates.
 % If no, these are re-calculated.
-Runtype.plotlevel = 1;
+if isdeployed
+    % Force to no plots when run as compiled library
+    Runtype.plotlevel = 0;
+else
+    Runtype.plotlevel = 0;
+end
 % Options: 0: 'none' (no plots), 1: 'info' (few plots), 2: 'debug' (all plots)
 
 % Display info messages if different from standard settings:
@@ -82,7 +93,7 @@ end
 
 %% Select model settings:
 % Import default settings:
-Model = defaultsettings;
+Model = defaultsettings();
 % Add release date:
 Model.releasedate = releasedate;
 
@@ -589,4 +600,6 @@ end
 disp(['Output directory: ' outputdir])
 
 %% Show results in matchmaker:
-checkinmatchmaker(outputdir,Model);
+if ~isdeployed
+    checkinmatchmaker(outputdir,Model);
+end
