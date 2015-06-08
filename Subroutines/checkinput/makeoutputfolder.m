@@ -7,8 +7,8 @@ function [outputdir,outputdir0,runID] = makeoutputfolder(Model,Runtype)
 
 %% Find/generate output folder:
 % Running in development mode?
-if strcmp(Runtype.develop,'yes'); outputdir0 = './Output/develop';
-else outputdir0 = './Output';
+if strcmp(Runtype.develop,'yes'); outputdir0 = 'Output/develop';
+else outputdir0 = 'Output';
 end
 
 if strcmp(Model.icecore, 'SyntheticData')

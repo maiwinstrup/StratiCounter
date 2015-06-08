@@ -10,11 +10,11 @@ Matlab C datastructure.
 
 Matlab supplies a builtin function that will test whether or not the code is
 running in a deployed environment (i.e. a compiled shared object, as opposed to
-in the interpreter).  This function is called `ismcc`. This is used as a
+in the interpreter).  This function is called `isdeployed`. This is used as a
 guard around code sections which are not supported, and uneeded, by the
 compiler. Example:
 
-if ~ismcc
+if ~isdeployed
     addpath(genpath('./Subroutines'))
     addpath(genpath('./Settings'))
 end
