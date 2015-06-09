@@ -53,11 +53,17 @@ releasedate = '30-04-2015';
 % with this program; if not, write to the Free Software Foundation, Inc.,
 % 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+%% Add paths to subroutines and settings folders:
+if ~isdeployed
+    addpath(genpath('./Subroutines'))
+    addpath(genpath('./Settings'))
+end
+
 %% Select model settings:
 % Import default settings:
 Model = defaultsettings();
 % Add release date:
-Model.releasedate = releasedate; 
+Model.releasedate = releasedate;
 
 vararg_err = 'This function accepts a maximum of two (2) input arguments';
 % Use core-specific settings:
@@ -73,13 +79,6 @@ elseif nargin ==2
     Model = varargin{1};
 else
     error(vararg_err);
-end
-
-
-%% Add paths to subroutines and settings folders:
-if ~isdeployed
-    addpath(genpath('./Subroutines'))
-    addpath(genpath('./Settings'))
 end
 
 %% Select how to run the script:
@@ -101,7 +100,7 @@ else
     error(vararg_err)
 end
 
-if isdeployed       
+if isdeployed
     % Force to no plots when run as compiled library
     Runtype.plotlevel = 0;
 else
@@ -118,7 +117,7 @@ if strcmp(Runtype.reuse,'no');
 end
 if Runtype.plotlevel>1;
     disp('Plots will be generated');
-end 
+end
 
 %% Ensure correct format of content in Model:
 Model = adjustmodel(Model);
@@ -131,7 +130,7 @@ elseif nargin ==2
 else
     error(vararg_err);
 end
-    
+
 
 %% Load data and manual layer counts:
 if strcmp(Model.icecore,'SyntheticData')

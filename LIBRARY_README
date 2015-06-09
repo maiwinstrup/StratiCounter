@@ -1,29 +1,38 @@
+This file is a readme for a shared `libStraticounter` library that can be used to interface with the scibox software.
+
+# Prerequisites
+
+1. MATLAB Runtime v8.4 (for R2014b) - [Found Here](http://www.mathworks.com/products/compiler/mcr/)
+2. Your compiler (g++) must be version 4.7x (may involve using update-alternatives to switch default version on your computer)
+
+# Building the Library
+
 To create a shared library, run the command from the root of StratiCounter:
 
-mcc -W lib:straticounter -T link:lib -d out -v straticounter.m
+```
+mcc -g -W cpplib:libStraticounter -T link:lib  -d MCR_Library/ -I Subroutines/ -I Subroutines/algorithm/ -I Subroutines/batchresults/ -I Subroutines/checkinput/ -I Subroutines/layertemplates/ -I Subroutines/matchmaker/ -I Subroutines/preprocessing/ -I Subroutines/showresults/ -I Subroutines/syntheticdata/ -I Subroutines/utilities/  straticounter_scibox.m
+```
 
-This will create a shared object file along with a C source and C header in the
-out/ directory. Right now, the main routine takes no arguments and uses a hard-coded
-set of parameters. From what I can tell, when the top-level function takes an argument,
-then the types of those parameters are of a type mxArray, which appears to be the general
-Matlab C datastructure.
+This will create a shared object file along with a C++ source and C++ header in the `MCR_Library/` directory.
 
-Matlab supplies a builtin function that will test whether or not the code is
-running in a deployed environment (i.e. a compiled shared object, as opposed to
-in the interpreter).  This function is called `isdeployed`. This is used as a
-guard around code sections which are not supported, and uneeded, by the
-compiler. Example:
+# Approach
 
+A small interface function called `straticounter_scibox.m` was written to interface with the `straticounter.m` function. This is an attempt to decouple the interface of scibox from that of the MATLAB tool. The main funciton `straticounter.m` did need to be modified in two key ways:
+
+1. Some code in the file should not run when used as a library (like plots) - It turns out the easiest/best way to address this was to force the Runtype.plotlevel variable to be zero when the code is deployed. The `isdeployed` variable was used to make these conditions. Example:
+
+```
 if ~isdeployed
     addpath(genpath('./Subroutines'))
     addpath(genpath('./Settings'))
 end
+```
 
-Indeed, most, if not all, of the plotting should be guarded. So it is not
-called in the compiled form.
+2. The interface to scibox requires the ability to specify an arbitrary output directory - This was addressed by extending the `Runtype` structure to include a variable called `outdir` and modifying the `makeoutputfolder.m` to use the `Runtype.outdir` variable for the path of the directory if it is not empty.
+3. In order to accomplish items 1 and 2 the function `straticounter.m` now takes a variable number of inputs. When given 1 parameter the function works the same as before. When called with 2 parameters (like `straticounter_scibox.m` does) the inputs are a path to the data file to load and the path for the desired output directory.
 
+#Terminal interface for testing
 
-Finally, the shared object will need to loaded by Python at runtime and the C
-function called. There may be the need to add another wrapper around the shared
-object for when parameters are passed to it. This is to translate between the
-python PyObject type to the mxMatrix type.
+In order to create an executable (that can be run from the terminal):
+
+```mbuild MCR_Library/Straticounter.cpp MCR_Library/libStraticounter.so```
