@@ -1,6 +1,10 @@
 function straticounter(varargin)
 
 if ~isdeployed
+    % use the `isdeployed` variable to know whether this is a compiled instance
+    % of the code or not.
+
+    % If compiled we do not need to clc or close anything
     clc; close all;
 end
 
