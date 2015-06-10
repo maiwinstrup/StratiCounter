@@ -1,5 +1,13 @@
-function straticounter(sett_icecore)
-clc; close all;
+function straticounter(varargin)
+
+if ~isdeployed
+    % use the `isdeployed` variable to know whether this is a compiled instance
+    % of the code or not.
+
+    % If compiled we do not need to clc or close anything
+    clc; close all;
+end
+
 releasedate = '30-04-2015';
 
 %% StratiCounter: A layer counting algorithm
@@ -49,24 +57,59 @@ releasedate = '30-04-2015';
 % with this program; if not, write to the Free Software Foundation, Inc.,
 % 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-%% Check that settings file exist:
-if ~exist(['./Settings/' sett_icecore '.m'],'file')
-    disp('Settings file unknown, please correct')
-    return
+%% Add paths to subroutines and settings folders:
+if ~isdeployed
+    addpath(genpath('./Subroutines'))
+    addpath(genpath('./Settings'))
 end
 
-%% Add paths to subroutines and settings folders:
-addpath(genpath('./Subroutines'))
-addpath(genpath('./Settings'))
+%% Select model settings:
+% Import default settings:
+Model = defaultsettings();
+% Add release date:
+Model.releasedate = releasedate;
+
+vararg_err = 'This function accepts a maximum of two (2) input arguments';
+% Use core-specific settings:
+if nargin == 1
+    % Check that settings file exist:
+    if ~exist(['Settings/' varargin{1} '.m'],'file')
+        disp('Settings file unknown, please correct')
+        return
+    end
+    %Import settings
+    run(varargin{1});
+elseif nargin ==2
+    Model = varargin{1};
+else
+    error(vararg_err);
+end
 
 %% Select how to run the script:
-Runtype.develop = 'no';
-% In development mode; will run as normal, but output will be put in the
-% ./Output/develop folder. Option to run for only a few batches.
-Runtype.reuse = 'yes';
-% If yes; use previously processed data and calculated layer templates.
-% If no, these are re-calculated.
-Runtype.plotlevel = 1;
+if nargin ==1
+    Runtype.develop = 'no';
+    % In development mode; will run as normal, but output will be put in the
+    % ./Output/develop folder. Option to run for only a few batches.
+    Runtype.reuse = 'yes';
+    % If yes; use previously processed data and calculated layer templates.
+    % If no, these are re-calculated.
+    Runtype.outdir = '';
+    %provide this if you have a custom output directory that you want to
+    %provide
+elseif nargin == 2
+    Runtype.develop = 'no';
+    Runtype.reuse = 'no';
+    Runtype.outdir = varargin{2};
+else
+    error(vararg_err)
+end
+
+if isdeployed
+    % Force to no plots when run as compiled library
+    Runtype.plotlevel = 0;
+else
+    Runtype.plotlevel = 0;
+end
 % Options: 0: 'none' (no plots), 1: 'info' (few plots), 2: 'debug' (all plots)
 
 % Display info messages if different from standard settings:
@@ -80,20 +123,18 @@ if Runtype.plotlevel>1;
     disp('Plots will be generated');
 end
 
-%% Select model settings:
-% Import default settings:
-Model = defaultsettings;
-% Add release date:
-Model.releasedate = releasedate;
-
-% Use core-specific settings:
-run(sett_icecore)
-
 %% Ensure correct format of content in Model:
 Model = adjustmodel(Model);
 
 %% Make output folders:
-[outputdir, outputdir0, runID] = makeoutputfolder(Model, Runtype);
+if nargin == 1
+    [outputdir, outputdir0, runID] = makeoutputfolder(Model, Runtype);
+elseif nargin ==2
+    [outputdir, outputdir0, runID] = makeoutputfolder(Model, Runtype);
+else
+    error(vararg_err);
+end
+
 
 %% Load data and manual layer counts:
 if strcmp(Model.icecore,'SyntheticData')
@@ -589,4 +630,6 @@ end
 disp(['Output directory: ' outputdir])
 
 %% Show results in matchmaker:
-checkinmatchmaker(outputdir,Model);
+if ~isdeployed
+    checkinmatchmaker(outputdir,Model);
+end
