@@ -81,16 +81,26 @@ for j = 1:Model.nSpecies
 
         % Corresponding filename:
         filename = [outputdir '/Template_' num2str(Model.manualtemplates(1)) '-' ...
-            num2str(Model.manualtemplates(2)) 'm'];
+            num2str(Model.manualtemplates(2)) 'm_' Model.nameManualCounts];
     end
 
     %% Do layer templates exist from previous run? 
     % If so: Load a previously computed version of templates, unless 
     % a) we're dealing with synthetic data, in which case they are always 
-    % recalculated, or b) if Runtype.reuse='no'.    
+    % recalculated, or b) if Runtype.reuse='no', or c) the file containing 
+    % the manual layer counts has been modified since calculation of layer 
+    % templates.
+    
+    % Dates for last modification of files: 
+    if exist([filename '.mat'],'file')
+        InfoManCounts = dir(['./ManualCounts/' Model.nameManualCounts]);
+        dateManCounts = InfoManCounts.datenum; 
+        InfoTemplates = dir([filename '.mat']);
+        dateTemplates = InfoTemplates.datenum;
+    end
     
     if exist([filename '.mat'],'file') && ~strcmp(Model.icecore,'SyntheticData') ...
-            && strcmp(Runtype.reuse,'yes')
+            && strcmp(Runtype.reuse,'yes') && dateManCounts < dateTemplates
         load([filename '.mat']);
         
         % Check that this template is using the correct value of dtstack:
@@ -165,7 +175,7 @@ for j = 1:Model.nSpecies
     %% Plot principal components, and save figure:
     if Runtype.plotlevel > 0
         if strcmp(Model.type,'PCA')
-            plotprincomp(TemplateInfo,Model.species{j},Model.icecore,Model.manCountsName)
+            plotprincomp(TemplateInfo,Model.species{j},Model.icecore,Model.nameManualCounts)
             print([filename '.jpeg'], '-djpeg','-r400')
             % Close plot (if plotlevel<2):
             if Runtype.plotlevel==1; close(gcf); end

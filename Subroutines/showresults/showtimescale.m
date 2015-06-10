@@ -58,7 +58,7 @@ fill(xvalues(1:dx:end),yvalues_unc(1:dx:end),color_manual,'edgecolor',...
 hold on
 % Plot the most likely ages:
 hline(1)=plot(layerpos_manual(1:dx:end),age_manual(1:dx:end),'-k','linewidth',1);
-legendname{1} = Model.manCountsName;
+legendname{1} = Model.nameManualCounts;
 
 %% Timescale results from Forward-Backward algorithm: 
 % Mode and confidence intervals of age-distribution at each datapoint.

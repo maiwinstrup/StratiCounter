@@ -60,10 +60,10 @@ end
 %% Length of each data batch (in approximate number of layers):
 Model.nLayerBatch = 50; 
 % If tiepoints are given, the length of each data batch corresponds to the
-% interval between these. 
+% interval between these.
 
 %% Provide path to manual layer counts to be used for initialization:
-Model.pathManualCounts = './Manualcounts/ExampleIceCore.txt';
+Model.nameManualCounts = 'ExampleIceCore.txt';
 Model.ageUnitManual = 'AD';
 % Format of file with manual layer counts:
 % counts(:,1): Depth

@@ -33,7 +33,8 @@ Model.tiepoints = [];
 %% Data treatment:
 % Resolution of data series to be used:
 Model.dx = 10^-3; % [m/px]
-% If Model.dx is empty: No interpolation to equidistant depthscale. 
+% If Model.dx is empty: No interpolation to equidistant depthscale (this 
+% option is not fully implemented). 
 % The resolution is allowed to (slowly) change with depth. 
 Model.dx_center = 0;
 % If using e.g. midpoints of dx intervals, the value of dx_center should
@@ -74,8 +75,7 @@ Model.nLayerBatch = 50;
 % interval between these. 
 
 %% If using manual counts for initialization:
-Model.manCountsName = 'Manual layer counts';
-Model.pathManualCounts = '';
+Model.nameManualCounts = '';
 Model.ageUnitManual = '';
 % Format of file with manual layer counts:
 % counts(:,1): Depth
@@ -189,10 +189,11 @@ Model.confInterval = [50 95];
 
 % Interval(s) for determining average layer thicknesses:
 % Regular length intervals:
-Model.dxLambda = [1 5]; % [m]
+Model.dxLambda = []; % [m]
 % If empty, lambda values are not determined.
 
-% Specific depth sections for mean layer thickness calculations:
+% Depth sections for calculation of confidence intervals of the number of 
+% layers between these marker horizons:
 Model.dMarker = [];
 
 % Which timescale terminology to be used for output? 

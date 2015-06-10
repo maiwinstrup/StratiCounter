@@ -22,20 +22,20 @@ dy0 = (1-h)/2;
 dx0 = (1-w)/2;
 hax = axes('position',[dx0 dy0 w h],'nextplot','add','yaxislocation','left','xaxislocation','bottom');
 
-%% Select unit for layer thickness: 
+%% Select unit for display of layer thickness: 
 meanLambda = mean(lambda(:,3));
 if meanLambda < 10^-3;
     lambdaunit = 'm';
-    multiplyfactor = 1;
+    unitfactor = 1;
 elseif meanLambda <10^-2
     lambdaunit = 'mm';
-    multiplyfactor = 10^3;
+    unitfactor = 10^3;
 elseif meanLambda < 1
     lambdaunit = 'cm';
-    multiplyfactor = 10^2;
+    unitfactor = 10^2;
 else
     lambdaunit = 'm';
-    multiplyfactor = 1;
+    unitfactor = 1;
 end
 
 %% Mean layer thickness of manually counted layers:
@@ -80,43 +80,45 @@ lambdaManual(:,3) = Lman./(nManual+mce); % Maximum value
 dplot = [lambda_man(:,1)'; lambda_man(:,2)'];
 dplot = dplot(:);
 % Uncertainty bands:
+% dx is added only for plotting purposes (bug in "fill" in Matlab R2015a)
 xvalues = [dplot+Model.dx/10; dplot(end:-1:1)];
-% dx is added only for plotting purposes
+% An offset is also required for the lambda values:
+yoffset = range(lambda(:,3))/1000;
 lambdaManualMin = [lambdaManual(:,2)'; lambdaManual(:,2)'];
+lambdaManualMin = lambdaManualMin(:)-yoffset;
 lambdaManualMax = [lambdaManual(:,3)'; lambdaManual(:,3)'];
 lambdaManualMax = lambdaManualMax(:);
-yvalues = [lambdaManualMin(:); lambdaManualMax(end:-1:1)];
+yvalues = [lambdaManualMin; lambdaManualMax(end:-1:1)];
+% Plot in appropriate unit:
 color_gicc  = [1 1 1]*0.5;
 alpha_gicc = 0.7;
-fill(xvalues(:),yvalues(:)*multiplyfactor,color_gicc,'edgecolor',...
+fill(xvalues(:),yvalues(:)*unitfactor,color_gicc,'edgecolor',...
     color_gicc,'facealpha',alpha_gicc,'edgealpha', alpha_gicc)
 hold on
 % Most likely layer thickness:
-lambdaManualML = [lambdaManual(:,1)'; lambdaManual(:,1)']; 
-% Plot in appropriate unit:
-hline(1)=plot(dplot,lambdaManualML(:)*multiplyfactor,'-k','linewidth',2);
-legendtext{1} = 'Manual';
+lambdaManualML = [lambdaManual(:,1)'; lambdaManual(:,1)'];
+hline(1)=plot(dplot,lambdaManualML(:)*unitfactor,'-k','linewidth',2);
+legendtext{1} = Model.nameManualCounts;
 
 %% Mean layer thicknesses from Forward-Backward algorithm as run for each 
 % section individually:
 lambdaFBmode = [lambda(:,3)'; lambda(:,3)']; 
 dplot = [lambda(:,1)'; lambda(:,2)'];
 dplot = dplot(:);
-hline(2)=plot(dplot,lambdaFBmode(:)*multiplyfactor,'-r','linewidth',2);
+hline(2)=plot(dplot,lambdaFBmode(:)*unitfactor,'-r','linewidth',2);
 hold on
 
 % Uncertainty bands for each confidence interval: 
 nConf = length(Model.prctile)/2;
 for i = 1:nConf
     lambdaFBmin = [lambda(:,3+i)'; lambda(:,3+i)'];
-    lambdaFBmin = lambdaFBmin(:);
     lambdaFBmax = [lambda(:,4+2*nConf-i)'; lambda(:,4+2*nConf-i)'];
     lambdaFBmax = lambdaFBmax(:);
     xvalues = [dplot+Model.dx/10; dplot(end:-1:1)];
-    yvalues = [lambdaFBmin(:); lambdaFBmax(end:-1:1)];
+    yvalues = [lambdaFBmin(:)-yoffset; lambdaFBmax(end:-1:1)];
     color = [1 0.3 0.3];
     alpha = 0.5;
-    fill(xvalues(:),yvalues(:)*multiplyfactor,color,'edgecolor',color,...
+    fill(xvalues(:),yvalues(:)*unitfactor,color,'edgecolor',color,...
         'facealpha',alpha,'edgealpha',0)
 end
 legendtext{2} = 'Forward-Backward';
@@ -132,13 +134,13 @@ end
 L = lambda(:,2)-lambda(:,1);
 lambdaAutoBoundaries = L./nAuto;
 lambdaAutoBoundaries = [lambdaAutoBoundaries'; lambdaAutoBoundaries'];   
-hline(3) = plot(dplot,lambdaAutoBoundaries(:)*multiplyfactor,'--',...
+hline(3) = plot(dplot,lambdaAutoBoundaries(:)*unitfactor,'--',...
     'color',color*0.6,'linewidth',1.2);
 legendtext{3} = 'Layers in timescale1yr';
 
 %% Tiepoints as grey bars:
-ymin = min(lambda(:,3))*multiplyfactor;
-ymax = max(lambda(:,end))*multiplyfactor;
+ymin = min(lambda(:,3))*unitfactor;
+ymax = max(lambda(:,end))*unitfactor;
 K = length(legendtext);
 if ~isempty(Model.tiepoints)
     % Find tiepoints within selected depth interval:
