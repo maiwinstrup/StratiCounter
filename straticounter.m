@@ -237,7 +237,7 @@ while iBatch < nBatch
     % layer parameter re-estimation (may e.g. occur when using closely 
     % spaced tiepoints):
     if nLayerMax <= 50
-        disp(['Note: Batch only contains few layers (nLayerMax = ' ...
+        disp(['Note: Batch contains a limited number of layers (nLayerMax = ' ...
             num2str(nLayerMax) ')'])
         disp(['For reliable layer parameter re-estimation it is recommended '...
             'to use a larger batch size.'])
@@ -603,4 +603,4 @@ end
 disp(['Output directory: ' outputdir])
 
 %% Show results in matchmaker:
-checkinmatchmaker(outputdir,Model);
+checkinmatchmaker(outputdir,Model,Runtype);

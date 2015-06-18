@@ -119,6 +119,12 @@ for i = 1:length(Model.dMarker)
     Model.dMarker{i} = Model.dMarker{i}(mask);
 end
 
+%% Check for file extension on filename with manual layer counts:
+if ~strcmp(Model.nameManualCounts(end-3:end),'.txt')
+    % If not: add to filename
+    Model.nameManualCounts = [Model.nameManualCounts '.txt'];
+end
+
 %% Check that one of four options are chosen as unit for timescale output: 
 while ~ismember(Model.ageUnitOut,{'AD','BP','b2k','layers'})
     promt = 'Which timescale terminology to be used for output? \n(Options: AD, BP, b2k, layers): ';

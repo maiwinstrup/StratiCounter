@@ -58,7 +58,7 @@ fill(xvalues(1:dx:end),yvalues_unc(1:dx:end),color_manual,'edgecolor',...
 hold on
 % Plot the most likely ages:
 hline(1)=plot(layerpos_manual(1:dx:end),age_manual(1:dx:end),'-k','linewidth',1);
-legendname{1} = Model.nameManualCounts;
+legendname{1} = Model.nameManualCounts(1:end-4); % remove fileextension
 
 %% Timescale results from Forward-Backward algorithm: 
 % Mode and confidence intervals of age-distribution at each datapoint.
@@ -99,7 +99,7 @@ legendname{2} = 'Forward-Backward';
 % And plot these:
 hline(3)=plot(layerpos_1yr(1:dx:end),age_1yr(1:dx:end),'-',...
     'color',color*0.6,'linewidth',1.2);
-legendname{3} = 'Timescale1yr';
+legendname{3} = [Model.icecore '_timescale'];
 
 %% Mark the depths of batch boundaries:
 % If tiepoints: Batch boundaries are the location of tiepoints.
@@ -157,7 +157,7 @@ title([Model.icecore ' layer counts'],'fontweight','bold','interpreter','none')
 xlim([Model.dstart timescale(end,1)])
 box on
 % Legend:
-legend(hline,legendname,'location','Best','fontsize',7)
+legend(hline,legendname,'location','Best','fontsize',7,'interpreter','none')
 legend('boxoff')
 
 %% Save figure:

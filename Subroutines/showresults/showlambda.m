@@ -98,7 +98,7 @@ hold on
 % Most likely layer thickness:
 lambdaManualML = [lambdaManual(:,1)'; lambdaManual(:,1)'];
 hline(1)=plot(dplot,lambdaManualML(:)*unitfactor,'-k','linewidth',2);
-legendtext{1} = Model.nameManualCounts;
+legendtext{1} = Model.nameManualCounts(1:end-4); % remove fileextension .txt
 
 %% Mean layer thicknesses from Forward-Backward algorithm as run for each 
 % section individually:
@@ -136,7 +136,7 @@ lambdaAutoBoundaries = L./nAuto;
 lambdaAutoBoundaries = [lambdaAutoBoundaries'; lambdaAutoBoundaries'];   
 hline(3) = plot(dplot,lambdaAutoBoundaries(:)*unitfactor,'--',...
     'color',color*0.6,'linewidth',1.2);
-legendtext{3} = 'Layers in timescale1yr';
+legendtext{3} = [Model.icecore '_timescale'];
 
 %% Tiepoints as grey bars:
 ymin = min(lambda(:,3))*unitfactor;
@@ -176,7 +176,7 @@ end
 
 %% Add legend, title and labels:
 % Legend:
-hleg = legend(hline,legendtext);
+hleg = legend(hline,legendtext,'interpreter','none');
 set(hleg,'box','off')
 % Label:
 ylabel(['Mean layer thickness [' lambdaunit ']']) 

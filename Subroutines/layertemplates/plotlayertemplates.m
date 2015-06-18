@@ -42,7 +42,7 @@ for j = 1:Model.nSpecies
     if strcmp(Model.icecore,'SyntheticData')
         title(['Species #' Model.species{j}],'fontweight','bold')    
     else
-        title(Model.species{j},'fontweight','bold')
+        title(Model.species{j},'fontweight','bold','interpreter','none')
     end
     if j == 1; ylabel('Mean signal','fontweight','bold'); end
     
