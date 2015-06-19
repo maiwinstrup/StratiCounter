@@ -1,14 +1,18 @@
-Output/
-Data/
-!/Data/data_empty.mat
-!/Data/data_example.mat
-Manualcounts/
-Settings/
-matchfiles/
-Mai's stuff/
 *.mat
 *.asv
 *.docx
 *.xlsx
-files_main.m
-
+Output/*
+Data/*
+!Data/data_empty.mat
+!Data/data_example.mat
+Manualcounts/*
+!Manualcounts/counts_empty.txt
+!Manualcounts/counts_example.txt
+Settings/*
+!Settings/sett_empty.m
+!Settings/sett_example.m
+Subroutines/matchmaker/files_main.m
+Subroutines/matchmaker/matchmaker_sett.mat
+Subroutines/matchmaker/data/*
+Mai's stuff/*
