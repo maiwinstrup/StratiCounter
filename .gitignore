@@ -1,5 +1,7 @@
 Output/
 Data/
+!/Data/data_empty.mat
+!/Data/data_example.mat
 Manualcounts/
 Settings/
 matchfiles/

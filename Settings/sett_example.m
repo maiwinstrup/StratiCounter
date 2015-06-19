@@ -1,21 +1,25 @@
-%% Example of settings for an ice core record
+%% Example of settings for the data record from the NEEM-2011-S1 ice core.
+% Data reference: Sun et al (2014), Ash from Changbaishan Millennium 
+% eruption recorded in Greenland ice: Implications for determining the 
+% eruption's timing and impact, GRL 41, 2, pp. 694–701, 10.1002/2013GL058642. 
+
 % Mai Winstrup, 2015
 
 %% Data files:
-Model.icecore = 'ExampleIceCore';
+Model.icecore = 'NEEM_S1';
 % Data existing for core:
-Model.species = {'Isotopes'};
+Model.species = {'Cl','nssS'};
 Model.nSpecies = length(Model.species);
 
 % Weighting of various species:
 Model.wSpecies = ones(Model.nSpecies,1);
 
 % Path to data file:
-Model.path2data = './Data/data_empty.mat';
+Model.path2data = './Data/data_example.mat';
 
 %% Depth interval [m]:
-Model.dstart = 100;
-Model.dend = 200; 
+Model.dstart = 202;
+Model.dend = 210; 
 
 %% Marker horizons to be used as tiepoints?
 % No tiepoints:
@@ -28,15 +32,15 @@ Model.tiepoints = [];
 
 %% Data treatment:
 % Resolution of data series to be used:
-Model.dx = 10^-3; % [m/px]
+Model.dx = 10^-2; % [m/px]
 Model.dx_center = 0;
 % If using e.g. midpoints of dx intervals, the value of dx_center should
 % be set as 0.5 (to avoid unnecessary interpolation). 
 
 % Preprocessing of each data series:
 for j = 1:Model.nSpecies
-    Model.preprocsteps{j,1} = {'zscore',0.5};
-    Model.preprocsteps{j,2} = [];
+    Model.preprocsteps{j,1} = {'zscore',1};
+    Model.preprocsteps{j,2} = []; 
 end
 % 1st row: Initial preprocessing
 % 2nd row: Batch preprocessing 
@@ -60,10 +64,10 @@ end
 %% Length of each data batch (in approximate number of layers):
 Model.nLayerBatch = 50; 
 % If tiepoints are given, the length of each data batch corresponds to the
-% interval between these.
+% interval between these. 
 
 %% Provide path to manual layer counts to be used for initialization:
-Model.nameManualCounts = 'ExampleIceCore.txt';
+Model.nameManualCounts = 'counts_example.txt'; 
 Model.ageUnitManual = 'AD';
 % Format of file with manual layer counts:
 % counts(:,1): Depth
@@ -101,13 +105,12 @@ Model.update = {'ML', 'ML', 'ML', 'ML', 'ML'};
 Model.dxLambda = [1 5]; % [m]
 % If empty, lambda values are not determined.
 
-% Depth sections for calculation of confidence intervals of the number of 
-% layers between these marker horizons:
+% Specific depth sections for mean layer thickness calculations:
 Model.dMarker = [];
-% Multiple sets of sections can be included as follows:
+% Several sections can be included as follows:
 % Model.dMarker{1} = [101, 152.5, 204];
 % Model.dMarker{2} = [121, 142, 201];
 
 % Which timescale terminology to be used for output? 
-Model.ageUnitOut = 'layers';
+Model.ageUnitOut = 'AD';
 % Options: AD, BP, b2k, layers
