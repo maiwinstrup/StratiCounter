@@ -7,7 +7,7 @@
 // "Subroutines/checkinput/" "-I" "Subroutines/layertemplates/" "-I"
 // "Subroutines/matchmaker/" "-I" "Subroutines/preprocessing/" "-I"
 // "Subroutines/showresults/" "-I" "Subroutines/syntheticdata/" "-I"
-// "Subroutines/utilities/" "straticounter_scibox.m" 
+// "Subroutines/utilities/" "straticounter_scibox.m"
 //
 
 #include <stdio.h>
@@ -50,13 +50,13 @@ static int mclDefaultErrorHandler(const char *s)
 #endif
 
 /* This symbol is defined in shared libraries. Define it here
- * (to nothing) in case this isn't a shared library. 
+ * (to nothing) in case this isn't a shared library.
  */
 #ifndef LIB_libStraticounter_C_API
 #define LIB_libStraticounter_C_API /* No special import/export declaration */
 #endif
 
-LIB_libStraticounter_C_API 
+LIB_libStraticounter_C_API
 bool MW_CALL_CONV libStraticounterInitializeWithHandlers(
     mclOutputHandlerFcn error_handler,
     mclOutputHandlerFcn print_handler)
@@ -67,39 +67,39 @@ bool MW_CALL_CONV libStraticounterInitializeWithHandlers(
   if (!mclmcrInitialize())
     return false;
     {
-        mclCtfStream ctfStream = 
+        mclCtfStream ctfStream =
             mclGetEmbeddedCtfStream((void *)(libStraticounterInitializeWithHandlers));
         if (ctfStream) {
             bResult = mclInitializeComponentInstanceEmbedded(   &_mcr_inst,
-                                                                error_handler, 
+                                                                error_handler,
                                                                 print_handler,
                                                                 ctfStream);
             mclDestroyStream(ctfStream);
         } else {
             bResult = 0;
         }
-    }  
+    }
     if (!bResult)
     return false;
   return true;
 }
 
-LIB_libStraticounter_C_API 
+LIB_libStraticounter_C_API
 bool MW_CALL_CONV libStraticounterInitialize(void)
 {
-  return libStraticounterInitializeWithHandlers(mclDefaultErrorHandler, 
+  return libStraticounterInitializeWithHandlers(mclDefaultErrorHandler,
                                                 mclDefaultPrintHandler);
 }
 
-LIB_libStraticounter_C_API 
+LIB_libStraticounter_C_API
 void MW_CALL_CONV libStraticounterTerminate(void)
 {
   if (_mcr_inst != NULL)
     mclTerminateInstance(&_mcr_inst);
 }
 
-LIB_libStraticounter_C_API 
-void MW_CALL_CONV libStraticounterPrintStackTrace(void) 
+LIB_libStraticounter_C_API
+void MW_CALL_CONV libStraticounterPrintStackTrace(void)
 {
   char** stackTrace;
   int stackDepth = mclGetStackTrace(&stackTrace);
@@ -113,17 +113,16 @@ void MW_CALL_CONV libStraticounterPrintStackTrace(void)
 }
 
 
-LIB_libStraticounter_C_API 
-bool MW_CALL_CONV mlxStraticounter_scibox(int nlhs, mxArray *plhs[], int nrhs, mxArray 
+LIB_libStraticounter_C_API
+bool MW_CALL_CONV mlxStraticounter_scibox(int nlhs, mxArray *plhs[], int nrhs, mxArray
                                           *prhs[])
 {
   return mclFeval(_mcr_inst, "straticounter_scibox", nlhs, plhs, nrhs, prhs);
 }
 
-LIB_libStraticounter_CPP_API 
-void MW_CALL_CONV straticounter_scibox(const mwArray& settings_path, const mwArray& 
+LIB_libStraticounter_CPP_API
+void MW_CALL_CONV straticounter_scibox(const mwArray& settings_path, const mwArray&
                                        output_path)
 {
   mclcppMlfFeval(_mcr_inst, "straticounter_scibox", 0, 0, 2, &settings_path, &output_path);
 }
-
