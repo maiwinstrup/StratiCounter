@@ -1,4 +1,74 @@
 function straticounter(varargin)
+%% STRATICOUNTER A Layer counting algorithm
+% STRATICOUNTER(settings_file_name) loads settings from the named file in
+%   "settings_file_name" The file name should not include the ".m"
+%   extension
+%
+% STRATICOUNTER(settings_path, output_path) loads settings from a ".mat"
+%   file whose path and name is given in "settings_path". The output of the
+%   function will be saved in the "output_path"
+%
+%INPUTS:
+%   settings_file_name (string): name of the settings file (.m) to load.
+%       It is assumed that the file is located in a local folder
+%       called "Settings"
+%   settings_path (string): path to the file (.mat) from which the
+%       settings should be loaded
+%   output_path (string): path to the folder where the output of the
+%       funciton should be written
+%
+%OUTPUTS:
+%   When providing only 1 argument the output files will be placed in a
+%   local folder named "Output"
+%
+%   When providing 2 arguments the output files will be saved in the
+%   folder specified by the "output_path" argument
+%
+%DETAILS:
+% The algorithm is based on the principles of statistical inference of
+% hidden states in semi-Markov processes. States, and their associated
+% confidence intervals, are inferred by the Forward-Backward algorithm.
+% The EM (Expectation-Maximization) algorithm is used to find the optimal
+% set of layer parameters for each data batch. Confidence intervals do not
+% account for the uncertainty in estimation of layer parameters.
+%
+% If (absolute) tiepoints are given, the algorithm is run between these,
+% while assuming constant annual layer signals between each pair. If no
+% tiepoints, the algorithm is run batch-wise down the core, with a slight
+% overlap between consecutive batches.
+%
+% The algorithm was developed for visual stratigraphy data from the NGRIP
+% ice core (Winstrup (2011), Winstrup et al. (2012)). It has later been
+% applied to other cores, and extended to parallel analysis of multi-
+% parameter data sets (e.g. Vallelonga et al. (2014), Sigl et al. (in prep,
+% 2015)). For testing purposes, it can also be run on synthetic data.
+%
+% See Winstrup (2011) and Winstrup et al. (2012) for further documentation.
+%
+% When using this script, please provide release date of the algorithm,
+% and cite:
+% Winstrup et al., An automated approach for annual layer counting in
+% ice cores, Clim. Past. 8, 1881-1895, 2012.
+%
+%%%%%
+% Copyright (C) 2015  Mai Winstrup
+% Files associated with the matchmaker software (matchmaker.m,
+% matchmaker_evaluate.m) is authored and copyrighted by Sune Olander
+% Rasmussen.
+%
+% This program is free software; you can redistribute it and/or modify it
+% under the terms of the GNU General Public License as published by the
+% Free Software Foundation; either version 2 of the License, or (at your
+% option) any later version.
+%
+% This program is distributed in the hope that it will be useful, but
+% WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+% Public License for more details.
+%
+% You should have received a copy of the GNU General Public License along
+% with this program; if not, write to the Free Software Foundation, Inc.,
+% 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 if ~isdeployed
     % use the `isdeployed` variable to know whether this is a compiled instance
@@ -9,53 +79,6 @@ if ~isdeployed
 end
 
 releasedate = '30-04-2015';
-
-%% StratiCounter: A layer counting algorithm
-% Developed by Mai Winstrup, mai@gfy.ku.dk
-
-% The algorithm is based on the principles of statistical inference of
-% hidden states in semi-Markov processes. States, and their associated
-% confidence intervals, are inferred by the Forward-Backward algorithm.
-% The EM (Expectation-Maximization) algorithm is used to find the optimal
-% set of layer parameters for each data batch. Confidence intervals do not
-% account for the uncertainty in estimation of layer parameters.
-
-% If (absolute) tiepoints are given, the algorithm is run between these,
-% while assuming constant annual layer signals between each pair. If no
-% tiepoints, the algorithm is run batch-wise down the core, with a slight
-% overlap between consecutive batches.
-
-% The algorithm was developed for visual stratigraphy data from the NGRIP
-% ice core (Winstrup (2011), Winstrup et al. (2012)). It has later been
-% applied to other cores, and extended to parallel analysis of multi-
-% parameter data sets (e.g. Vallelonga et al. (2014), Sigl et al. (in prep,
-% 2015)). For testing purposes, it can also be run on synthetic data.
-
-% See Winstrup (2011) and Winstrup et al. (2012) for further documentation.
-
-% When using this script, please provide release date of the algorithm,
-% and cite:
-% Winstrup et al., An automated approach for annual layer counting in
-% ice cores, Clim. Past. 8, 1881-1895, 2012.
-
-%% Copyright (C) 2015  Mai Winstrup
-% Files associated with the matchmaker software (matchmaker.m,
-% matchmaker_evaluate.m) is authored and copyrighted by Sune Olander
-% Rasmussen.
-
-% This program is free software; you can redistribute it and/or modify it
-% under the terms of the GNU General Public License as published by the
-% Free Software Foundation; either version 2 of the License, or (at your
-% option) any later version.
-
-% This program is distributed in the hope that it will be useful, but
-% WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-% Public License for more details.
-
-% You should have received a copy of the GNU General Public License along
-% with this program; if not, write to the Free Software Foundation, Inc.,
-% 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 %% Add paths to subroutines and settings folders:
 if ~isdeployed
@@ -69,13 +92,16 @@ Model = defaultsettings();
 % Add release date:
 Model.releasedate = releasedate;
 
+% make generic message to be used when incorrect number of inputs are used
 vararg_err = 'This function accepts a maximum of two (2) input arguments';
-% Use core-specific settings:
+
+% use 'nargin' to see how many input arguments were used and select appropriate
+% behavior
 if nargin == 1
-    % Check that settings file exist:
+    % Use core-specific settings:
+    % Check that settings file exists:
     if ~exist(['Settings/' varargin{1} '.m'],'file')
-        disp('Settings file unknown, please correct')
-        return
+        error('Settings file unknown, please correct')
     end
     %Import settings
     run(varargin{1});
@@ -108,7 +134,7 @@ if isdeployed
     % Force to no plots when run as compiled library
     Runtype.plotlevel = 0;
 else
-    Runtype.plotlevel = 0;
+    Runtype.plotlevel = 2;
 end
 % Options: 0: 'none' (no plots), 1: 'info' (few plots), 2: 'debug' (all plots)
 
@@ -127,14 +153,7 @@ end
 Model = adjustmodel(Model);
 
 %% Make output folders:
-if nargin == 1
-    [outputdir, outputdir0, runID] = makeoutputfolder(Model, Runtype);
-elseif nargin ==2
-    [outputdir, outputdir0, runID] = makeoutputfolder(Model, Runtype);
-else
-    error(vararg_err);
-end
-
+[outputdir, outputdir0, runID] = makeoutputfolder(Model, Runtype);
 
 %% Load data and manual layer counts:
 if strcmp(Model.icecore,'SyntheticData')
