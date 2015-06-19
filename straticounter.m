@@ -235,10 +235,7 @@ end
 disp('Algorithm is running, please be patient...')
 logPobs_alldata = 0;
 iBatch = 0;
-<<<<<<< HEAD
-=======
 data_final = [];
->>>>>>> 130914f9f7453a1772aa0a36fded6f88509a5092
 
 while iBatch < nBatch
     %% Batch number:
@@ -326,15 +323,10 @@ while iBatch < nBatch
     depth_in = Data.depth(istart:iend);
 
     % Preprocess batch data:
-<<<<<<< HEAD
-    data_out = makedatafile(data_in,depth_in,preprocsteps,Model.derivatives);
-
-=======
     data_out = makedatafile(data_in,depth_in,preprocsteps,Model.derivatives);
     % Save resulting data record:
     data_final = [data_final; data_out];
 
->>>>>>> 130914f9f7453a1772aa0a36fded6f88509a5092
     % Remove extended part of data:
     data_batch = data_out(batchStart(iBatch)-istart+1:batchEnd-istart+1,:,:);
 
@@ -418,15 +410,9 @@ while iBatch < nBatch
        end
 
        %% 2f: Check that log(Pobs) is always growing (as it should)
-<<<<<<< HEAD
-       if Runtype.plotlevel>1
-           if iTemplateBatch==1;
-              if iBatch == 1;
-=======
        if Runtype.plotlevel>1 && Model.nIter > 1
            if iTemplateBatch==1;
               if iBatch == 1;
->>>>>>> 130914f9f7453a1772aa0a36fded6f88509a5092
                   hfig_logPobs = figure;
               else clf(hfig_logPobs); % Clear figure from previous batch
               end
@@ -480,12 +466,6 @@ while iBatch < nBatch
         dDxLambda,iIter,Model,Runtype.plotlevel);
 
     % Calculate log(P_obs) for entire data series, up and including this one:
-<<<<<<< HEAD
-    logPobs_alldata = logPobs_alldata + logPobs(iBatch,iTemplateBatch,iIter,1);
-    % (OBS: Does this go up to tau in this batch, or to T? If so, the
-    % probabilities for ending sections are counted twice.)
-
-=======
     logPobs_alldata = logPobs_alldata + logPobs(iBatch,iTemplateBatch,iIter);
     % (OBS: Does this go up to tau in this batch, or to T? If so, the
     % probabilities for ending sections are counted twice.)
@@ -494,7 +474,6 @@ while iBatch < nBatch
     % batch, since logPobs includes probability section after tau):
     logPobsNorm(iBatch) = logPobs(iBatch,iTemplateBatch,iIter)/batchLength;
 
->>>>>>> 130914f9f7453a1772aa0a36fded6f88509a5092
     % Prior for next batch:
     Prior(iBatch+1) = updatepriors(Prior(iBatch),Layerpar_new,Model);
 
@@ -580,9 +559,6 @@ end
 nBatch = iBatch;
 % Remove unused parts of initialized matrices:
 Result = Result(1:nBatch);
-<<<<<<< HEAD
-
-=======
 Layerpar = Layerpar(1:nBatch,:,:);
 relweight = relweight(1:nBatch,:,:);
 logPobs = logPobs(1:nBatch,:,:);
@@ -591,7 +567,6 @@ batchStart = batchStart(1:nBatch+1);
 % Convert batchStart to depths:
 batchStartDepth = Data.depth(batchStart);
 
->>>>>>> 130914f9f7453a1772aa0a36fded6f88509a5092
 % Combine batches:
 [Layerpos,LayerProbDist,centralEst,timescale,timescale1yr,markerProb,...
     markerConf,lambdaResults] = combinebatches(Result,manualcounts,Model);
@@ -619,15 +594,9 @@ if ~isempty(Model.dxLambda)
 end
 
 % Save all results from iterations (!):
-<<<<<<< HEAD
-save([outputdir '/results.mat'],'Result','relweight','logPobs',...
-    'Layerpar','Prior','Template')
-
-=======
 save([outputdir '/results.mat'],'Result','relweight','logPobs','logPobsNorm',...
     'Layerpar','Prior','Template','batchStartDepth','data_final')
 
->>>>>>> 130914f9f7453a1772aa0a36fded6f88509a5092
 % Save run number:
 save([outputdir0 '/runID.mat'],'runID')
 
@@ -694,10 +663,6 @@ end
 disp(['Output directory: ' outputdir])
 
 %% Show results in matchmaker:
-<<<<<<< HEAD
 if ~isdeployed
-    checkinmatchmaker(outputdir,Model);
+    checkinmatchmaker(outputdir,Model,Runtype);
 end
-=======
-checkinmatchmaker(outputdir,Model,Runtype);
->>>>>>> 130914f9f7453a1772aa0a36fded6f88509a5092
