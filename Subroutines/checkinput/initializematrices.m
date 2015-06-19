@@ -1,8 +1,8 @@
-function [batchStart,Layer0,Template,Prior,Layerpar,logPobs,relweight,Result]=...
-    initializematrices(nBatch,Model)
+function [batchStart,Layer0,Template,Prior,Layerpar,logPobs,logPobsNorm,...
+    relweight,Result] = initializematrices(nBatch,Model)
 
-%% [batchStart,Layer0,Template,Prior,Layerpar,logPobs,relweight,Result]=...
-%    initializematrices(nBatch,Model)
+%% [batchStart,Layer0,Template,Prior,Layerpar,logPobs,logPobsNorm,...
+%   relweight,Result] = initializematrices(nBatch,Model)
 % Initialize empty matrices for results from nBatches. 
 % Copyright (C) 2015  Mai Winstrup
 
@@ -39,6 +39,8 @@ Layerpar(1:nBatch,1:Model.nTemplateBatch,1:Model.nIter+1)=...
 %% Initialize matrices for performance evaluation: 
 % Evolution of log(Pobs) with iterations:
 logPobs = ones(nBatch,Model.nTemplateBatch,Model.nIter+1)*-inf;
+% Standardized final values of logPobs:
+logPobsNorm = ones(nBatch,1)*-inf;
 
 % Relative weighting of layer shape vs. layer thickness:
 relweight = nan(nBatch,Model.nTemplateBatch,Model.nIter+1);

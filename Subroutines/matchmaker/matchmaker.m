@@ -22,8 +22,7 @@ switch nargin
     case {0 1 2} % Only for development purposes
         delete(gcf);
         clc;
-%        eval('open_request(''files_main'', [3 6], [2 2])');
-        disp('MATCHMAKER needs input arguments ! Take a look at the users'' guide.');
+        disp('MATCHMAKER needs input arguments! Take a look at the users'' guide.');
     case 3
         eval('open_request(varargin{1:3})');
     case {4, 5, 6, 7}
@@ -77,7 +76,7 @@ function open_request(datafiles, fileno, NN)
         handles.colours{i} = colours;
         waitbar(0.2*i+0.1, h_wait, ['Please be patient ... loading matchpoint file no. ' num2str(i)]); % Wait window is updated
         try
-            load(['Output' filesep 'matchfiles' filesep files.matchfile{fileno(i)}]);
+            load(files.matchfile{fileno(i)});
         catch
             disp(['Matchpoint file ' files.matchfile{fileno(i)} ' not found']);
             delete(handles.fig);
@@ -111,7 +110,7 @@ function open_request(datafiles, fileno, NN)
     close(h_wait)
         
     font1 = 8;
-    font2 = 14;
+    font2 = 10;
     
     y0 = 0.03;
     y1 = 0.02;
@@ -130,7 +129,7 @@ function open_request(datafiles, fileno, NN)
     
     dummyax = axes('position', [0 0 1 1], 'xlim', [0 1], 'ylim', [0 1], 'visible', 'off', 'nextplot', 'add');
 
-    handles.title = text(dx, 0.4*y0, 'MATCHMAKER', 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left', 'Fontsize', font2, 'fontweight', 'bold', 'parent', dummyax);
+    %handles.title = text(dx, 0.4*y0, 'MATCHMAKER', 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left', 'Fontsize', font2, 'fontweight', 'bold', 'parent', dummyax);
     handles.save = uicontrol('units', 'normalized', 'position', [x0+x1+3*dx 0.4*y0 1.6*x0 eh], 'string', 'Save', 'style', 'pushbutton', 'callback', ['matchmaker(''save_Callback'',gcbo,[],guidata(gcbo))'], 'fontname', 'default', 'fontsize', font1, 'fontweight', 'bold', 'horizontalalignment', 'center', 'enable', 'off');
     handles.accordianize = uicontrol('units', 'normalized', 'position', [3*x0+x1+3*dx 0.4*y0 1.6*x0 eh], 'string', 'Accordianize', 'style', 'pushbutton', 'callback', ['matchmaker(''accordianize_Callback'',gcbo,[],guidata(gcbo))'], 'fontname', 'default', 'fontsize', font1, 'fontweight', 'bold', 'horizontalalignment', 'center');
     handles.masterno = uicontrol('units', 'normalized', 'position', [5*x0+x1+3*dx 0.4*y0 0.6*x0 eh], 'string', '1', 'style', 'edit', 'callback', ['matchmaker(''masterno_Callback'',gcbo,[],guidata(gcbo))'], 'fontname', 'default', 'fontsize', font1, 'fontweight', 'bold', 'horizontalalignment', 'center');
@@ -144,7 +143,7 @@ function open_request(datafiles, fileno, NN)
     for i = 1:N
         handles.bigax(i) = axes('position', [x0+x1+3*dx y0+2*dy+y1+(i-1)*(yh+dy) xw yh-y1], 'nextplot', 'add', 'ylim', [0 1], 'ytick', [], 'box', 'off', 'fontsize', font1, 'ycolor', 'w', 'xcolor', 'w', 'ButtonDownFcn', ['matchmaker(''axesclick_Callback'',gcbo,[],guidata(gcbo),' num2str(i) ')']);
         handles.bigax2(i) = axes('position', [x0+x1+3*dx y0+2*dy+y1+(i-1)*(yh+dy) xw yh-y1], 'nextplot', 'add', 'visible', 'off', 'hittest', 'off', 'clipping', 'on', 'ylim', [0 1]);
-        handles.name(i) = text(dx+x0/2, y0+dy+i*(yh+dy), files.core{fileno(i)}, 'VerticalAlignment', 'top', 'HorizontalAlignment', 'center', 'Fontsize', font2, 'fontweight', 'bold', 'parent', dummyax);
+        handles.name(i) = text(dx+x0/2, y0+dy+i*(yh+dy), files.core{fileno(i)}, 'VerticalAlignment', 'top', 'HorizontalAlignment', 'center', 'Fontsize', font2, 'fontweight', 'bold', 'parent', dummyax,'interpreter','none');
         handles.minx(i) = uicontrol('units', 'normalized', 'position', [dx y0+dy+i*(yh+dy)-2*(eh+dh) x0 eh], 'string', '0', 'style', 'edit', 'callback', ['matchmaker(''xscale_Callback'',gcbo,[],guidata(gcbo),' num2str(i) ', 1)'], 'fontname', 'default', 'fontsize', font1, 'fontweight', 'normal', 'horizontalalignment', 'right');
         handles.maxx(i) = uicontrol('units', 'normalized', 'position', [dx y0+dy+i*(yh+dy)-3*(eh+dh) x0 eh], 'string', '1', 'style', 'edit', 'callback', ['matchmaker(''xscale_Callback'',gcbo,[],guidata(gcbo),' num2str(i) ', 2)'], 'fontname', 'default', 'fontsize', font1, 'fontweight', 'normal', 'horizontalalignment', 'right');
         handles.back(i) = uicontrol('units', 'normalized', 'position', [dx y0+dy+i*(yh+dy)-5*(eh+dh) x0 eh], 'string', '<--', 'style', 'pushbutton', 'callback', ['matchmaker(''move_Callback'',gcbo,[],guidata(gcbo),' num2str(i) ', -1)'], 'fontname', 'default', 'fontsize', font2, 'fontweight', 'bold', 'horizontalalignment', 'center');
@@ -682,13 +681,13 @@ figure(handles.fig);
 
 function save_Callback(hObject, handles);
 for i = 1:handles.N
-    status = copyfile(['Output' filesep 'matchfiles' filesep handles.matchfile{i}], ['matchfiles' filesep handles.matchfile{i} '.backup']);
+    status = copyfile(handles.matchfile{i},[handles.matchfile{i} '.backup']);
     if status == 0
         disp(['MATCHMAKER.m warning : Could not back up matchpoint file ' handles.matchfile{i} ' before saving']);
         disp('   (this error does not influence the saving procedure itself)');
     end;
     mp = handles.mp{i};
-    save(['Output' filesep 'matchfiles' filesep handles.matchfile{i}], 'mp', '-MAT');
+    save(handles.matchfile{i}, 'mp', '-MAT');
 end;
 set(handles.save, 'enable', 'off');
 

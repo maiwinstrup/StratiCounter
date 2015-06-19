@@ -221,7 +221,7 @@ end
 %% Is the possible number of layers in batch larger than anticipated? 
 % If so, increase value of nLayerMax by 20% in next iteration:
 if FBprob.gamma(end,end)>10^-3 % If P(t=end,j=nMax) larger than this value
-    nLayerMax_new = 1.2*nLayerMax;
+    nLayerMax_new = ceil(1.2*nLayerMax);
 else
     nLayerMax_new = nLayerMax;
 end

@@ -46,8 +46,10 @@ end
 % Plot uncertainty band:
 color_manual  = [1 1 1]*0.5;
 alpha_manual = 0.7;
-xvalues = [layerpos_manual; layerpos_manual(end:-1:1)];
-yvalues_unc = [age_manual+unc_manual; age_manual(end:-1:1)-unc_manual(end:-1:1)];
+xvalues = [layerpos_manual+Model.dx/10; layerpos_manual(end:-1:1)];
+% dx is added only for plotting purposes
+yvalues_unc = [age_manual-unc_manual-0.01; age_manual(end:-1:1)+unc_manual(end:-1:1)+0.01];
+% 0.01 is added/subtracted only for plotting purposes
 % Number of points used to create line (forth and back):
 N = min(length(xvalues),2000); % Maximum ~2000 points
 dx = round(length(xvalues)/N);
@@ -56,7 +58,7 @@ fill(xvalues(1:dx:end),yvalues_unc(1:dx:end),color_manual,'edgecolor',...
 hold on
 % Plot the most likely ages:
 hline(1)=plot(layerpos_manual(1:dx:end),age_manual(1:dx:end),'-k','linewidth',1);
-legendname{1} = Model.manCountsName;
+legendname{1} = Model.nameManualCounts(1:end-4); % remove fileextension
 
 %% Timescale results from Forward-Backward algorithm: 
 % Mode and confidence intervals of age-distribution at each datapoint.
@@ -70,8 +72,8 @@ nConf = (size(timescale,2)-2)/2;
 for i = 1:nConf
     unc_lowerbound = timescale(:,2+i);
     unc_upperbound = timescale(:,2+2*nConf-i+1);    
-    xvalues = [timescale(:,1); timescale(end:-1:1,1)];
-    yvalues = [unc_upperbound; unc_lowerbound(end:-1:1)];
+    xvalues = [timescale(:,1)+Model.dx/10; timescale(end:-1:1,1)];
+    yvalues = [unc_lowerbound-0.01; unc_upperbound(end:-1:1)+0.01];
 
     % Reduce array to only include those points where yvalues change:
     mask = diff(yvalues)~=0;
@@ -97,7 +99,7 @@ legendname{2} = 'Forward-Backward';
 % And plot these:
 hline(3)=plot(layerpos_1yr(1:dx:end),age_1yr(1:dx:end),'-',...
     'color',color*0.6,'linewidth',1.2);
-legendname{3} = 'Timescale1yr';
+legendname{3} = [Model.icecore '_timescale'];
 
 %% Mark the depths of batch boundaries:
 % If tiepoints: Batch boundaries are the location of tiepoints.
@@ -155,7 +157,7 @@ title([Model.icecore ' layer counts'],'fontweight','bold','interpreter','none')
 xlim([Model.dstart timescale(end,1)])
 box on
 % Legend:
-legend(hline,legendname,'location','Best','fontsize',7)
+legend(hline,legendname,'location','Best','fontsize',7,'interpreter','none')
 legend('boxoff')
 
 %% Save figure:

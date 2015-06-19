@@ -60,7 +60,7 @@ handles.diff = uicontrol('units', 'normalized', 'position', [0.31 0.012 0.08 eh]
 handles.ax(1) = axes('position', [0.05 0.1 0.44 0.84], 'nextplot', 'add', 'box', 'on', 'fontsize', font1);
 handles.axtitle(1) = title(['Depth vs. ' handles.core{handles.masterno} ' depth'], 'Fontsize', font1);
 handles.ax(2) = axes('position', [0.55 0.1 0.44 0.84], 'nextplot', 'add', 'box', 'on', 'fontsize', font1);
-handles.axtitle(2) = title(['(slope / ' handles.core{handles.masterno} ' slope) vs. ' handles.core{handles.masterno} 'depth'], 'Fontsize', font1);
+handles.axtitle(2) = title(['(slope / ' handles.core{handles.masterno} ' slope) vs. ' handles.core{handles.masterno} ' depth'], 'Fontsize', font1,'interpreter','none');
 xlim_Callback(handles.fig, handles, 1);
 diff_Callback(handles.fig, handles)
 
@@ -127,9 +127,9 @@ figure(handles.matchmakerfighandle)
 function diff_Callback(hObject, handles) % Change cursor type from crosshair to fullcrosshair and back
 plotcurves(handles);
 if get(handles.diff, 'value') == 1
-    set(handles.axtitle(1), 'String', ['Normalized depth difference(s) vs. ' handles.core{handles.masterno} ' depth']);
+    set(handles.axtitle(1), 'String', ['Normalized depth difference(s) vs. ' handles.core{handles.masterno} ' depth'],'interpreter','none');
 else
-    set(handles.axtitle(1), 'String', ['Depth vs. ' handles.core{handles.masterno} ' depth']);
+    set(handles.axtitle(1), 'String', ['Depth vs. ' handles.core{handles.masterno} ' depth'],'interpreter','none');
 end;
 
 %---

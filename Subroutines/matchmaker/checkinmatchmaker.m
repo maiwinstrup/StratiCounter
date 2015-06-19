@@ -1,4 +1,4 @@
-function checkinmatchmaker(outputdir,Model)
+function checkinmatchmaker(outputdir,Model,Runtype)
 
 %% checkinmatchmaker(outputdir,Model)
 % Extract timescale results; open them in Matchmaker for manual check,
@@ -11,13 +11,17 @@ manualcounts = loadlayercounts(Model,[Model.dstart Model.dend]);
 
 mp(:,1) = manualcounts(:,1);
 mp(:,2) = 1; % Certain years
-mask = manualcounts(:,2)==1;
+mask = manualcounts(:,3)==1;
 mp(mask,2) = 2; % Uncertain years
 
 % Save layer counts:
-folder = './Output/matchfiles';
-if ~exist(folder,'dir'); mkdir(folder); end
-filename = [folder '/' Model.icecore 'layers_manual.mat'];
+if strcmp(Runtype.develop,'yes')
+    matchfilefolder = ['./Output/develop/' Model.icecore '/Matchfiles'];
+else
+    matchfilefolder = ['./Output/' Model.icecore '/Matchfiles'];
+end
+if ~exist(matchfilefolder,'dir'); mkdir(matchfilefolder); end
+filename = [matchfilefolder '/layers_manual.mat'];
 save(filename,'mp')
 
 %% 1b: Matchmaker file including all available data files:
@@ -30,13 +34,13 @@ clear data
 
 %% 1c: Start matchmaker's files_main:
 % Create files_main file
-fid = fopen('files_main.m','w'); % open new file, discard any content
+fid = fopen('./Subroutines/matchmaker/files_main.m','w'); % open new file, discard any content
 
 % Convert to text:
 iCore = 1;
-textinfile = ['files.core{' num2str(iCore) '}=''' Model.icecore ' (manual)''; \r\n'...
+textinfile = ['files.core{' num2str(iCore) '}=''' Model.nameManualCounts(1:end-4) '''; \r\n'...
     'files.datafile{' num2str(iCore) '}=''data_manual.mat''; \r\n'...
-    'files.matchfile{' num2str(iCore) '}=''' Model.icecore 'layers_manual.mat'';'];
+    'files.matchfile{' num2str(iCore) '}=''' matchfilefolder '/layers_manual.mat'';'];
 fprintf(fid,textinfile);
 fclose(fid);
     
@@ -84,10 +88,10 @@ for iCore = 2:nCore
 
     % Save layer counts and tiepoints:
     if iCore == 2
-        filename = ['./Output/matchfiles/' Model.icecore 'layers_auto.mat']; ...
+        filename = [matchfilefolder '/layers_auto.mat']; ...
             % We may compare two results from the same ice core
     else
-        filename = ['./Output/matchfiles/' Model.icecore 'layers_auto' num2str(iCore-1) '.mat'];...
+        filename = [matchfilefolder '/layers_auto' num2str(iCore-1) '.mat'];...
     end
     save(filename,'mp')
     
@@ -102,17 +106,17 @@ for iCore = 2:nCore
     end
     
     %% Create files_main file:
-    fid = fopen('files_main.m','a'); % append to file
+    fid = fopen('./Subroutines/matchmaker/files_main.m','a'); % append to file
 
     % Convert to text:
     if iCore == 2
         textinfile = ['\r\nfiles.core{' num2str(iCore) '}=''' Model.icecore '''; \r\n'...
             'files.datafile{' num2str(iCore) '}=''data_auto.mat''; \r\n'...
-            'files.matchfile{' num2str(iCore) '}=''' Model.icecore 'layers_auto.mat''; \r\n'];
+            'files.matchfile{' num2str(iCore) '}=''' matchfilefolder '/layers_auto.mat''; \r\n'];
     else
         textinfile = ['\r\nfiles.core{' num2str(iCore) '}=''' Model.icecore '''; \r\n'...
             'files.datafile{' num2str(iCore) '}=''data_auto' num2str(iCore-1) '.mat''; \r\n'...
-            'files.matchfile{' num2str(iCore) '}=''' Model.icecore 'layers_auto' num2str(iCore-1) '.mat''; \r\n'];
+            'files.matchfile{' num2str(iCore) '}=''' matchfilefolder '/layers_auto' num2str(iCore-1) '.mat''; \r\n'];
     end
     fprintf(fid,textinfile);
     fclose(fid);
@@ -130,13 +134,16 @@ end
 
 %% Generate matchmaker_sett.mat:
 % Set x-limits:
-sett.xlim(1:2,1)=Model.dstart;meanlambda = mean(diff(manualcounts(:,1)));
-sett.xlim(1:2,2)=Model.dstart+round(20*meanlambda);
+sett.xlim(1:2,1)=Model.dstart;
+meanlambda = mean(diff(manualcounts(:,1)));
+if Model.dend < Model.dstart+30*meanlambda
+    sett.xlim(1:2,2) = Model.dend;
+else
+    sett.xlim(1:2,2)=Model.dstart+round(20*meanlambda);
+end
 sett.specs{1} = [1];
 sett.specs{2} = [1];
 save('./Subroutines/matchmaker/matchmaker_sett.mat','sett','-v6')
 
 % Open matchmaker:
 matchmaker('files_main',1:nCore,nSp)
-delete files_main.m 
-end
