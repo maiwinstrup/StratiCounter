@@ -1,8 +1,0 @@
-LIBRARY libStraticounter
-EXPORTS
-libStraticounterInitialize
-libStraticounterInitializeWithHandlers
-libStraticounterTerminate
-libStraticounterPrintStackTrace
-mlxStraticounter_scibox
-
