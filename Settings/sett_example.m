@@ -6,7 +6,7 @@
 % Mai Winstrup, 2015
 
 %% Data files:
-Model.icecore = 'NEEM_S1';
+Model.icecore = 'NEEM-2011-S1_example';
 % Data existing for core:
 Model.species = {'Cl','nssS'};
 Model.nSpecies = length(Model.species);

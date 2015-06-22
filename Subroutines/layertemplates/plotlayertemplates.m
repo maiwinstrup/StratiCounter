@@ -40,7 +40,7 @@ for j = 1:Model.nSpecies
     hold on
     % Add title:
     if strcmp(Model.icecore,'SyntheticData')
-        title(['Species #' Model.species{j}],'fontweight','bold')    
+        title(['Species #' Model.species{j}],'fontweight','bold','interpreter','none')    
     else
         title(Model.species{j},'fontweight','bold','interpreter','none')
     end

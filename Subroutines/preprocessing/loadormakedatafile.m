@@ -62,10 +62,12 @@ for j = 1:Model.nSpecies
             d1 = zeros(1,N);
             d2 = zeros(1,N);
             for i = 1:N
-                index1 = strfind(listing(i,1).name,'-');
+                % Selecting the correct '-' also if depths are negative:
+                index1 = strfind(listing(i,1).name(2:end),'-');
+                if size(index1)>=2; index1 = index1(1); end
                 index2 = strfind(listing(i,1).name,'m');
-                d1(i) = str2double(listing(i,1).name(1:index1-1));
-                d2(i) = str2double(listing(i,1).name(index1+1:index2-1));
+                d1(i) = str2double(listing(i,1).name(1:1+index1-1));
+                d2(i) = str2double(listing(i,1).name(2+index1:index2-1));
             end
             mask = d1<=Model.dstart & d2>=Model.dend;
             listing = listing(mask,:);
@@ -84,7 +86,8 @@ for j = 1:Model.nSpecies
                 % Check that depth scale is correct, i.e. that data is 
                 % computed with correct value of dx_center. If not, data 
                 % will be re-preprocessed to correct depth scale.
-                if ismember(depth(1),Data_final.depth)
+                if ismember(round(depth(1)/(0.1*Model.dx))*0.1*Model.dx,...
+                        round(Data_final.depth/(0.1*Model.dx))*0.1*Model.dx)
                     % Add to output data file:
                     % Place data correctly in array (since data may not 
                     % cover entire interval):

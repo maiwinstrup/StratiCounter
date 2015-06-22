@@ -110,7 +110,7 @@ if plotlevel>0&&nDeriv>0
     plot(depth(mask),data(mask))
     hold on
     plotlayercounts(layercounts,data(mask))
-    title(['Data: ' species],'fontweight','bold')
+    title(['Data: ' species],'fontweight','bold','interpreter','none')
     xlim([dstart_fig dend_fig])
     
     % Name of derivative data series: 

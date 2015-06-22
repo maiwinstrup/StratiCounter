@@ -196,9 +196,9 @@ plot(x,TemplateInfo.meansignal,'-k','linewidth',2)
 % Add label and title:
 ylabel('Mean signal','fontweight','bold')
 if strcmp(icecore,'SyntheticData')
-    title(['Species #' species ' (' manCountsName ')'],'fontweight','bold')
+    title(['Species #' species ' (' manCountsName ')'],'fontweight','bold','interpreter','none')
 else
-    title([species ' (' manCountsName ')'],'fontweight','bold')
+    title([species ' (' manCountsName ')'],'fontweight','bold','interpreter','none')
 end
 
 %% Principal components (plotting the first three components): 

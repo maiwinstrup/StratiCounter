@@ -152,6 +152,6 @@ plotlayercounts(layercounts,data_fig)
 text = preproctype;
 if ~isempty(procdist); text = [text '(' num2str(procdist) ')']; end
 if ~isempty(procval); text = [text '(' num2str(procval) ')']; end
-title(text,'fontweight','bold')
+title(text,'fontweight','bold','interpreter','none')
 xlim([dstart_fig dend_fig])
 end
