@@ -1,30 +1,30 @@
 function straticounter(varargin)
-%% STRATICOUNTER A Layer counting algorithm
+
+%% STRATICOUNTER: A layer counting algorithm
 % STRATICOUNTER(settings_file_name) loads settings from the named file in
-%   "settings_file_name" The file name should not include the ".m"
-%   extension
+%   "settings_file_name". 
 %
 % STRATICOUNTER(settings_path, output_path) loads settings from a ".mat"
 %   file whose path and name is given in "settings_path". The output of the
-%   function will be saved in the "output_path"
+%   function will be saved in the "output_path".
 %
-%INPUTS:
-%   settings_file_name (string): name of the settings file (.m) to load.
+% INPUTS:
+%   settings_file_name (string): Name of the settings file (.m) to load.
 %       It is assumed that the file is located in a local folder
-%       called "Settings"
-%   settings_path (string): path to the file (.mat) from which the
-%       settings should be loaded
-%   output_path (string): path to the folder where the output of the
-%       funciton should be written
+%       called "Settings".
+%   settings_path (string): Path to the file (.mat) from which the
+%       settings should be loaded.
+%   output_path (string): Path to the folder where the output of the
+%       function should be written.
 %
-%OUTPUTS:
-%   When providing only 1 argument the output files will be placed in a
+% OUTPUTS:
+%   When providing only 1 argument, the output files will be placed in a
 %   local folder named "Output"
 %
-%   When providing 2 arguments the output files will be saved in the
-%   folder specified by the "output_path" argument
+%   When providing 2 arguments, the output files will be saved in the
+%   folder specified by the "output_path" argument.
 %
-%DETAILS:
+% DETAILS:
 % The algorithm is based on the principles of statistical inference of
 % hidden states in semi-Markov processes. States, and their associated
 % confidence intervals, are inferred by the Forward-Backward algorithm.
@@ -50,8 +50,7 @@ function straticounter(varargin)
 % Winstrup et al., An automated approach for annual layer counting in
 % ice cores, Clim. Past. 8, 1881-1895, 2012.
 %
-%%%%%
-% Copyright (C) 2015  Mai Winstrup
+%% Copyright (C) 2015  Mai Winstrup
 % Files associated with the matchmaker software (matchmaker.m,
 % matchmaker_evaluate.m) is authored and copyrighted by Sune Olander
 % Rasmussen.
@@ -70,18 +69,12 @@ function straticounter(varargin)
 % with this program; if not, write to the Free Software Foundation, Inc.,
 % 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-if ~isdeployed
-    % use the `isdeployed` variable to know whether this is a compiled instance
-    % of the code or not.
-
-    % If compiled we do not need to clc or close anything
-    clc; close all;
-end
-
+%% Release date:
 releasedate = '30-04-2015';
 
-%% Add paths to subroutines and settings folders:
-if ~isdeployed
+%% Paths to subroutine and settings folders:
+if ~isdeployed % shows whether this is a compiled instance of the code
+    clc; close all;
     addpath(genpath('./Subroutines'))
     addpath(genpath('./Settings'))
 end
@@ -92,18 +85,18 @@ Model = defaultsettings();
 % Add release date:
 Model.releasedate = releasedate;
 
-% make generic message to be used when incorrect number of inputs are used
+%% Core-specific settings:
+% Make generic message to be used when incorrect number of inputs are used:
 vararg_err = 'This function accepts a maximum of two (2) input arguments';
 
-% use 'nargin' to see how many input arguments were used and select appropriate
-% behavior
-if nargin == 1
-    % Use core-specific settings:
+% Use 'nargin' to see the number of input arguments, and select appropriate 
+% behavior:
+if nargin == 1    
     % Check that settings file exists:
-    if ~exist(['Settings/' varargin{1} '.m'],'file')
+    if ~exist(['Settings/' varargin{1}],'file')
         error('Settings file unknown, please correct')
     end
-    %Import settings
+    % Import settings:
     run(varargin{1});
 elseif nargin ==2
     Model = varargin{1};
@@ -112,31 +105,33 @@ else
 end
 
 %% Select how to run the script:
-if nargin ==1
+if nargin == 1
     Runtype.develop = 'no';
-    % In development mode; will run as normal, but output will be put in the
-    % ./Output/develop folder. Option to run for only a few batches.
+    % In development mode; will run as normal, but output will be put in 
+    % the ./Output/develop folder. Option to run for only a few batches.
     Runtype.reuse = 'yes';
     % If yes; use previously processed data and calculated layer templates.
     % If no, these are re-calculated.
     Runtype.outdir = '';
-    %provide this if you have a custom output directory that you want to
-    %provide
+    % Provide path if wanting to use a custom output directory.    
+
 elseif nargin == 2
     Runtype.develop = 'no';
     Runtype.reuse = 'no';
     Runtype.outdir = varargin{2};
+
 else
     error(vararg_err)
 end
 
+% Plotting:
+% Options: 0: 'none' (no plots), 1: 'info' (few plots), 2: 'debug' (all plots)
 if isdeployed
     % Force to no plots when run as compiled library
     Runtype.plotlevel = 0;
 else
-    Runtype.plotlevel = 2;
+    Runtype.plotlevel = 1;
 end
-% Options: 0: 'none' (no plots), 1: 'info' (few plots), 2: 'debug' (all plots)
 
 % Display info messages if different from standard settings:
 if strcmp(Runtype.develop,'yes');
@@ -418,7 +413,8 @@ while iBatch < nBatch
               end
            end
            figure(hfig_logPobs)
-           plot(squeeze(logPobs(iBatch,iTemplateBatch,2:end)),'.-','color',[1 1 1]*(iTemplateBatch-1)/Model.nTemplateBatch);
+           plot(squeeze(logPobs(iBatch,iTemplateBatch,2:end)),'.-',...
+               'color',[1 1 1]*(iTemplateBatch-1)/Model.nTemplateBatch);
            hold on
            title(['Batch: ' num2str(iBatch)],'fontweight','bold')
            xlabel('Iteration number')
@@ -444,7 +440,8 @@ while iBatch < nBatch
        if Runtype.plotlevel > 0
            color = [1 0 1; 1 1 0; 1 0.5 0.5; 0 0 1];
            filename = [outputdir '/layertemplates_new'];
-           plotlayertemplates(Template_new,TemplateInfo_new,Model,hfig_template,color,filename);
+           plotlayertemplates(Template_new,TemplateInfo_new,Model,...
+               hfig_template,color,filename);
        end
 
 %        % Possibility for updating the layer templates:
@@ -642,7 +639,8 @@ data_out = makedatafile(Data.data,Data.depth,preprocsteps,Model.derivatives);
 if Runtype.plotlevel > 0
     color = [1 0 1; 1 1 0; 1 0.5 0.5; 0 0 1]*0.5;
     filename = [outputdir '/layertemplates_new'];
-    plotlayertemplates(Template_new,TemplateInfo_new,Model,hfig_template,color,filename);
+    plotlayertemplates(Template_new,TemplateInfo_new,Model,...
+        hfig_template,color,filename);
 end
 
 %% Clean-up: Remove preliminary datafiles and figures
