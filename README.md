@@ -26,9 +26,9 @@ Having questions?
 ----
 Or did you encounter a bug?
 
-For questions and inquiries, send me an e-mail at *mai@gfy.ku.dk* describing the issue, and I'll get back to you as soon as I can. 
+For questions and inquiries, send me an e-mail at mai@gfy.ku.dk describing the issue, and I'll get back to you as soon as I can. 
 
-For bug reports, please use Github's issue tracking feature: 
+For filing a bug report, please use Github's issue tracking feature: 
 https://github.com/maiwinstrup/StratiCounter/issues/new
 
 Bug reports should at least contain the following information:

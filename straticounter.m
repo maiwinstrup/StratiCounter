@@ -70,7 +70,7 @@ function straticounter(varargin)
 % 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 %% Release date:
-releasedate = '30-04-2015';
+releasedate = '07-07-2015';
 
 %% Paths to subroutine and settings folders:
 if ~isdeployed % shows whether this is a compiled instance of the code
