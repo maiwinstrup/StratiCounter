@@ -17,6 +17,7 @@ StratiCounter is written in Matlab, and thus running the script requires a Matla
 
 Released versions of the program can be downloaded from: 
 https://github.com/maiwinstrup/StratiCounter/releases
+
 We always recommend using the latest release. 
 
 The software package includes a user manual describing how to set up and run the program, and how to interpret the results.
@@ -25,7 +26,7 @@ Having questions?
 ----
 Or did you encounter a bug?
 
-For questions and inquiries, send me an e-mail at ***mai@gfy.ku.dk*** describing the issue, and I'll get back to you as soon as I can. 
+For questions and inquiries, send me an e-mail at *mai@gfy.ku.dk* describing the issue, and I'll get back to you as soon as I can. 
 
 For bug reports, please use Github's issue tracking feature: 
 https://github.com/maiwinstrup/StratiCounter/issues/new
