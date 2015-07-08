@@ -90,6 +90,11 @@ if ~isempty(Model.tiepoints)
     Model.dend = ceil(Model.tiepoints(end,1));
     
     % Check age unit of tiepoints:
+    if ~isfield(Model,'ageUnitTiepoints')
+        promt = ['Which timescale terminology was used for tiepoints?' ... 
+            '\n(Options: AD, BP, b2k, layers): '];
+        Model.ageUnitTiepoints = input(promt,'s');
+    end        
     while ~ismember(Model.ageUnitTiepoints,{'AD','BP','b2k','layers'})
         promt = ['Which timescale terminology was used for tiepoints?' ... 
             '\n(Options: AD, BP, b2k, layers): '];

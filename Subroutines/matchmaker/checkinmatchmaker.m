@@ -126,10 +126,13 @@ for iCore = 2:nCore
 end
 
 %% Open matchmaker:
-% Set maximum 10 subfigures in total:
-nSubfig = sum(nSp);
-if nSubfig > 10
-    nSp = round(min(nSp,10/nCore)); 
+% Display a maximum of 5 subfigures per panel:
+nSp = min(nSp,5);
+
+% And a total number of maximum 10:
+while sum(nSp) > 10
+    [~,index]=max(nSp);
+    nSp(index) = nSp(index)-1;
 end
 
 %% Generate matchmaker_sett.mat:
