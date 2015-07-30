@@ -9,35 +9,61 @@ function Layerpar0 = constructmanualpar(Data,Template,Model,outputdir,Runtype)
 %% Load manual layer counts for selected depth interval:
 [manualcounts,meanLambda,newinterval] = ...
     loadlayercounts(Model,Model.initialpar);
+if isempty(manualcounts)
+    error(['Manual counts do not exist in selected interval for initial '...
+        'parameter estimation.'])
+end
 
 % Changes to depth interval?
 if newinterval(1)>Model.initialpar(1)
-    disp(['Note: Change of interval for calculating initial layer parameters. '...
+    warning(['Note: Change of interval for calculating initial layer parameters. '...
         'Start: ' num2str(newinterval(1)) 'm'])
 end
 if newinterval(2)<Model.initialpar(2)
-    disp(['Note: Change of interval for calculating initial layer parameters. '... 
+    warning(['Note: Change of interval for calculating initial layer parameters. '... 
         'End: ' num2str(newinterval(2)) 'm'])
 end
 Model.initialpar = newinterval;
 
 %% Perform data preprocessing steps for distances given in layer thickness 
-% fractions:
-% It is here assumed that the layer thicknesses in the entire interval stay
-% relatively constant, so that we can use a fixed processing distance for 
-% the data throughout the interval. 
+% fractions. If depth interval is outside data range, data for interval is 
+% first loaded and then preprocessed according to all preprocessing steps. 
+
+% For the floating preprocessing steps it is assumed that the layer 
+% thicknesses in the entire interval stay relatively constant, so that we 
+% can use a fixed processing distance for the data throughout the interval. 
 preprocstepsFloat = setpreprocdist(Model.preprocsteps(:,2),meanLambda);
 
-% Initial parameter interval is assumed to always be within the depth range
-% of our depth-interval, and thus contained in Data. 
-% Data in interval:
-mask=Data.depth>=Model.initialpar(1)&Data.depth<=Model.initialpar(2);
-depth = Data.depth(mask);
-data = Data.data(mask,:,:);
-       
+% If initial parameter interval is within depth section for layer counting: 
+if Model.initialpar(1)>=Data.depth(1) && Model.initialpar(2)<=Data.depth(end)
+    % Data in interval:
+    mask=Data.depth>=Model.initialpar(1)&Data.depth<=Model.initialpar(2);
+    depth = Data.depth(mask);
+    data = Data.data(mask,:,:);
+    
+else
+    % Load and/or process data for interval.
+    % Processed data may not exist from before if e.g. the provided 
+    % parameter interval is not covered by data interval for layer counting.  
+        
+    % Construct processed data file: 
+    % No plotting:
+    Runtype1 = Runtype; Runtype1.plotlevel=0;
+    % For layerpar interval:
+    Model1 = Model; 
+    Model1.dstart = Model.initialpar(1);
+    Model1.dend = Model.initialpar(2);
+    % Load and/or process data:
+    Data = loadormakedatafile(Model1,[],Runtype1);
+    depth = Data.depth;
+    data = Data.data;
+end
+    
 % Finalize the preprocessing steps:
-[DataPreproc.data, DataPreproc.depth] = makedatafile(data,depth,...
-    preprocstepsFloat,Model.derivatives); % No further downsampling etc.
+DataPreproc.depth = depth;
+DataPreproc.data = makedatafile(data,depth,preprocstepsFloat,...
+    Model.derivatives,depth); 
+% Keeping the same depth scale - no further downsampling etc.
 
 %% Compute layer parameters for the various data records:
 % Calculating both the maximum-Likelihood initial parameters (i.e. the best 
@@ -68,6 +94,10 @@ for i= 1:length(index)
         % Check for correct format:
         while ~isequal(size(value),size(eval(['Layerpar0.' names{index(i)}])))
             value = input('Incorrect format, please correct: ');
+        end
+        while (ismember(names{index(i)},{'sigma','nvar'})&& sum(value<=0)>0) || ...
+                strcmp(names{index(i)},{'cov'}) && sum(diag(value)<=0)>0
+            value = input(['Value of ' names{index(i)} ' must be great than 0. Please correct: ']);
         end
         % Inset value in array:
         if index(i) == 1; Layerpar0.my = value;

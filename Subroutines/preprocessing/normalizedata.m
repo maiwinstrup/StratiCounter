@@ -28,7 +28,8 @@ for i = 1:length(y)
         case 'minmax'
             % Min-Max normalization:
             % Normalization to between 0 and 1.
-            ynew(i) = (y(i)-nanmin(ysegment))/(nanmax(ysegment)-nanmin(ysegment));
+            ynew(i) = (y(i)-nanmin(ysegment))/(nanmax(ysegment)-nanmin(ysegment));            
+       
     end
 end
 

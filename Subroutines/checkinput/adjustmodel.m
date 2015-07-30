@@ -2,43 +2,32 @@ function Model = adjustmodel(Model)
 
 %% Model = adjustmodel(Model)
 % This function checks that the Model structure array has the correct 
-% format, and (if possible) makes the required corrections to the array. 
+% format, and/or (if possible) makes the required corrections.
 % Copyright (C) 2015  Mai Winstrup
 
-%% Check value of dx_center:
-if Model.dx_center<0 || Model.dx_center>=1
-    disp('Value of Model.dx_center must be a positive number below 1. Please correct!')
-    return
-end
-if Model.dx_center~=0 && Model.dx_center~=0.5;
-    disp(['Check value of Model.dx_center (current value: ' num2str(Model.dx_center) ')'])
+%% Check for settings corresponding to old versions:
+if isfield(Mode,'dx_center')
+    warning('"dx_center" has in current version been replaced by "dx_offset"')
 end
 
-%% Adjust depth intervals:
-% The depths below do not include displacement due to possible non-zero
-% value of dx_center.
-% Interval for layer counting:
-Model.dstart = ceil((Model.dstart-Model.dx_center*Model.dx)/Model.dx)*Model.dx; 
-Model.dend = ceil((Model.dend-Model.dx_center*Model.dx)/Model.dx)*Model.dx; 
+%% Check value of dx_offset:
+if Model.dx_offset<0 || Model.dx_offset>=1
+    error('Value of Model.dx_offset must be a positive number less than unity.')
+end
+if ~ismember(Model.dx_offset, [0 0.5]);
+    warning(['Check value of Model.dx_offset (current value: ' num2str(Model.dx_offset) ')'])
+end
 
-% Interval for manual templates:
-Model.manualtemplates = ...
-    ceil((Model.manualtemplates-Model.dx_center*Model.dx)/Model.dx)*Model.dx; 
-
-% Interval for initial parameters:
-Model.initialpar = ...
-    ceil((Model.initialpar-Model.dx_center*Model.dx)/Model.dx)*Model.dx; 
-
+%% Depth intervals:
 % Depth intervals must be positive:
 if Model.dend<=Model.dstart
-    disp('Check depth interval for layer counting')
-    return
+    error('Error in depth interval for layer counting')
 end
 if Model.manualtemplates(1)>=Model.manualtemplates(2)
-    disp('Check depth interval for layer templates')
+    error('Error in depth interval for layer templates')
 end
 if Model.initialpar(1)>=Model.initialpar(2)
-    disp('Check depth interval for initial layer parameter estimation')
+    error('Error in depth interval for initial layer parameter estimation')
 end
 
 %% Format preprocessing steps:
@@ -48,6 +37,13 @@ for j = 1:Model.nSpecies
             Model.preprocsteps{j,k} = {Model.preprocsteps{j,k}{1,1},[]};
         end
     end
+end
+
+%% Model.wSpecies must be the correct format:
+Model.wSpecies = Model.wSpecies(:);
+% And of correct length:
+if length(Model.wSpecies)~=Model.nSpecies
+    error('Model.wSpecies does not have the required format')
 end
 
 %% Sort ordering of data species:
@@ -61,16 +57,7 @@ clear index
 %% Does one data species occur more than once?
 nUnique = length(unique(Model.species));
 if nUnique~=Model.nSpecies
-    disp('One data species occur more than once, please correct')
-    return
-end
-
-%% Model.wSpecies must be the correct format:
-Model.wSpecies = Model.wSpecies(:);
-% And of correct length:
-if length(Model.wSpecies)~=Model.nSpecies
-    disp('Model.wSpecies does not have the required format, please correct')
-    return
+    error('One data species occur more than once, please correct')
 end
 
 %% Tiepoints: 
@@ -79,8 +66,8 @@ if ~isempty(Model.tiepoints)
     Model.tiepoints = sortrows(Model.tiepoints,1);
 
     % Remove tiepoints from outside data interval:
-    mask = Model.tiepoints(:,1)>=Model.dstart+Model.dx_center*Model.dx &...
-        Model.tiepoints(:,1)<=Model.dend+Model.dx_center*Model.dx;
+    mask = Model.tiepoints(:,1)>=Model.dstart &...
+        Model.tiepoints(:,1)<=Model.dend;
     Model.tiepoints = Model.tiepoints(mask,:);
     
     % Only the section between the uppermost and lowermost tiepoints 
@@ -91,16 +78,13 @@ if ~isempty(Model.tiepoints)
     
     % Check age unit of tiepoints:
     if ~isfield(Model,'ageUnitTiepoints')
-        promt = ['Which timescale terminology was used for tiepoints?' ... 
-            '\n(Options: AD, BP, b2k, layers): '];
-        Model.ageUnitTiepoints = input(promt,'s');
-    end        
+        Model.ageUnitTiepoints =[];
+    end 
     while ~ismember(Model.ageUnitTiepoints,{'AD','BP','b2k','layers'})
         promt = ['Which timescale terminology was used for tiepoints?' ... 
             '\n(Options: AD, BP, b2k, layers): '];
         Model.ageUnitTiepoints = input(promt,'s');
     end
-
     % Convert tiepoints to integer values:
     Model.tiepoints(:,2)=floor(Model.tiepoints(:,2));        
 end
@@ -113,7 +97,7 @@ if strcmp(Model.type,'FFT')
     Model.order = 1+2*Model.order;
 end
 
-%% Sections for mean layer thickness calculations:
+%% Sections for layer number distribution calculations:
 if ~iscell(Model.dMarker)&&~isempty(Model.dMarker)
     Model.dMarker = {Model.dMarker};
 end
@@ -123,6 +107,19 @@ for i = 1:length(Model.dMarker)
     mask = Model.dMarker{i}>=Model.dstart & Model.dMarker{i}<=Model.dend;
     Model.dMarker{i} = Model.dMarker{i}(mask);
 end
+
+% Add start and end of data series to interval for calculating layer 
+% distributions:
+for i = 1:length(Model.dMarker)
+    if ~isempty(Model.dMarker{i})
+        Model.dMarker{i} = unique([Model.dstart; Model.dMarker{i}(:); Model.dend]);
+    end
+end
+% Remove empty entries in dMarker:
+for i = 1:length(Model.dMarker)
+    mask(i) = isempty(Model.dMarker{i});
+end
+Model.dMarker = Model.dMarker(~mask);
 
 %% Check for file extension on filename with manual layer counts:
 if ~strcmp(Model.nameManualCounts(end-3:end),'.txt')
@@ -138,33 +135,21 @@ end
 
 %% Truncating tiepoints etc. to the desired data resolution:
 if ~isempty(Model.dx)
-    % New depth scale:
-    depth_new = Model.dstart+Model.dx_center*Model.dx:Model.dx:...
-        Model.dend+Model.dx_center*Model.dx;
+    % Depth scale:
+    depth = makedepthscale(Model.dstart,Model.dend,Model.dx,Model.dx_offset);
     
     % Tiepoints:
     if ~isempty(Model.tiepoints)
         % Interpolate to data resolution:
-        index = interp1(depth_new,1:length(depth_new),Model.tiepoints(:,1),'nearest','extrap');
-        Model.tiepoints(:,1) = depth_new(index);
+        index = interp1(depth,1:length(depth),Model.tiepoints(:,1),...
+            'nearest','extrap');
+        Model.tiepoints(:,1) = depth(index);
     end
-
+        
     % Sections for lambda calculations:
     for i = 1:length(Model.dMarker)
-        mask = Model.dMarker{i}>=Model.dstart+Model.dx_center*Model.dx & ...
-            Model.dMarker{i}<=Model.dend+Model.dx_center*Model.dx;
-        index = interp1(depth_new,1:length(depth_new),Model.dMarker{i}(mask),'nearest');
-        Model.dMarker{i} = depth_new(index);
-    end
-end
-
-if ~isempty(Model.dMarker)
-    if isempty(Model.dMarker{1})
-        Model.dMarker = [];
-    else
-        for i = 1:length(Model.dMarker)
-            Model.dMarker{i} = sort(Model.dMarker{i});
-        end
+        index = interp1(depth,1:length(depth),Model.dMarker{i},'nearest','extrap');
+        Model.dMarker{i} = sort(depth(index));
     end
 end
 

@@ -53,7 +53,7 @@ header = ['%% Timescale for the ' Model.icecore ' core \r\n' ...
 
 %% Digits and spacing in data file:
 % Number of digits in depth:
-if Model.dx_center == 0
+if Model.dx_offset == 0
     nDigits = max(ceil(log10(1/Model.dx)));
 else
     nDigits = max(ceil(log10(1/Model.dx)))+1;

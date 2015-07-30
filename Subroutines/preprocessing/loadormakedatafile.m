@@ -22,8 +22,8 @@ function [Data_final, Model] = loadormakedatafile(Model,layercounts,Runtype)
 flag = nan(1,Model.nSpecies);
 
 %% Final depth scale:
-Data_final.depth(:,1) = Model.dstart+Model.dx_center*Model.dx:Model.dx:...
-    Model.dend+Model.dx_center*Model.dx;
+Data_final.depth(:,1) = makedepthscale(Model.dstart,Model.dend,Model.dx,Model.dx_offset);
+
 % Initialize data array:
 Data_final.data = nan(length(Data_final.depth),Model.derivatives.nDeriv+1,...
     Model.nSpecies);
@@ -39,14 +39,14 @@ for j = 1:Model.nSpecies
 
     %% Output folder for preprocessed data:
     % Running in development mode?
-    if strcmp(Runtype.develop,'yes'); outputdir = './Output/develop';
-    else outputdir = './Output';
+    if strcmp(Runtype.develop,'yes'); outputdir0 = './Output/develop';
+    else outputdir0 = './Output';
     end
     % Including the (ordered) preprocessing steps:
     preprocname = makepreprocname(Model.preprocsteps{j,1}, Model.dx);
 
     % Output folder for processed data:
-    outputdir = [outputdir '/' Model.icecore '/ProcessedData/' Model.species{j} '/' preprocname];
+    outputdir = [outputdir0 '/' Model.icecore '/ProcessedData/' Model.species{j} '/' preprocname];
     % Make folder (if doesn't exist):
     if ~exist(outputdir,'dir'); mkdir(outputdir); end
     
@@ -74,57 +74,71 @@ for j = 1:Model.nSpecies
         
             % Load the smallest file (if file exist):
             if size(listing,1)>0
-                [~,imin]=min([listing.bytes]);
-                filename = listing(imin,1).name;
-                load([outputdir '/' filename]);
-        
-                % Remove excess data from outside interval:
-                mask = depth>=Model.dstart+Model.dx_center*Model.dx & ...
-                    depth<=Model.dend+Model.dx_center*Model.dx;
-                depth = depth(mask);
-                
-                % Check that depth scale is correct, i.e. that data is 
-                % computed with correct value of dx_center. If not, data 
-                % will be re-preprocessed to correct depth scale.
-                if ismember(round(depth(1)/(0.1*Model.dx))*0.1*Model.dx,...
-                        round(Data_final.depth/(0.1*Model.dx))*0.1*Model.dx)
-                    % Add to output data file:
-                    % Place data correctly in array (since data may not 
-                    % cover entire interval):
-                    index = interp1(Data_final.depth,...
-                        1:length(Data_final.depth),depth,'nearest');
+                filefound = false;
+                possiblefile = true(size(listing));
+                k = 0;
+                while ~filefound && k<=length(listing)
+                    k = k+1;
+                    [~,imin] = min([listing(possiblefile).bytes]);
+                    imin = find(cumsum(possiblefile)==imin,1);
+                    filename = listing(imin,1).name;
+                    % Load this data file:
+                    clear data depth
+                    load([outputdir '/' filename]);
                     
-                    % Are all required derivatives calculated?
-                    if Model.derivatives.nDeriv+1 <= size(data,2)
-                        Data_final.data(index,1:Model.derivatives.nDeriv+1,j) = ...
-                            data(mask,1:Model.derivatives.nDeriv+1);
-                    else
-                        % Otherwise, calculate derivatives:
-                        [slope,derivnoise] = calculateslope(data(mask,1),...
-                            Model.derivatives.nDeriv,Model.derivatives.slopeorder,...
-                            Model.derivatives.slopedist,0);
-                        
-                        % Save data:
-                        data = [data(mask,1), slope];
-                        filename = [num2str(Model.dstart) '-'  num2str(Model.dend) 'm'];
-                        save([outputdir '/' filename '.mat'],'data','depth','derivnoise');
+                    % Remove excess data from outside interval:
+                    mask = depth>=Model.dstart & depth<=Model.dend;
+                    depth = depth(mask);
+
+                    % Check that depth scale is correct, i.e. that data is 
+                    % computed with same value of dx_offset and same
+                    % starting point. If not, data will be re-preprocessed 
+                    % to correct depth scale.
+                    if ismember(round(depth(1)/(0.1*Model.dx)),...
+                            round(Data_final.depth/(0.1*Model.dx)))
+                        filefound = true;
                         
                         % Add to output data file:
-                        Data_final.data(index,1:Model.derivatives.nDeriv+1,j) = data;
+                        % Place data correctly in array (since data may not 
+                        % cover entire interval):
+                        index = interp1(Data_final.depth,...
+                            1:length(Data_final.depth),depth,'nearest');
+                    
+                        % Are all required derivatives calculated?
+                        if Model.derivatives.nDeriv+1 <= size(data,2)
+                            Data_final.data(index,1:Model.derivatives.nDeriv+1,j) = ...
+                                data(mask,1:Model.derivatives.nDeriv+1);
+                        else
+                            % Otherwise, calculate derivatives:
+                            [slope,derivnoise] = calculateslope(data(mask,1),...
+                                Model.derivatives.nDeriv,Model.derivatives.slopeorder,...
+                                Model.derivatives.slopedist,0);
+                        
+                            % Save data:
+                            data = [data(mask,1), slope];
+                            filename = [num2str(Model.dstart) '-'  num2str(Model.dend) 'm'];
+                            save([outputdir '/' filename '.mat'],'data','depth','derivnoise');
+                    
+                            % Add to output data file:
+                            Data_final.data(index,1:Model.derivatives.nDeriv+1,j) = data;
+                        end
+                    else
+                        % If not same dx_offset or starting depth: Try next file
+                        filefound = false;
+                        possiblefile(imin) = false;
                     end
                     
                     % Display warning if data series does not cover all of 
                     % interval (some flexibility in interval endpoints)
                     if index(1)>10 || index(end)<length(Data_final.depth)-10
-                        disp(['OBS: ' Model.species{j} ' only covers interval ' ...
-                            num2str(depth(1)-Model.dx_center*Model.dx) '-' ...
-                            num2str(depth(end)-Model.dx_center*Model.dx) 'm.'])
+                        warning(['Note: ' Model.species{j} ' only covers interval ' ...
+                            num2str(depth(1)) '-' num2str(depth(end)) 'm.'])
                     end
                 
                     % Test for only NaNs in data series 
                     if sum(isfinite(Data_final.data(:,1,j)))==0; 
                         flag(j) = 1; % Data are nan in all of current interval 
-                        disp([Model.species{j} ' not available for current depth interval'])
+                        warning([Model.species{j} ' not available for current depth interval'])
                     end
                 
                     % Also loaded are the analytically-derived relative 
@@ -134,17 +148,17 @@ for j = 1:Model.nSpecies
                     if strcmp(Model.derivnoise,'analytical')
                        Model.derivnoise = derivnoise(1:Model.derivatives.nDeriv+1);
                     end
+                end
                 
+                if filefound
                     % And we're done! 
                     % Proceed to next impurity record.
                     continue
-                else
-                    clear data depth
                 end
             end
         end
     end
-
+    
     %% Otherwise: Load and preprocess the raw data for current interval
     rawdata = loadrawdata(Model.species{j},Model.path2data); 
     % Format of rawdata:
@@ -160,19 +174,18 @@ for j = 1:Model.nSpecies
     % Set flag, display error message, and go to next impurity species.
     if isempty(rawdata); 
         flag(j) = 2; 
-        disp([Model.species{j} ' does not exist in data file']);
+        warning([Model.species{j} ' does not exist in data file']);
         continue
     end
     
     % Does data exist in at least part of data interval?   
     % If not, set flag, display error message, and continue to next 
     % impurity species.
-    mask = rawdata(:,1)>=Model.dstart+Model.dx_center*Model.dx & ...
-        rawdata(:,1)<=Model.dend+Model.dx_center*Model.dx;
+    mask = rawdata(:,1)>=Model.dstart & rawdata(:,1)<=Model.dend;
     if sum(isfinite(rawdata(mask,2)))==0; 
         % Data is nan in all of current interval: 
         flag(j) = 1; 
-        disp([Model.species{j} ' not available for current depth interval']); 
+        warning([Model.species{j} ' not available for current depth interval']); 
         continue 
     end
     
@@ -187,18 +200,30 @@ for j = 1:Model.nSpecies
         L = max(cell2mat(Model.preprocsteps{j,1}(:,2)));
     end
     mask = rawdata(:,1)>=Model.dstart-L & rawdata(:,1)<=Model.dend+L;
-    depth = rawdata(mask,1);
-    data0 = rawdata(mask,2);   
-
+    depth0 = rawdata(mask,1);
+    data0 = rawdata(mask,2);
+    
     %% Preprocess data, downsample, and calculate derivatives:
-    % If Model.dx is empty, the original resolution is kept.
-    [data, depth, derivnoise, hfigpreproc(j), hfigderiv(j)] = ...
-        makedatafile(data0,depth,Model.preprocsteps(j,1),Model.derivatives,...
-        Model.dx,Model.dx_center,Runtype.plotlevel,Model.species(j),layercounts);
+    % Define depth scale:
+    if isempty(Model.dx)
+        % If Model.dx is empty, the original depthscale is used:
+        depth = depth0;
+    else
+        % New (extended) depth scale:
+        depth1 = makedepthscale(Model.dstart,Model.dend,Model.dx,Model.dx_offset);
+        % Extend by L to both sides:
+        nExt = ceil(L/Model.dx);
+        depth = [depth1(1)-(nExt:-1:1)'*Model.dx; depth1(:); depth1(end)+(1:nExt)'*Model.dx];
+        depth = depth(depth>=depth0(1)&depth<=depth0(end));
+    end
+        
+    % The corresponding data file:
+    [data, derivnoise, hfigpreproc(j), hfigderiv(j)] = ...
+        makedatafile(data0,depth0,Model.preprocsteps(j,1),Model.derivatives,...
+        depth,Runtype.plotlevel,Model.species(j),layercounts);
     
     %% Remove extra data from edges: 
-    mask = depth>=Model.dstart+Model.dx_center*Model.dx & ...
-        depth<=Model.dend+Model.dx_center*Model.dx;
+    mask = depth>=Model.dstart & depth<=Model.dend;
     depth = depth(mask);
     data = data(mask,:);
     
@@ -232,8 +257,7 @@ for j = 1:Model.nSpecies
     % flexibility in interval endpoints)
     if index(1)>10 || index(end)<length(Data_final.depth)-10
         disp(['OBS: ' Model.species{j} ' only covers interval ' ...
-            num2str(depth(1)-Model.dx_center*Model.dx) '-' ...
-            num2str(depth(end)-Model.dx_center*Model.dx) 'm.'])
+            num2str(depth(1)) '-' num2str(depth(end)) 'm.'])
     end
     
     %% Add analytical weighting values to Model (if wanted):
@@ -258,5 +282,4 @@ end
 if Runtype.plotlevel==1
     close(hfigpreproc(isgraphics(hfigpreproc,'figure'))); 
     close(hfigderiv(isgraphics(hfigpreproc,'figure')));
-end
 end

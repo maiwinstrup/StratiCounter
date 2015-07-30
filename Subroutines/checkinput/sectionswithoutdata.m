@@ -7,6 +7,9 @@ function sectionswithoutdata(Data,sectionlength,species)
 
 %% Section length in pixels:
 dx = mean(diff(Data.depth)); % Using an average value for dx
+if isnan(sectionlength)
+    sectionlength = input('Length of section (in m) defining a large data gab (usually 20*lambda): ');
+end
 sectionlength_px = round(sectionlength/dx); %[pixel]
 
 %% Find nans in data (not considering derivatives) 

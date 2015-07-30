@@ -27,7 +27,7 @@ function [Result, Layer0_new, batchStart_new] = ...
 % Result.Lambda.ndist: Probability distribution of layers in section 
 % Result.Lambda.d: ending depth of corresponding lambda sections
 % Result.Marker.ndist: Probability distribution of layer numbers in section
-% Result.Marker.d: Depth of corresponding marker horizons.
+% Result.Marker.d: End depth of section for marker horizons.
 % Result.nIter: Final iteration number for batch
 
 % Copyright (C) 2015  Mai Winstrup
@@ -56,7 +56,7 @@ batchStart_new = batchStart+tau-1; %[pixel from start of data series]
 %% Resulting layer number distribution along batch:
 % This is calculated up to and including pixel tau.
 [ntau, ntauTotal, LayerProbDist] = ...
-    batchlayerprobs(depth,FBprob,tau,Layer0,Model.prctile,plotlevel); 
+    batchlayerprobabilities(depth,FBprob,tau,Layer0,Model.prctile,plotlevel); 
 
 % Save: Results for current batch, and initial conditions for next
 Layer0_new.no = ntauTotal;

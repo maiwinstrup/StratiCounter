@@ -1,8 +1,8 @@
 function [ntau, ntauTotal, LayerProbDist] = ...
-    batchlayerprobs(depth,FBprob,tau,Layer0,prctile,plotlevel)
+    batchlayerprobabilities(depth,FBprob,tau,Layer0,prctile,plotlevel)
 
-%% [ntau, ntauTotal, LayerProbDist] = batchlayerprobs(depth,FBprob,tau,...
-%   Layer0,prctile,plotlevel)
+%% [ntau, ntauTotal, LayerProbDist] = batchlayerprobabilities(depth,FBprob,...
+%   tau,Layer0,prctile,plotlevel)
 % Calculating the probability distribution of number of layers in current 
 % batch (ntau) and total number of layers in data series up to end of 
 % current batch (ntauTotal), along with various properties of the changing 

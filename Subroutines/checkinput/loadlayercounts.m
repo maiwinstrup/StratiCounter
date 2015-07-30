@@ -15,11 +15,9 @@ manualcounts = sortrows(manualcounts,1);
 
 %% Remove layercounts from outside interval, and ensure correct placement. 
 % Layer positions must always be located halfway between data points. 
-% Location of first and last data point:
-dstart = ceil((interval(1)-Model.dx_center*Model.dx)/Model.dx)*Model.dx+Model.dx_center*Model.dx; 
-dend = ceil((interval(2)-Model.dx_center*Model.dx)/Model.dx)*Model.dx+Model.dx_center*Model.dx;
+d = makedepthscale(interval(1),interval(2),Model.dx,Model.dx_offset);
 % Possible layer boundary locations:
-dlayer_px = dstart-Model.dx/2:Model.dx:dend+Model.dx/2;
+dlayer_px = [d(:)-Model.dx/2; d(end)+Model.dx/2];
 % Truncated locations:
 pos = interp1(dlayer_px,1:length(dlayer_px),manualcounts(:,1),'nearest',nan);
 
@@ -29,10 +27,17 @@ manualcounts = manualcounts(mask,:);
 
 % If no manual layer counts exist in interval:
 % Return to main program with error message.
-if isempty(manualcounts)
-    disp(['Manual counts are not provided for interval ' num2str(interval(1)) ...
-        '-' num2str(interval(2)) 'm. Please correct!'])
+if isempty(manualcounts) 
+    warning(['Manual counts are not provided for interval ' num2str(interval(1)) ...
+        '-' num2str(interval(2)) 'm'])
+    meanLambda = nan; 
+    newinterval = interval;
     return
+elseif size(manualcounts,1)<=5
+    % Warning if very few layer counts exist:
+    warning(['Very few manual layer counts ('  num2str(size(manualcounts,1)) ...
+        ') exist for interval ' num2str(interval(1)) ...
+        '-' num2str(interval(2)) 'm'])
 end
 
 % Replacing with truncated layer boundary locations in manualcounts:

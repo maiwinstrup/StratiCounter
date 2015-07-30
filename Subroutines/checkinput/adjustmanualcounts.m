@@ -12,14 +12,16 @@ end
 
 %% Ensure that the increase/decreasing age numbers correspond to the
 % selected value of ageUnitManual:
-if manualcounts(2,2)-manualcounts(1,2)>0 
-    % An increase in age values with increasing depth is not consistent 
-    % with manual counts age unit "AD"
-    if strcmp(Model.ageUnitManual,'AD')
-        disp(['OBS: Age values are increasing with depth, which is '...
-            'inconsistent with the value of Model.ageUnitManual ("AD"):'])
-        disp('     Model.ageUnitManual is changed to "layers"');
-        Model.ageUnitManual = 'layers';
+if size(manualcounts,1)>1 
+    if manualcounts(2,2)-manualcounts(1,2)>0 
+        % An increase in age values with increasing depth is not consistent 
+        % with manual counts age unit "AD"
+        if strcmp(Model.ageUnitManual,'AD')
+            warning(['OBS: Age values are increasing with depth, which is '...
+                'inconsistent with the value of Model.ageUnitManual ("AD"):'])
+            warning('     Model.ageUnitManual is changed to "layers"');
+            Model.ageUnitManual = 'layers';
+        end
     end
 end
 
@@ -27,9 +29,10 @@ end
 % Must either be ones or zeros:
 mask = manualcounts(:,3)~=0 & manualcounts(:,3)~=1;
 if sum(mask)>0
-    disp(['Check manual layer uncertainties. These must either be given a ' ...
-        'value of 0 (certain) or 1 (uncertain)']);
-    return
+    warning(['Check manual layer uncertainties. These must either be given '...
+        'a value of 0 (certain) or 1 (uncertain). For now, they have been '...
+        'assumed certain.']);
+    manualcounts(mask,:) = 0;
 end
 
 %% Accumulated uncertainty within current depth interval: 

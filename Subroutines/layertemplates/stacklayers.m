@@ -83,14 +83,9 @@ y = [NaN;y(:);NaN];
 tpx = interp1(dlayer,0:1:(length(dlayer)-1),d,'linear','extrap');
 
 % Up/downsample data to given dt:
-dt_center = 1/2; % Half way
-[tnew, ynew]=downsampling(tpx,y,dt,dt_center);
-
-%% Remove layer fractions at edges:
-% These are caused by the added NaNs earlier.
-istart = find(round(2*rem(tnew,1)/dt)==1,1,'first');
-iend = find(round(2*rem(tnew,1)/dt)==1,1,'last'); % This is first data point of next layer
-ynew = ynew(istart:iend-1);
+% Do not consider layer fractions at edges.
+tnew = 1/2*dt:dt:floor(tpx(end)); % Times are taken half way
+ynew = downsampling(tpx,y,tnew);
 
 %% Stack data:
 stack = reshape(ynew,1/dt,length(ynew)*dt)';

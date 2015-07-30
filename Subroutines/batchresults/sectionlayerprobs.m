@@ -14,7 +14,7 @@ function [probdistSections,layer0new_no,dSectionBounds] = ...
 % Output:
 % probdistSections(:,1): Layer numbers
 % probdistSections(:,2:M+1): Corresponding probabilities for the M sections
-% dSectionBounds: Section bounds ending within current batch (in meters)
+% dSectionBounds: End depth of section bounds ending within current batch (in meters)
 % layer0new_no: Layer number probability distribution by end of batch (tau)
 % (used for calculating results for next batch)
 % Last layer position probabilities used by start of batch are similar to

@@ -29,8 +29,8 @@ Model.tiepoints = [];
 %% Data treatment:
 % Resolution of data series to be used:
 Model.dx = 10^-3; % [m/px]
-Model.dx_center = 0;
-% If using e.g. midpoints of dx intervals, the value of dx_center should
+Model.dx_offset = 0;
+% If using e.g. midpoints of dx intervals, the value of dx_offset should
 % be set as 0.5 (to avoid unnecessary interpolation). 
 
 % Preprocessing of each data series:
@@ -107,6 +107,9 @@ Model.dMarker = [];
 % Multiple sets of sections can be included as follows:
 % Model.dMarker{1} = [101, 152.5, 204];
 % Model.dMarker{2} = [121, 142, 201];
+% Distributions are also calculated for the section from the beginning of 
+% the data series to the first marker horizon, and from the last
+% marker horizon within data series to end of the data series. 
 
 % Which timescale terminology to be used for output? 
 Model.ageUnitOut = 'layers';

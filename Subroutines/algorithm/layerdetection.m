@@ -219,9 +219,11 @@ if plotlevel>=2
 end
 
 %% Is the possible number of layers in batch larger than anticipated? 
-% If so, increase value of nLayerMax by 20% in next iteration:
-if FBprob.gamma(end,end)>10^-3 % If P(t=end,j=nMax) larger than this value
+% If so, increase value of nLayerMax by 20% in next iteration.
+if max(FBprob.gamma(:,end))>10^-3 % If the probability of being in 
+    % layer j=nMax at any point t is larger than this value.
     nLayerMax_new = ceil(1.2*nLayerMax);
+    disp(['nLayerMax increased:' num2str(nLayerMax_new)])
 else
     nLayerMax_new = nLayerMax;
 end

@@ -1,8 +1,8 @@
-function [Template_all, TemplateInfo_all] = ...
+function [Template_all, TemplateInfo_all, Model] = ...
     constructmanualtemplates(Data,Model,outputdir,Runtype)
 
-%% [Template_all, TemplateInfo_all] = constructmanualtemplates(Data,Model,...
-%   outputdir,Runtype)
+%% [Template_all, TemplateInfo_all, Model] = ...
+%   constructmanualtemplates(Data,Model,outputdir,Runtype)
 % Compute array of layer templates for all species corresponding to the 
 % manual layer counts in interval "Model.manualtemplates". If running in
 % mode Runtype.reuse='yes', layer templates (or preprocessed data to 
@@ -33,11 +33,11 @@ end
 
 % Changes to depth interval?
 if newinterval(1)>Model.manualtemplates(1)
-    disp(['Note: Change of interval for calculating layer templates. '...
+    warning(['Change of interval for calculating layer templates. '...
         'Start: ' num2str(newinterval(1)) 'm'])
 end
 if newinterval(2)<Model.manualtemplates(2)
-    disp(['Note: Change of interval for calculating layer templates. '... 
+    warning(['Change of interval for calculating layer templates. '... 
         'End: ' num2str(newinterval(2)) 'm'])
 end
 Model.manualtemplates = newinterval;
@@ -66,12 +66,12 @@ for j = 1:Model.nSpecies
         % Name describing the preprocessing steps:
         preprocname = makepreprocname(preprocstepsTotal{j},Model.dx);
         % Running in development mode?
-        if strcmp(Runtype.develop,'yes'); outputdir = './Output/develop';
-        else outputdir = './Output';
+        if strcmp(Runtype.develop,'yes'); outputdir0 = './Output/develop';
+        else outputdir0 = './Output';
         end        
         
         % Output folder for manual layer templates and parameters:
-        outputdir = [outputdir '/' Model.icecore '/LayerCharacteristics/' ...
+        outputdir = [outputdir0 '/' Model.icecore '/LayerCharacteristics/' ...
             Model.species{j} '/' preprocname '/' Model.type];
         if ~strcmp(Model.normalizelayer,'none')
             outputdir = [outputdir '_' Model.normalizelayer];
@@ -137,13 +137,15 @@ for j = 1:Model.nSpecies
        
     % Does "Data" contain data for the appropriate interval?
     if Data.depth(1)<=Model.manualtemplates(1) && ...
-            Data.depth(end)>=Model.manualtemplates(2)       
+            Data.depth(end)>=Model.manualtemplates(2)
+        mask = Data.depth>=Model.manualtemplates(1) & ...
+            Data.depth<=Model.manualtemplates(2);
+        DataPreproc.depth = Data.depth(mask);
         
         % Finalize preprocessing (if necessary):
         % Using already preprocessed data (which is given as input file):
-        [DataPreproc.data, DataPreproc.depth] = ...
-            makedatafile(Data.data(:,:,j),Data.depth,preprocstepsFloat(j),...
-            Model.derivatives);
+        DataPreproc.data = makedatafile(Data.data(:,:,j),Data.depth,...
+            preprocstepsFloat(j),Model.derivatives,DataPreproc.depth);
         % Derivatives are calculated, but no further downsampling is
         % required.
         

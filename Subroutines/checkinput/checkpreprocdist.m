@@ -9,7 +9,17 @@ function checkpreprocdist(Model,manualcounts)
 % Copyright (C) 2015  Mai Winstrup
 
 %% Only performed if manual counts are provided:
-if isempty(manualcounts); return; end
+if isempty(manualcounts); 
+    mindist = [];
+    for j = 1:Model.nSpecies
+        mindist = min([mindist; cell2mat(Model.preprocsteps{j,1}(:,2))]);
+    end
+    if ~isempty(mindist)
+        warning(['Check that preprocessing distances (min value: ' ...
+            num2str(mindist) ') are much larger than derived layer thicknesses'])
+    end
+    return
+end
 
 %% Range of layer thicknesses for the interval [m]: 
 meanLambda = mean(diff(manualcounts(:,1)));
@@ -22,13 +32,13 @@ if ~isempty(Model.dx)
     Nmin = round(minLambda/Model.dx);
     disp(['Average number of data points per layer: ' num2str(Naverage)])
     if Naverage < 10
-        disp(['OBS: Average number of data points per layer is small (' num2str(Naverage) ')'])
+        warning(['OBS: Average number of data points per layer is small (' num2str(Naverage) ')'])
     end
     if Naverage > 20
-        disp(['OBS: Average number of data points per layer is large (' num2str(Naverage) ')'])
+        warning(['OBS: Average number of data points per layer is large (' num2str(Naverage) ')'])
     end
     if Nmin < 5
-        disp(['OBS: Minimum number of data points per layer: ' num2str(Nmin)])
+        warning(['OBS: Minimum number of data points per layer: ' num2str(Nmin)])
     end
 end
 
@@ -49,10 +59,10 @@ if isfinite(minDist)
     Mmin = minDist/maxLambda;
     disp(['Average number of layers per (smallest) preprocessing distance: ' num2str(Maverage)])
     if Maverage < 2
-        disp(['OBS: Average number of layers per preprocessing distance is small (' num2str(Maverage) ')'])
+        warning(['OBS: Average number of layers per preprocessing distance is small (' num2str(Maverage) ')'])
     end
     if Mmin < 1
-        disp(['OBS: Minimum number of layers per preprocessing distance is small: ' num2str(Mmin)])
+        warning(['OBS: Minimum number of layers per preprocessing distance is small: ' num2str(Mmin)])
     end
 end
 
@@ -66,5 +76,5 @@ end
 minDist_adj = min(cell2mat(preprocdist_adj));
 
 if minDist_adj < 2
-     disp('OBS: Adjustable preprocessing distance(s) is small (less than 2*lambda)')
+     warning('OBS: Adjustable preprocessing distance(s) is small (less than 2*lambda)')
 end

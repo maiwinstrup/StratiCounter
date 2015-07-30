@@ -159,7 +159,7 @@ zerolimit = 10^-5;
 for iMarkerSet = 1:length(Model.dMarker)
     k=0;
     for iBatch = 1:nBatch
-        % Number of marker horizons within batch:
+        % Number of marker horizons within batch (end of sections):
         nMarker = length(Result(iBatch).Marker(iMarkerSet).d);
         for j = 1:nMarker
             % End depth:
@@ -175,16 +175,17 @@ end
 
 %% Maximum likelihood and confidence intervals of layer number probability
 % distributions between marker horizons: 
-% Only including intervals between marker horizons, i.e. the section from 
-% the beginning to the first marker horizon is not included, and nor is the
-% section from the last marker horizon to the last data point.
+% Also the section from the beginning to the first marker horizon is 
+% included, as well as the section from the last marker horizon within data 
+% section to the last data point.
 markerConf = cell(1,length(Model.dMarker));
 
 for iMarkerSet = 1:length(Model.dMarker)
     % Remove marker horizons outside interval:
     mask = Model.dMarker{iMarkerSet}>=LayerProbDist.d(1) & ...
         Model.dMarker{iMarkerSet}<=LayerProbDist.d(end);
-    markerhorizons = Model.dMarker{iMarkerSet}(mask);
+    markerhorizons = Model.dMarker{iMarkerSet}(mask); % Includes start of 
+    % data section.
     % Number of horizons within interval:
     nMarker = length(markerhorizons); 
     if nMarker <= 1; continue; end
@@ -201,12 +202,12 @@ for iMarkerSet = 1:length(Model.dMarker)
     for iMarker = 1:nMarker-1
         % Maximum likelihood layer number, and its associated probability:
         [probML(iMarker),indexML] = ...
-            max(markerProb{iMarkerSet}(iMarker+1).ndist(:,2));
-        nML(iMarker) = markerProb{iMarkerSet}(iMarker+1).ndist(indexML,1);
+            max(markerProb{iMarkerSet}(iMarker).ndist(:,2));
+        nML(iMarker) = markerProb{iMarkerSet}(iMarker).ndist(indexML,1);
         % Confidence intervals:
         confInt(iMarker,:) = ...
-            prctileofprobdist(markerProb{iMarkerSet}(iMarker+1).ndist(:,1),...
-            markerProb{iMarkerSet}(iMarker+1).ndist(:,2),Model.prctile)'; 
+            prctileofprobdist(markerProb{iMarkerSet}(iMarker).ndist(:,1),...
+            markerProb{iMarkerSet}(iMarker).ndist(:,2),Model.prctile)'; 
     end
     
     % Combine to array:

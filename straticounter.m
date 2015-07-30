@@ -74,7 +74,11 @@ releasedate = '07-07-2015';
 
 %% Paths to subroutine and settings folders:
 if ~isdeployed % shows whether this is a compiled instance of the code
-    clc; close all;
+    % Header for current run:
+    disp('==========================================')
+    disp(varargin{1})
+    disp('==========================================')
+    % close all
     addpath(genpath('./Subroutines'))
     addpath(genpath('./Settings'))
 end
@@ -99,7 +103,7 @@ if nargin == 1
     % Import settings:
     run(varargin{1});
 elseif nargin ==2
-    Model = varargin{1};
+    run(varargin{1});
 else
     error(vararg_err);
 end
@@ -113,13 +117,12 @@ if nargin == 1
     % If yes; use previously processed data and calculated layer templates.
     % If no, these are re-calculated.
     Runtype.outdir = '';
-    % Provide path if wanting to use a custom output directory.    
-
+    % Provide path if wanting to use a custom output directory.
+    
 elseif nargin == 2
     Runtype.develop = 'no';
     Runtype.reuse = 'no';
     Runtype.outdir = varargin{2};
-
 else
     error(vararg_err)
 end
@@ -141,7 +144,7 @@ if strcmp(Runtype.reuse,'no');
     disp('Will reprocess data and recalculate layer templates');
 end
 if Runtype.plotlevel>1;
-    disp('Plots will be generated');
+    disp('Many plots will be generated');
 end
 
 %% Ensure correct format of content in Model:
@@ -156,8 +159,15 @@ if strcmp(Model.icecore,'SyntheticData')
     [Data, manualcounts, Model] = makesyntheticdata(Model,Runtype,outputdir);
 
 else
-    % Load manually-counted annual layers:
+    % Load manually-counted annual layers for interval:
     [manualcounts, meanLambda] = loadlayercounts(Model,[Model.dstart Model.dend]);
+    % If no manual counts are known, an empty array is provided, and
+    % meanLambda is estimated by user:
+    while isnan(meanLambda) || meanLambda <= 0
+        meanLambda = input(['Rough estimate for mean layer thickness (in m) '...
+            'over layer counting interval (used for finding data gabs and '...
+            'estimating value of nBatch): ']);
+    end
 
     % Check format, and convert ages to ageUnitOut:
     [manualcounts, Model] = adjustmanualcounts(manualcounts,Model);
@@ -170,17 +180,10 @@ else
     [Data, Model] = loadormakedatafile(Model,manualcounts,Runtype);
 
     % Check for long sections without data:
-    % long sections are in this context corresponding to 20 mean layer
+    % Long sections are in this context corresponding to 20 mean layer
     % thicknesses without much data:
     sectionswithoutdata(Data,20*meanLambda,Model.species);
 end
-
-% If no manual counts are known, an empty array should be provided.
-% Similarly if information from manual counts should be disregarded:
-% manualcounts = [];
-
-%% Save an updated version of "Model" in output folder:
-save([outputdir '/Model.mat'],'Model')
 
 %% Initial layer templates and layer parameters:
 % These are based on manual layer counts in the data in the depth interval
@@ -189,7 +192,7 @@ save([outputdir '/Model.mat'],'Model')
 if isempty(Model.manualtemplates)
     disp('Could allow for using e.g. a sinusoidal layer template. Not implemented.')
 else
-    [Template0,Template0Info] = ...
+    [Template0,Template0Info,Model] = ...
         constructmanualtemplates(Data,Model,outputdir,Runtype);
 end
 
@@ -212,6 +215,9 @@ else
     % derivatives.
     Layerpar0 = constructmanualpar(Data,Template0,Model,outputdir,Runtype);
 end
+
+%% Save an updated version of "Model" in output folder:
+save([outputdir '/Model.mat'],'Model')
 
 %% Set initial conditions, and initialize arrays:
 [nBatch,batchStart,Layer0,Template,Prior,Layerpar,dDxLambda,logPobs,...
@@ -243,7 +249,6 @@ while iBatch < nBatch
 
     %% 1a: Select data corresponding to current batch:
     % And provide an upper-bound estimate of the number of layers in batch.
-
     if isempty(Model.tiepoints)
         % Situation A: No tiepoints.
         % We select a section of appropriate length. This section may be
@@ -268,8 +273,8 @@ while iBatch < nBatch
 
             % Maximum number of layers in batch is then:
             nLayerMean = (Data.depth(end)-Data.depth(batchStart(iBatch)))/meanLambda;
-            nLayerMax = round(1.3*nLayerMean);
-
+            nLayerMax = round(1.3*nLayerMean);            
+            
             % Do not use any overlap section for the last data batch:
             Model.batchOverlap = 0;
             disp(['Stopping at batch ' num2str(iBatch) ', ' ...
@@ -317,8 +322,8 @@ while iBatch < nBatch
     data_in = Data.data(istart:iend,:,:);
     depth_in = Data.depth(istart:iend);
 
-    % Preprocess batch data:
-    data_out = makedatafile(data_in,depth_in,preprocsteps,Model.derivatives);
+    % Preprocess batch data (keep depth scale):
+    data_out = makedatafile(data_in,depth_in,preprocsteps,Model.derivatives,depth_in);
     % Save resulting data record:
     data_final = [data_final; data_out];
 
@@ -362,7 +367,7 @@ while iBatch < nBatch
                 layerdetection(data_batch,Template(:,iBatch,iTemplateBatch),...
                 Layerpar(iBatch,iTemplateBatch,iIter),Layer0(iBatch),...
                 nLayerMax,Model,Runtype.plotlevel);
-
+            
             %% 2c: New estimates for layer parameters:
             [Layerpar_new, relweight_new] = ...
                 updatelayerpar(ExpVal_new,FBprob_new,Prior(iBatch),...
@@ -437,7 +442,7 @@ while iBatch < nBatch
        Template(:,iBatch,iTemplateBatch+1)=Template_new;
 
        % Plot new layer templates (and compare to original ones):
-       if Runtype.plotlevel > 0
+       if Runtype.plotlevel > 1
            color = [1 0 1; 1 1 0; 1 0.5 0.5; 0 0 1];
            filename = [outputdir '/layertemplates_new'];
            plotlayertemplates(Template_new,TemplateInfo_new,Model,...
@@ -480,7 +485,7 @@ while iBatch < nBatch
         [~,~,~,timescale_prelim,timescale1yr_prelim,~,...
              markerConf_prelim,lambda_prelim] = ...
              combinebatches(Result(1:iBatch),manualcounts,Model);
-
+         
         % Save preliminary output:
         save([outputdir '/timescale1yr_prelim'],'timescale1yr_prelim')
         save([outputdir '/markerhorizons_prelim'],'markerConf_prelim')
@@ -573,7 +578,8 @@ batchStartDepth = Data.depth(batchStart);
 save([outputdir '/timescale.mat'],...
     'timescale','timescale1yr','Layerpos','LayerProbDist','centralEst','Model')
 % Save timescale1yr as textfile with metadata:
-filename = [outputdir '/' Model.icecore '_timescale.txt'];
+filename = [outputdir '/' Model.icecore '_timescale_' num2str(Model.dstart) ...
+    '-' num2str(Model.dend) 'm.txt'];
 savetimescaleastxt(timescale1yr,filename,Model)
 
 % Confidence interval for marker horizons:
@@ -660,7 +666,10 @@ end
 %% Display name of output directory:
 disp(['Output directory: ' outputdir])
 
+%% Calculate similarity to manual layer counts:
+% similarity = similarityindex(timescale1yr(:,1),manualcounts(:,1),[],Model.dx,[],Runtype.plotlevel)
+
 %% Show results in matchmaker:
 if ~isdeployed
-    checkinmatchmaker(outputdir,Model,Runtype);
+    checkinmatchmaker(outputdir,Model,[],Runtype);
 end

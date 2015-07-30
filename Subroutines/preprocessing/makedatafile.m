@@ -1,17 +1,18 @@
-function [data_out,depth_out,derivnoise,hfigpreproc,hfigderiv] = ...
-    makedatafile(data_in,depth_in,preprocsteps,derivatives,dx,dx_center,...
+function [data_out,derivnoise,hfigpreproc,hfigderiv] = ...
+    makedatafile(data_in,depth_in,preprocsteps,derivatives,depth_out,...
     plotlevel,species,layercounts)
 
-%% [data_out,depth_out,derivnoise,hfigpreproc,hfigderiv] = 
-%      makedatafile(data_in,depth_in,preprocsteps,derivatives,dx,dx_center,
-%      plotlevel,species,layercounts)
-% Take in a data series, which may contain multiple species, and preprocess 
-% these according to the specifications in preprocsteps. Subsequently, the 
-% data series may be downsampled to equidistant depthscale (unless dx=[]),
-% and derivatives are calculated. "Derivnoise" is a vector providing the 
-% theoretical amount of white noise in the derivative data series relative 
-% to the original data profile. Preprocessed data and derivatives are 
-% plotted if plotlevel>0. Figure handles are provided as output. 
+%% [data_out,derivnoise,hfigpreproc,hfigderiv] = makedatafile(data_in,...
+%      depth_in,preprocsteps,derivatives,depth_out,plotlevel,species,layercounts)
+%
+% This function takes in a data series, which may contain multiple species, 
+% and preprocesses these according to the specifications in preprocsteps. 
+% Subsequently, the data series may be downsampled to the depthscale 
+% "depth_out", and derivatives are calculated. "Derivnoise" is a vector 
+% providing the theoretical amount of white noise in the derivative data 
+% series relative to the original data profile. Layercounts are only used 
+% for plotting. Preprocessed data and derivatives are plotted if 
+% plotlevel>0. Figure handles are provided as output. 
 
 % Copyright (C) 2015  Mai Winstrup
 % This program is free software; you can redistribute it and/or modify it 
@@ -20,13 +21,12 @@ function [data_out,depth_out,derivnoise,hfigpreproc,hfigderiv] = ...
 % option) any later version.
 
 %% Set default: 
-if nargin<9; layercounts=[]; end % No plotting of layer counts
-if nargin<8; species=[]; end; % No titles on plot
-if nargin<7; plotlevel=0; end % No plotting
-if nargin<6; dx_center=0; end  % Pixels are not centered in depth
-if nargin<5; dx=[]; end  % No adjustment of depth scale
-
-% If not given, the species name array is empty:
+if nargin<8; layercounts=[]; end % No plotting of layer counts
+if nargin<7; species=[]; end; % No titles on plot
+if nargin<6; plotlevel=0; end % No plotting
+if nargin<5; depth_out = depth_in; end % No change in depth scale
+    
+% If not provided, the species name array is empty:
 nSpecies = size(data_in,3);
 if isempty(species)
     for j = 1:nSpecies; species{j}=''; end
@@ -44,10 +44,12 @@ end
 dx_old = diff(depth_in);
 regularity_test = abs(median(dx_old)-min(dx_old))/mean(dx_old);
 if regularity_test<0.01
-    [depth_in, data_in, startofbreaks] = addbreaks(depth_in,data_in,1.8*median(dx_old));
+    [depth_in, data_in, startofbreaks, endofbreaks] = ...
+        addbreaks(depth_in,data_in,1.8*median(dx_old));
     if ~isempty(startofbreaks)
-        disp('Breaks are added starting at the following depths:')
-        disp(startofbreaks)
+        disp(['Break(s) are added to datafile starting at the following depth(s): ' ...
+            num2str(startofbreaks)])
+        disp(['and ending at depth(s): ' num2str(endofbreaks)])
     end
 end
 
@@ -70,18 +72,22 @@ for j = 1:nSpecies
     end
 end
 
-%% Interpolate depth scale:
-if isempty(dx)
-    depth_out = depth_in;
+%% Interpolate to depth scale:
+% Check for no changes in depthscale
+if isequal(depth_out,depth_in); 
+    nochangeindepth = true;
+else nochangeindepth = false;
+end
+
+if nochangeindepth
     data_out(:,1,:)=data1(:,1,:);
     % Initialize rest of array:
     data_out(:,2:1+derivatives.nDeriv,:)=nan;
 
 else
-    % Interpolate to equidistant depth scale: 
+    % Interpolate to new depth scale:
     % Species #1:
-    [depth_out,data_out(:,1,1)] = ...
-        downsampling(depth_in,data1(:,1,1),dx,dx_center);    
+    data_out(:,1,1) = downsampling(depth_in,data1(:,1,1),depth_out);    
     % Initialize data array for remaining species (and derivatives):
     L = length(depth_out);
     data_out = cat(3,[data_out(:,1,1),nan(L,derivatives.nDeriv)], ...
@@ -89,8 +95,7 @@ else
     
     % Remaining species:
     for j = 2:nSpecies
-        [depth_out,data_out(:,1,j)] = ...
-            downsampling(depth_in,data1(:,1,j),dx,dx_center);
+        data_out(:,1,j) = downsampling(depth_in,data1(:,1,j),depth_out);
     end
 end
 
@@ -105,7 +110,7 @@ for j = 1:nSpecies
         % a) all data is nan
         %    In this case, all derivatives are nan too (as initialized)        
 
-    elseif isempty(dx) && isempty(preprocsteps{j})
+    elseif nochangeindepth && isempty(preprocsteps{j})
         % b) already calculated using this depthscale, i.e. no processing 
         %    or depth interpolation was performed on data.
         data_out(:,2:1+derivatives.nDeriv,j) = data_in(:,2:1+derivatives.nDeriv,j);
