@@ -82,6 +82,9 @@ for j = 1:Model.nSpecies
         % Corresponding filename:
         filename = [outputdir '/Template_' num2str(Model.manualtemplates(1)) '-' ...
             num2str(Model.manualtemplates(2)) 'm_' Model.nameManualCounts];
+        if Model.dx_offset~=0
+            filename = [filename '_dxoffset' num2str(Model.dx_offset)];
+        end
     end
 
     %% Do layer templates exist from previous run? 

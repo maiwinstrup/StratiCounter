@@ -6,7 +6,7 @@ function Model = adjustmodel(Model)
 % Copyright (C) 2015  Mai Winstrup
 
 %% Check for settings corresponding to old versions:
-if isfield(Mode,'dx_center')
+if isfield(Model,'dx_center')
     warning('"dx_center" has in current version been replaced by "dx_offset"')
 end
 

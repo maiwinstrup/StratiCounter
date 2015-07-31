@@ -77,11 +77,11 @@ for j = 1:Model.nSpecies
                 filefound = false;
                 possiblefile = true(size(listing));
                 k = 0;
-                while ~filefound && k<=length(listing)
+                while ~filefound && k<length(listing)
                     k = k+1;
                     [~,imin] = min([listing(possiblefile).bytes]);
-                    imin = find(cumsum(possiblefile)==imin,1);
-                    filename = listing(imin,1).name;
+                    iimin = find(cumsum(possiblefile)==imin,1);
+                    filename = listing(iimin,1).name;
                     % Load this data file:
                     clear data depth
                     load([outputdir '/' filename]);
@@ -100,13 +100,13 @@ for j = 1:Model.nSpecies
                         
                         % Add to output data file:
                         % Place data correctly in array (since data may not 
-                        % cover entire interval):
-                        index = interp1(Data_final.depth,...
+                        % cover entire interval): 
+                        locs = interp1(Data_final.depth,...
                             1:length(Data_final.depth),depth,'nearest');
                     
                         % Are all required derivatives calculated?
                         if Model.derivatives.nDeriv+1 <= size(data,2)
-                            Data_final.data(index,1:Model.derivatives.nDeriv+1,j) = ...
+                            Data_final.data(locs,1:Model.derivatives.nDeriv+1,j) = ...
                                 data(mask,1:Model.derivatives.nDeriv+1);
                         else
                             % Otherwise, calculate derivatives:
@@ -120,38 +120,37 @@ for j = 1:Model.nSpecies
                             save([outputdir '/' filename '.mat'],'data','depth','derivnoise');
                     
                             % Add to output data file:
-                            Data_final.data(index,1:Model.derivatives.nDeriv+1,j) = data;
+                            Data_final.data(locs,1:Model.derivatives.nDeriv+1,j) = data;
+                        end
+                        
+                        % Display warning if data series does not cover all of 
+                        % interval (some flexibility in interval endpoints)
+                        if locs(1)>10 || locs(end)<length(Data_final.depth)-10
+                            warning(['Note: ' Model.species{j} ' only covers interval ' ...
+                                num2str(depth(1)) '-' num2str(depth(end)) 'm.'])
+                        end
+                
+                        % Test for only NaNs in data series 
+                        if sum(isfinite(Data_final.data(:,1,j)))==0; 
+                            flag(j) = 1; % Data are nan in all of current interval 
+                            warning([Model.species{j} ' not available for current depth interval'])
+                        end
+                
+                        % Also loaded are the analytically-derived relative 
+                        % white noise weighting values for the derivative 
+                        % data series. If appropriate, these are added to 
+                        % the Model structure array. 
+                        if strcmp(Model.derivnoise,'analytical')
+                            Model.derivnoise = derivnoise(1:Model.derivatives.nDeriv+1);
                         end
                     else
                         % If not same dx_offset or starting depth: Try next file
                         filefound = false;
                         possiblefile(imin) = false;
                     end
-                    
-                    % Display warning if data series does not cover all of 
-                    % interval (some flexibility in interval endpoints)
-                    if index(1)>10 || index(end)<length(Data_final.depth)-10
-                        warning(['Note: ' Model.species{j} ' only covers interval ' ...
-                            num2str(depth(1)) '-' num2str(depth(end)) 'm.'])
-                    end
-                
-                    % Test for only NaNs in data series 
-                    if sum(isfinite(Data_final.data(:,1,j)))==0; 
-                        flag(j) = 1; % Data are nan in all of current interval 
-                        warning([Model.species{j} ' not available for current depth interval'])
-                    end
-                
-                    % Also loaded are the analytically-derived relative 
-                    % white noise weighting values for the derivative data 
-                    % series. If appropriate, these are added to the Model 
-                    % structure array. 
-                    if strcmp(Model.derivnoise,'analytical')
-                       Model.derivnoise = derivnoise(1:Model.derivatives.nDeriv+1);
-                    end
                 end
-                
                 if filefound
-                    % And we're done! 
+                    % We're done! 
                     % Proceed to next impurity record.
                     continue
                 end
@@ -250,12 +249,12 @@ for j = 1:Model.nSpecies
     
     %% Include in data array containing data for all species:
     % Place data correctly in array:
-    index = interp1(Data_final.depth,1:length(Data_final.depth),depth,'nearest');
-    Data_final.data(index,:,j) = data; 
+    locs = interp1(Data_final.depth,1:length(Data_final.depth),depth,'nearest');
+    Data_final.data(locs,:,j) = data; 
     
     % Display warning if data series does not cover all of interval (some 
     % flexibility in interval endpoints)
-    if index(1)>10 || index(end)<length(Data_final.depth)-10
+    if locs(1)>10 || locs(end)<length(Data_final.depth)-10
         disp(['OBS: ' Model.species{j} ' only covers interval ' ...
             num2str(depth(1)) '-' num2str(depth(end)) 'm.'])
     end
