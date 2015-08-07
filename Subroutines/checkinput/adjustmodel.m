@@ -116,10 +116,12 @@ for i = 1:length(Model.dMarker)
     end
 end
 % Remove empty entries in dMarker:
-for i = 1:length(Model.dMarker)
-    mask(i) = isempty(Model.dMarker{i});
+if ~isempty(Model.dMarker)
+    for i = 1:length(Model.dMarker)
+        mask(i) = isempty(Model.dMarker{i});
+    end
+    Model.dMarker = Model.dMarker(~mask);
 end
-Model.dMarker = Model.dMarker(~mask);
 
 %% Check for file extension on filename with manual layer counts:
 if ~strcmp(Model.nameManualCounts(end-3:end),'.txt')

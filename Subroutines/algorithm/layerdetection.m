@@ -142,7 +142,11 @@ if strcmp(Model.bcalc,'BLR')
     for j = 1:Model.nSpecies
         speciesmask = false(size(logb));
         speciesmask(:,:,j)=true;
-        logb(nodatamask & speciesmask) = mean(logb(speciesmask & datamask));
+        % Mean probability value:
+        meanvalue = mean(logb(speciesmask & datamask)); 
+        if isfinite(meanvalue) % If no data exists in interval: keep value of 1
+            logb(nodatamask & speciesmask) = meanvalue;
+        end
     end
     
     % The all-species layer likelihood is the weighted sum of the layer 
@@ -219,10 +223,14 @@ if plotlevel>=2
 end
 
 %% Is the possible number of layers in batch larger than anticipated? 
-% If so, increase value of nLayerMax by 20% in next iteration.
+% If so, increase value of nLayerMax in next iteration.
 if max(FBprob.gamma(:,end))>10^-3 % If the probability of being in 
     % layer j=nMax at any point t is larger than this value.
-    nLayerMax_new = ceil(1.2*nLayerMax);
+    % Number of times that all layers numbers have been circled through:
+    nCircles = round(sum(FBprob.eta_bar(:,end)));
+    % Largest possible end layer value:
+    [~,nLayerEnd] = find(FBprob.gamma(end,:)>0,1,'last');    
+    nLayerMax_new = ceil(1.1*(nLayerMax*nCircles+nLayerEnd));
     disp(['nLayerMax increased:' num2str(nLayerMax_new)])
 else
     nLayerMax_new = nLayerMax;

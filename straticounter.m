@@ -262,7 +262,7 @@ while iBatch < nBatch
         batchEnd = min(batchStart(iBatch)+batchLength-1,length(Data.depth));
         % Upper-bound estimate of years (incl. uncertainties) in batch:
         nLayerMax = round(1.3*Model.nLayerBatch);
-        % If indications arise that this value should be larger, it will be
+        % If indications that this value should be larger, it will be
         % increased with each batch iteration.
 
         % In case there is less left than a full batch of data, the current
@@ -389,14 +389,15 @@ while iBatch < nBatch
             logPobs(iBatch,iTemplateBatch,iIter+1) = logPobs_new;
 
             % New estimate for maximum numbers of layer in batch:
-            nLayerMax = nLayerMax_new;
-
+            nLayerMax = nLayerMax_new;                
+            
             %% 2e: Stopping criteria reached?
             % Using log(P_obs) to test for convergence:
             if abs(logPobs(iBatch,iTemplateBatch,iIter)-...
                     logPobs(iBatch,iTemplateBatch,iIter+1))>Model.eps && ...
                     iIter<Model.nIter;
-                    iIter = iIter+1;
+                iIter = iIter+1;
+                
             else
                 % Convergence or maximum iteration value has been reached.
                 % Number of iterations performed:

@@ -35,8 +35,16 @@ eta_all = sum(FBprob.eta_bar,2);
 
 % Find the pixel with maximum layer ending probability within the selected
 % last part of the batch:
-tstart = max(1,batchLength-round(Model.batchOverlap*dmean)-dmax);
-tend = batchLength-dmax; 
+if round(sum(FBprob.eta_bar(:,end)))>=1
+    % We encounter, and end, nLayerMax on the way. In this case, we only 
+    % use the part of batch before the location of this layer.
+    L = find(FBprob.gamma(:,end)>10^-3,1,'first');
+    tstart = max(1,L-round(Model.batchOverlap*dmean)-dmax);
+    tend = L-dmax;
+else
+    tstart = max(1,batchLength-round(Model.batchOverlap*dmean)-dmax);
+    tend = batchLength-dmax;
+end
 % Find peak locations:
 [peakvalue, ipeak] = findpeaks(eta_all(tstart:tend),'minpeakdistance',dmin);
 % The maximum peak:

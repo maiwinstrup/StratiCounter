@@ -27,17 +27,14 @@ function [logalpha_bar,logbeta,eta2,eta2_bar,gamma2,layerpos,...
 %% Default is no plotting:
 if nargin<10; plotlevel = 0; end
 
-%% Calculating forwards and backwards variables:
-% Initial conditions for the forward pass, alpha: The previous layer ends
-% before start of the current data batch.
-
+%% Calculate forwards and backwards variables:
 % Forward message pass:
 [logalpha,logalpha_bar] = forward(T,nLayerMax,layer0_pos,d,dmax,D,logpd,logb);
+% Information on the previous layer position is included (if provided). 
+% The previous layer ends before start of the current data batch.
 % The initialization part of alpha (from before start of data batch) is 
 % removed, while the last part, corresponding to t > T, is calculated and
 % kept.
-% Information on the previous layer position is included (if provided),
-% both with and without tiepoints provided. 
 
 % Backward message pass:
 logbeta = backward(T,d,dmax,logpd,logb,tiepoints,nLayerMax);
@@ -66,7 +63,7 @@ end
 %% Posterior probability that we end a given layer at time t *and*
 %% observe the given observation sequence:
 % eta(t,j,d) = P(S([t-d+1:t])=j, o(1:T) | theta)
-% Logs are used to prevent underflow.
+% Implemented in log-space to prevent underflow.
 if isempty(tiepoints)
     logeta = logalpha+repmat(logbeta,[1 nLayerMax D]);
 else
@@ -85,9 +82,13 @@ end
 
 %% Probability of entire observation sequence given the model parameters:
 % P(o(1:T) | theta)
-logPobs = logsumexp(logeta_bar(:,1));
+logPobs = logsumexp(logeta_bar(1:dmax,1));
 % I.e. the joint probability of observing the observation sequence and
-% ending layer 1 (which has a probability equal to 1).
+% ending layer 1 in the very first part of the data record (1:dmax).
+% The latter has a probability equal to 1, thus this is equal to the 
+% probability of the observation sequence. 
+% If nLayerMax is large, we may encounter layer 1 again in the last part 
+% of the data series. 
 
 %% Posterior probability that we end a given layer at time t:
 % eta2(t,j,d) = P(S([t-d+1:t])=j | obs(1,T),theta)
@@ -104,11 +105,11 @@ if plotlevel>1
     plot(eta2_bar)
     hax_eta = gca;
     hold on
-    plot(eta2_all,'--k','linewidth',1)
+    plot(eta2_all,'--k','linewidth',0.1)
     ylabel('\it{\eta_t}','fontweight','normal','fontsize',10)
     
     [X,Y]=ndgrid(1:T+dmax,1:nLayerMax);
-    figure;
+    figure;   
     pcolor(X,Y,eta2_bar)
     shading flat
     xlabel('Pixel')
@@ -118,13 +119,18 @@ end
 
 %% Probability of being in a given layer at time t:
 % gamma2(t,j) = P(S(t)=j | obs(1:T),theta)
-
-% Initialization for layer 1 (and t=1, which for the remaining layers is zero):
 gamma2 = zeros(T,nLayerMax);
-for t = 1:dmax
-    gamma2(t,1)=sum(eta2_bar(t:end,1));
+
+% Initialization: 
+% Pixel 1 is part of layer 1:
+gamma2(1,1)=1;
+for t = 2:T
+    gamma2(t,1)=gamma2(t-1,1)-eta2_bar(t-1,1)+eta2_bar(t-1,nLayerMax);
+    % We never end layer 0 within data sequence, but we may end layer
+    % nLayerMax. 
 end
-% Evaluated recursively:
+
+% Evaluated recursively for t>1 and j>1 (gamma2(1,j) is zero for j>1)
 for t = 2:T
     gamma2(t,2:nLayerMax)=gamma2(t-1,2:nLayerMax)-eta2_bar(t-1,2:nLayerMax)+...
         eta2_bar(t-1,1:nLayerMax-1);
@@ -181,7 +187,7 @@ if plotlevel>1
 end
 end
 
-%% Forward part:
+%% Forward variable:
 function [logalpha, logalpha_bar] = ...
     forward(T,nLayerMax,layer0_pos,d,dmax,D,logpd,logb)
 
@@ -194,7 +200,7 @@ function [logalpha, logalpha_bar] = ...
 %                = log(P(S(t])=j, o(1:t) | theta))
 % I.e. alpha_bar(t,j) is the joint probability that at time t we are ending
 % state j *and* that we observe the observation sequence o(1:t).
-% Logs are used to prevent underflow.
+% Equations are implemented in log-space to prevent underflow.
 
 % Variables: 
 % T: length of observation sequence
@@ -207,45 +213,67 @@ function [logalpha, logalpha_bar] = ...
 % logb(t,d): log-likelihood of o(t-d+1:t) being an annual layer 
 
 %% Initialization:
-nLayerMax = nLayerMax+1; % Including data for layer 0
+nLayerMax = nLayerMax+1; % Including data for layer 0 (index 1)
 logalpha = -ones(T+2*dmax,nLayerMax,D)*Inf; % log(0)=-inf
 logalpha_bar = -ones(T+2*dmax,nLayerMax)*Inf;
 
-% Alpha probabilities for layer 0:
+%% Alpha probabilities for layer 0:
 logp0 = log(layer0_pos);
-for i = 1:dmax
+for i = 1:dmax % Time for ending previous layer
     logalpha(i,1,:)=logp0(i)+logpd;
+    % Previous layer thickness is assumed distributed according to p(d)
+    % This term is not used in subsequent summations. 
 end
 logalpha_bar(1:dmax,1)=logp0;
 
 %% Recursive evaluation of alpha:
-for t = 1:T
+for t = 1:T+dmax
     for j = 2:nLayerMax
-        x = logalpha_bar(t+dmax-d,j-1)+logb(t,:)'+logpd';
+        % Previous alpha values:
+        if j == 2
+            % Layer 1: 
+            % Transitions are allowed from layer 0 and layer nLayerMax 
+            % (used in case of too small estimate of nLayerMax)
+            if sum(isfinite(logalpha_bar(t+dmax-d,nLayerMax)))==0
+                % No probabilities of nLayerMax occuring.
+                logalphaPrev = logalpha_bar(t+dmax-d,j-1);
+            else
+                logalphaPrev = nan(D,1);
+                for id = 1:D
+                    logalphaPrev(id) = logsumexp([logalpha_bar(t+dmax-d(id),j-1);...
+                        logalpha_bar(t+dmax-d(id),nLayerMax)]);
+                end
+            end
+        else
+            % Remaining layers:
+            logalphaPrev = logalpha_bar(t+dmax-d,j-1);
+        end
+        
+        % Set b-terms corresponding to layers starting after end of (and
+        % thus being fully outside) data record to -inf. In this way, these 
+        % terms amount to 0 in the sum.
+        if t<=T
+            logb2 = logb(t,:);
+        else
+            bstart = t-d+1;
+            mask = bstart<=T; % Layer should start within data record
+            logb2 = ones(D,1)*-inf; 
+            logb2(mask)=logb(t,mask);        
+        end
+            
+        % Calculate new alpha values:
+        x = logalphaPrev+logb2(:)+logpd(:);
         logalpha(t+dmax,j,:)=x;
         logalpha_bar(t+dmax,j) = logsumexp(x);
     end
 end
-% Extending alpha for t>T:
-for t = T+1:T+dmax
-    for j = 2:nLayerMax
-        bstart = t-d+1;
-        mask = bstart<=T;
-        logb2 = -ones(D,1)*inf; % Set to -inf such that these terms amount to 0 in the sum
-        logb2(mask)=logb(t,mask);
-        
-        x=logalpha_bar(t+dmax-d,j-1)+logb2+logpd';
-        logalpha(t+dmax,j,:) = x;
-        logalpha_bar(t+dmax,j) = logsumexp(x);
-    end
-end
 
-%% Removing the initialization part of alpha and alpha_bar:
+%% Removing initialization part of alpha and alpha_bar:
 logalpha = logalpha(dmax+1:end,2:end,:);
 logalpha_bar = logalpha_bar(dmax+1:end,2:end);
 end
 
-%% Backward part:
+%% Backward variable:
 function logbeta = backward(T,d,dmax,logpd,logb,tiepoints,nLayerMax)
 
 %% logbeta = backward(T,d,dmax,logpd,logb,tiepoints,nLayerMax)
@@ -254,14 +282,14 @@ function logbeta = backward(T,d,dmax,logpd,logb,tiepoints,nLayerMax)
 %           = log(P(o(t+1:T) | S(t])=j, theta))
 % where theta here signifies all model parameters.
 % I.e. beta(t,j) is the probability of the given observation sequence 
-% o(t+1:T), when assuming that at time t we are ending state j. Or - in 
+% o(t+1:T), when assuming that at time t we are ending state j. Or in 
 % other words - the likelihood of ending a layer at time t, given the 
 % observation sequence o(t+1:T). 
 % In case of no tiepoints, the boundary conditions are independent of j, 
 % and thus also beta is independent on j (and d). 
-% Fixpoints are introduced in such a way, that layer J (=Nmax) ends at 
+% Fixpoints are introduced in such a way, that layer J (=nLayerMax) ends at 
 % or after T, i.e. pixel T is part of layer J.
-% Logs are used to prevent underflow.
+% Equations are implemented in log-space to prevent underflow.
 
 % Variables: 
 % T: length of observation sequence
@@ -269,10 +297,10 @@ function logbeta = backward(T,d,dmax,logpd,logb,tiepoints,nLayerMax)
 % dmax: maximum duration
 % logpd: log-probability distribution of durations
 % logb(t,d): log-likelihood of o(t-d+1:t) being an annual layer 
-% tiepoints: depth of possible tiepoint
+% tiepoints: depth of possible tiepoints
 % nLayerMax: maximum number of layers in batch
 
-%% Re-arrange logb-array:
+%% Rearrange logb-array:
 % logb2(istart,iend): log-likelihood of o(istart:iend) being an annual layer 
 logb2 = nan(T+2*dmax,T+2*dmax);
 for tend = 1:T+dmax
@@ -299,10 +327,10 @@ if isempty(tiepoints)
 else
     %% If tiepoints are given:
     % Initialization:
-    % Layer Nmax is ending at or after T, and no other layers can end 
-    % here. 
-    logbeta = -ones(T+dmax,nLayerMax)*inf; % prob=exp(-inf)=0
-    logbeta(T:T+dmax,nLayerMax)=0; 
+    % Layer Nmax is ending at or after T, and no other layers are allowed 
+    % to end here. 
+    logbeta = -ones(T+dmax,nLayerMax)*inf; % exp(-inf)=0; no probabilities
+    logbeta(T:T+dmax,nLayerMax)=0; % exp(0) = 1;
     % This is according to Yu (2010, p. 219).
     
     % Recursive evaluation of beta for t<T:
@@ -315,8 +343,12 @@ else
 end
 end
 
-%% Calculating y=logsumexp(x):
 function y = logsumexp(x)
+%% y=logsumexp(x)
+% Calculate an (slightly approximate) value of y=logsumexp(x) while 
+% preventing underflow in the calculations. 
+
+%% Calculate logsumexp:
 x = x(isfinite(x));
 if isempty(x)
     y = -inf;
