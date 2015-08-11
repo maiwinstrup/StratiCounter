@@ -672,6 +672,6 @@ disp(['Output directory: ' outputdir])
 % similarity = similarityindex(timescale1yr(:,1),manualcounts(:,1),[],Model.dx,[],Runtype.plotlevel)
 
 %% Show results in matchmaker:
-if ~isdeployed
+if Runtype.plotlevel>0
     checkinmatchmaker(outputdir,Model,[],Runtype);
 end
