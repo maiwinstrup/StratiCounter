@@ -81,7 +81,7 @@ for j = 1:Model.nSpecies
 
         % Corresponding filename:
         filename = [outputdir '/Template_' num2str(Model.manualtemplates(1)) '-' ...
-            num2str(Model.manualtemplates(2)) 'm_' Model.nameManualCounts];
+            num2str(Model.manualtemplates(2)) 'm_' Model.nameManualCounts(1:end-4)];
         if Model.dx_offset~=0
             filename = [filename '_dxoffset' num2str(Model.dx_offset)];
         end
@@ -96,10 +96,13 @@ for j = 1:Model.nSpecies
     
     % Dates for last modification of files: 
     if exist([filename '.mat'],'file')
-        InfoManCounts = dir(['./ManualCounts/' Model.nameManualCounts]);
+        InfoManCounts = dir(['./Manualcounts/' Model.nameManualCounts]);
         dateManCounts = InfoManCounts.datenum; 
         InfoTemplates = dir([filename '.mat']);
         dateTemplates = InfoTemplates.datenum;
+    else
+        dateManCounts = nan;
+        dateTemplates = nan;
     end
     
     if exist([filename '.mat'],'file') && ~strcmp(Model.icecore,'SyntheticData') ...

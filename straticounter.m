@@ -239,7 +239,7 @@ logPobs_alldata = 0;
 iBatch = 0;
 data_final = [];
 
-while iBatch < nBatch
+while iBatch < nBatch    
     %% Batch number:
     iBatch = iBatch+1;
     if nBatch<10; dispBatch = 1; else dispBatch = 5; end
@@ -393,8 +393,8 @@ while iBatch < nBatch
             
             %% 2e: Stopping criteria reached?
             % Using log(P_obs) to test for convergence:
-            if abs(logPobs(iBatch,iTemplateBatch,iIter)-...
-                    logPobs(iBatch,iTemplateBatch,iIter+1))>Model.eps && ...
+            if logPobs(iBatch,iTemplateBatch,iIter+1)-...
+                    logPobs(iBatch,iTemplateBatch,iIter)>Model.eps && ...
                     iIter<Model.nIter;
                 iIter = iIter+1;
                 
