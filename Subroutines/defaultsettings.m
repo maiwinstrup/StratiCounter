@@ -41,7 +41,7 @@ Model.dx_offset = 0;
 % be set as 0.5 (to avoid unnecessary interpolation). 
 
 % Preprocessing of each data series:
-Model.preprocsteps{1:Model.nSpecies,1:2} = []; 
+Model.preprocsteps = cell(Model.nSpecies,2); 
 % 1st row: Initial preprocessing
 % 2nd row: Batch preprocessing 
 

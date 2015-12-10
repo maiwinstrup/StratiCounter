@@ -1,4 +1,4 @@
-function straticounter(varargin)
+function outputdir = straticounter(varargin)
 
 %% STRATICOUNTER: A layer counting algorithm
 % STRATICOUNTER(settings_file_name) loads settings from the named file in
@@ -113,7 +113,7 @@ if nargin == 1
     Runtype.develop = 'no';
     % In development mode; will run as normal, but output will be put in 
     % the ./Output/develop folder. Option to run for only a few batches.
-    Runtype.reuse = 'yes';
+    Runtype.reuse = 'no'; %'yes';
     % If yes; use previously processed data and calculated layer templates.
     % If no, these are re-calculated.
     Runtype.outdir = '';

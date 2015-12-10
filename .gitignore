@@ -2,6 +2,9 @@
 *.asv
 *.docx
 *.xlsx
+*.jpg
+*.tif
+*.txt
 Output/*
 Data/*
 !Data/data_empty.mat
