@@ -51,14 +51,14 @@ Layer0(1).no(:,2)=1; % Probability
 %% Intervals for calculation of average layer thicknesses:
 % Number of different partitions of the data series to be used for mean 
 % layer thickness calculations:
-nDxLambda = length(Model.dxLambda);
+nDxLambda = length(Model.Out.dxLambda);
 
 % Boundaries associated with the depth sections:
 dDxLambda = cell(1,nDxLambda);
 for i = 1:nDxLambda
     % Interval boundaries:
-    d0 = floor(Data.depth(batchStart(1))/Model.dxLambda(i))*Model.dxLambda(i); 
-    dDxLambda{i} = d0:Model.dxLambda(i):Data.depth(end);   
+    d0 = floor(Data.depth(batchStart(1))/Model.Out.dxLambda(i))*Model.Out.dxLambda(i); 
+    dDxLambda{i} = d0:Model.Out.dxLambda(i):Data.depth(end);   
     % First value may be outside interval. If so, it is removed:
     dDxLambda{i} = dDxLambda{i}(dDxLambda{i}>=Data.depth(batchStart(1)));
 end
@@ -70,7 +70,7 @@ end
 
 %% Marker horizons:
 % Same initialization as for first layer:
-for i = 1:length(Model.dMarker)
+for i = 1:length(Model.Out.dMarker)
     Layer0(1).noMarker{i} = Layer0(1).no;
 end
 

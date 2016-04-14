@@ -32,13 +32,21 @@ if ~isempty(Model.dx)
     Nmin = round(minLambda/Model.dx);
     disp(['Average number of data points per layer: ' num2str(Naverage)])
     if Naverage < 10
-        warning(['OBS: Average number of data points per layer is small (' num2str(Naverage) ')'])
+        warning(['Average number of data points per layer is small (' num2str(Naverage) ')'])
+        
     end
     if Naverage > 20
-        warning(['OBS: Average number of data points per layer is large (' num2str(Naverage) ')'])
+        warning(['Average number of data points per layer is large (' num2str(Naverage) ')'])
     end
+    if Naverage <10 || Naverage > 20
+        % Find appropriate range of good values for Model.dx:
+        goodvaluemin = roundsignificant(meanLambda/15,2);
+        goodvaluemax = roundsignificant(meanLambda/10,2);
+        warning(['Suggested action: Adjust Model.dx to a value of ~' num2str(goodvaluemin) '-' num2str(goodvaluemax) 'm'])
+    end
+    
     if Nmin < 5
-        warning(['OBS: Minimum number of data points per layer: ' num2str(Nmin)])
+        warning(['Minimum number of data points per layer: ' num2str(Nmin)])
     end
 end
 
@@ -59,10 +67,10 @@ if isfinite(minDist)
     Mmin = minDist/maxLambda;
     disp(['Average number of layers per (smallest) preprocessing distance: ' num2str(Maverage)])
     if Maverage < 2
-        warning(['OBS: Average number of layers per preprocessing distance is small (' num2str(Maverage) ')'])
+        warning(['Average number of layers per preprocessing distance is small (' num2str(Maverage) ')'])
     end
     if Mmin < 1
-        warning(['OBS: Minimum number of layers per preprocessing distance is small: ' num2str(Mmin)])
+        warning(['Minimum number of layers per preprocessing distance is small: ' num2str(Mmin)])
     end
 end
 
@@ -76,5 +84,5 @@ end
 minDist_adj = min(cell2mat(preprocdist_adj));
 
 if minDist_adj < 2
-     warning('OBS: Adjustable preprocessing distance(s) is small (less than 2*lambda)')
+     warning('Adjustable preprocessing distance(s) is small (less than 2*lambda)')
 end

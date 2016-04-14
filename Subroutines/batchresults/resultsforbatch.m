@@ -74,7 +74,7 @@ Result.Layerpos = LayerposDepth;
 %% Mean layer thickness within sections in batch:
 % Layer number probability distributions for predetermined sections; these 
 % are later to be used for calculating mean layer thickness:
-for ix = 1:length(Model.dxLambda)
+for ix = 1:length(Model.Out.dxLambda)
     % Layer number distributions within sections:
     [probdistSections,Layer0_new.noDx{ix},dSectionBounds] = ...
         sectionlayerprobs(depth,FBprob,dDxLambda{ix},Layer0.noDx{ix},...
@@ -92,10 +92,10 @@ end
 %% Marker horizons: 
 % Layer number probability distributions for sections between marker
 % horizons:
-for ix = 1:length(Model.dMarker)
+for ix = 1:length(Model.Out.dMarker)
     % Layer number distributions within sections:
     [probdistMarker,Layer0_new.noMarker{ix},dMarkerBounds] = ...
-        sectionlayerprobs(depth,FBprob,Model.dMarker{ix},...
+        sectionlayerprobs(depth,FBprob,Model.Out.dMarker{ix},...
         Layer0.noMarker{ix},tau,ntau,d,pd,logb,plotlevel);
    
     % Save: 

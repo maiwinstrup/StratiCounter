@@ -17,8 +17,22 @@ if ~exist(path2data,'file')
 
 else
     % Load data structure array:
-    load(path2data)
+    load(path2data);
     
+    % Check for consistency between data and depth scale indicators:   
+    if length(data.name)~=length(data.data)
+        error(['Problem with data structure array: Inconsistency between '...
+            'number of data records and their corresponding names'])
+    end
+    if length(data.depth_no)~=length(data.data)
+        error(['Problem with data structure array: Inconsistency between '...
+            'number of data records and size of data.depth_no'])
+    end
+    if sum(~ismember(data.depth_no,1:length(data.depth))>0)
+        error(['Problem with data structure array: Inconsistency between '...
+            'input in depth_no and the number of depth scales'])
+    end   
+   
     % Find location of species in array: 
     index = find(strcmp(data.name,species)==1);
     if isempty(index)

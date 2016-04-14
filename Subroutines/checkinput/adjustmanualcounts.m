@@ -63,17 +63,17 @@ end
 % If tiepoints exist, these are used to provide ages:
 if ~isempty(Model.tiepoints) 
     if strcmp(Model.ageUnitTiepoints,'layers')
-        Model.ageUnitOut = 'layers';
+        Model.Out.ageUnit = 'layers';
         disp('Age units of resulting timescale is changed to "layers"')
     end
 end
 if strcmp(Model.ageUnitManual,'layers')
-    Model.ageUnitOut = 'layers';
+    Model.Out.ageUnit = 'layers';
     disp('Age units of resulting timescale is changed to "layers"')
 end
         
 %% Then convert to ageUnitOut:
-switch Model.ageUnitOut
+switch Model.Out.ageUnit
     case 'AD'
         manualcounts(:,2) = [2000-manualcounts(1,2); 2000-manualcounts(1:end-1,2)-1];
     case 'BP'

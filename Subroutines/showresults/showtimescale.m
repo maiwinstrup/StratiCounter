@@ -115,14 +115,14 @@ end
 
 %% Mark the depths of marker horizons, if any:
 K = length(legendname);
-if ~isempty(Model.dMarker)
+if ~isempty(Model.Out.dMarker)
     legendname{K+1} = 'Marker horizons';
-    for iMarkerSet = 1:length(Model.dMarker)
-        for i = 1:length(Model.dMarker{iMarkerSet})
-            dMarker = Model.dMarker{iMarkerSet}(i);
+    for iMarkerSet = 1:length(Model.Out.dMarker)
+        for i = 1:length(Model.Out.dMarker{iMarkerSet})
+            dMarker = Model.Out.dMarker{iMarkerSet}(i);
             
             % Size of marker on plot:
-            if strcmp(Model.ageUnitOut,'AD')
+            if strcmp(Model.Out.ageUnit,'AD')
                 indexmin = size(timescale,2); 
                 indexmax = 3;
             else
@@ -152,7 +152,7 @@ end
 % Labels and limits:
 h_ax = gca; 
 xlabel(h_ax,'Depth [m]','fontweight','bold')
-ylabel(h_ax,['Age (' Model.ageUnitOut ')'],'fontweight','bold')
+ylabel(h_ax,['Age (' Model.Out.ageUnit ')'],'fontweight','bold')
 title([Model.icecore ' layer counts'],'fontweight','bold','interpreter','none')
 xlim([Model.dstart timescale(end,1)])
 box on
@@ -178,7 +178,7 @@ dlayer_step = dlayer_step(:);
 
 % Ages:
 age = age(:);
-switch Model.ageUnitOut
+switch Model.Out.ageUnit
     case 'AD'
         age_step = [age(1:end)' age(end)-1; age(1:end)' age(end)-1];
     otherwise

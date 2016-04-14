@@ -98,29 +98,30 @@ if strcmp(Model.type,'FFT')
 end
 
 %% Sections for layer number distribution calculations:
-if ~iscell(Model.dMarker)&&~isempty(Model.dMarker)
-    Model.dMarker = {Model.dMarker};
+if ~iscell(Model.Out.dMarker)&&~isempty(Model.Out.dMarker)
+    Model.Out.dMarker = {Model.Out.dMarker};
 end
 
 % Remove sections from outside depth interval:
-for i = 1:length(Model.dMarker)
-    mask = Model.dMarker{i}>=Model.dstart & Model.dMarker{i}<=Model.dend;
-    Model.dMarker{i} = Model.dMarker{i}(mask);
+for i = 1:length(Model.Out.dMarker)
+    mask = Model.Out.dMarker{i}>=Model.dstart & Model.Out.dMarker{i}<=Model.dend;
+    Model.Out.dMarker{i} = Model.Out.dMarker{i}(mask);
 end
 
 % Add start and end of data series to interval for calculating layer 
 % distributions:
-for i = 1:length(Model.dMarker)
-    if ~isempty(Model.dMarker{i})
-        Model.dMarker{i} = unique([Model.dstart; Model.dMarker{i}(:); Model.dend]);
+for i = 1:length(Model.Out.dMarker)
+    if ~isempty(Model.Out.dMarker{i})
+        Model.Out.dMarker{i} = unique([Model.dstart; Model.Out.dMarker{i}(:); Model.dend]);
     end
 end
 % Remove empty entries in dMarker:
-if ~isempty(Model.dMarker)
-    for i = 1:length(Model.dMarker)
-        mask(i) = isempty(Model.dMarker{i});
+clear mask
+if ~isempty(Model.Out.dMarker)
+    for i = 1:length(Model.Out.dMarker)
+        mask(i) = isempty(Model.Out.dMarker{i});
     end
-    Model.dMarker = Model.dMarker(~mask);
+    Model.Out.dMarker = Model.Out.dMarker(~mask);
 end
 
 %% Check for file extension on filename with manual layer counts:
@@ -130,9 +131,9 @@ if ~strcmp(Model.nameManualCounts(end-3:end),'.txt')
 end
 
 %% Check that one of four options are chosen as unit for timescale output: 
-while ~ismember(Model.ageUnitOut,{'AD','BP','b2k','layers'})
+while ~ismember(Model.Out.ageUnit,{'AD','BP','b2k','layers'})
     promt = 'Which timescale terminology to be used for output? \n(Options: AD, BP, b2k, layers): ';
-    Model.ageUnitOutput = input(promt,'s');
+    Model.Out.ageUnitput = input(promt,'s');
 end
 
 %% Truncating tiepoints etc. to the desired data resolution:
@@ -149,15 +150,15 @@ if ~isempty(Model.dx)
     end
         
     % Sections for lambda calculations:
-    for i = 1:length(Model.dMarker)
-        index = interp1(depth,1:length(depth),Model.dMarker{i},'nearest','extrap');
-        Model.dMarker{i} = sort(depth(index));
+    for i = 1:length(Model.Out.dMarker)
+        index = interp1(depth,1:length(depth),Model.Out.dMarker{i},'nearest','extrap');
+        Model.Out.dMarker{i} = sort(depth(index));
     end
 end
 
 %% Confidence interval:
-for i = 1:Model.confInterval
-    quantile_perc = [(100-Model.confInterval)/2, 100-(100-Model.confInterval)/2];
+for i = 1:Model.Out.confInterval
+    quantile_perc = [(100-Model.Out.confInterval)/2, 100-(100-Model.Out.confInterval)/2];
     quantile_perc = sort(quantile_perc);
 end
 Model.prctile = quantile_perc/100;

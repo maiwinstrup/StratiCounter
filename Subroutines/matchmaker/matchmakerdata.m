@@ -42,13 +42,44 @@ for j = 2:nSpecies
     depth_no(j)=nd;
 end
         
-% Species are given random colours:
-colours = rand(nSpecies,3);   
-mask = colours>0.9;
-colours(mask)=0.7*colours(mask); % avoiding too bleak colors
+% Generate colour scheme for species: 
+colours = gencolours(species);
+
 % Save data:
 folder = './Subroutines/matchmaker/data';
 if ~exist(folder,'dir'); mkdir(folder); end
 filename = [folder '/data' datafilename '.mat'];
 save(filename,'data','depth','depth_no','species','colours')
+end
+
+function colours = gencolours(species)
+%% colours = gencolours(species)
+% Generate colour file for the species varieties, with some species having 
+% preset values. 
+
+%% Load pre-set color scheme: 
+[groupspecies, groupcolour] = colourscheme; 
+
+%% Detect species without preassigned colors:
+allspecies = [];
+for i = 1:length(groupspecies)
+    allspecies = [allspecies, groupspecies{i}];
+end
+mask = ~ismember(species,allspecies);
+if sum(mask)>0
+    disp('The following species do not have a pre-assigned colour:');
+    species{mask}
+end
+
+%% First: Assign random colors to all:
+N = length(species);
+colours = rand(N,3);
+mask = colours>0.9;
+colours(mask)=0.7*colours(mask); % Avoiding colors that are too bleak
+
+%% Use pre-set color scheme (where possible): 
+for i = 1:length(groupspecies)
+    mask = ismember(species,groupspecies{i});
+    colours(mask(:),1:3) = repmat(groupcolour{i},sum(mask),1);
+end
 end

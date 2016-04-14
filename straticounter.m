@@ -69,8 +69,9 @@ function outputdir = straticounter(varargin)
 % with this program; if not, write to the Free Software Foundation, Inc.,
 % 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-%% Release date:
-releasedate = '07-07-2015';
+%% Release version and date:
+releaseversion = '1.2.3';
+releasedate = '14-04-2016';
 
 %% Paths to subroutine and settings folders:
 if ~isdeployed % shows whether this is a compiled instance of the code
@@ -86,7 +87,8 @@ end
 %% Select model settings:
 % Import default settings:
 Model = defaultsettings();
-% Add release date:
+% Add release version and date:
+Model.version = releaseversion;
 Model.releasedate = releasedate;
 
 %% Core-specific settings:
@@ -97,7 +99,7 @@ vararg_err = 'This function accepts a maximum of two (2) input arguments';
 % behavior:
 if nargin == 1    
     % Check that settings file exists:
-    if ~exist(['Settings/' varargin{1}],'file')
+    if ~exist(varargin{1},'file')
         error('Settings file unknown, please correct')
     end
     % Import settings:
@@ -113,7 +115,7 @@ if nargin == 1
     Runtype.develop = 'no';
     % In development mode; will run as normal, but output will be put in 
     % the ./Output/develop folder. Option to run for only a few batches.
-    Runtype.reuse = 'no'; %'yes';
+    Runtype.reuse = 'yes';
     % If yes; use previously processed data and calculated layer templates.
     % If no, these are re-calculated.
     Runtype.outdir = '';
@@ -179,7 +181,7 @@ else
 
     % Load and preprocess data files:
     [Data, Model] = loadormakedatafile(Model,manualcounts,Runtype);
-
+   
     % Check for long sections without data:
     % Long sections are in this context corresponding to 20 mean layer
     % thicknesses without much data:
@@ -243,6 +245,7 @@ while iBatch < nBatch
     %% Batch number:
     iBatch = iBatch+1;
     if nBatch<10; dispBatch = 1; else dispBatch = 5; end
+    
     if mod(iBatch,dispBatch)==0
         disp(['Batch ' num2str(iBatch) ': ' ...
             num2str(Data.depth(batchStart(iBatch))) 'm'])
@@ -505,9 +508,9 @@ while iBatch < nBatch
             if exist('hfig_lambda','var')
                 close(hfig_lambda(isgraphics(hfig_lambda,'figure')));
             end
-            hfig_lambda = gobjects(length(Model.dxLambda),1); % Initialize handles
-            for idx = 1:length(Model.dxLambda)
-                filename = [outputdir '/lambda_' num2str(Model.dxLambda(idx)) 'm_prelim.jpeg'];
+            hfig_lambda = gobjects(length(Model.Out.dxLambda),1); % Initialize handles
+            for idx = 1:length(Model.Out.dxLambda)
+                filename = [outputdir '/lambda_' num2str(Model.Out.dxLambda(idx)) 'm_prelim.jpeg'];
                 hfig_lambda(idx) = showlambda(lambda_prelim{idx},...
                    timescale1yr_prelim,manualcounts,Model,filename);
             end
@@ -585,7 +588,7 @@ filename = [outputdir '/' Model.icecore '_timescale_' num2str(Model.dstart) ...
 savetimescaleastxt(timescale1yr,filename,Model)
 
 % Confidence interval for marker horizons:
-if ~isempty(Model.dMarker)
+if ~isempty(Model.Out.dMarker)
     save([outputdir '/markerhorizons.mat'],...
         'markerProb','markerConf','Model')
     % As txt file:
@@ -594,7 +597,7 @@ if ~isempty(Model.dMarker)
 end
 
 % Layer thicknesses:
-if ~isempty(Model.dxLambda)
+if ~isempty(Model.Out.dxLambda)
     save([outputdir '/lambda.mat'],'lambdaResults','Model')
 end
 
@@ -615,13 +618,13 @@ if Runtype.plotlevel>0
 
     % Mean layer thicknesses:
     if exist('hfig_lambda','var');
-        for i = 1:length(Model.dxLambda)
+        for i = 1:length(Model.Out.dxLambda)
             if ~isempty(hfig_lambda(i)); close(hfig_lambda(i)); end
         end
     end
-    hfig_lambda = gobjects(length(Model.dxLambda),1); % Initialize handles
-    for idx = 1:length(Model.dxLambda)
-        filename = [outputdir '/lambda_' num2str(Model.dxLambda(idx)) 'm.jpeg'];
+    hfig_lambda = gobjects(length(Model.Out.dxLambda),1); % Initialize handles
+    for idx = 1:length(Model.Out.dxLambda)
+        filename = [outputdir '/lambda_' num2str(Model.Out.dxLambda(idx)) 'm.jpeg'];
         hfig_lambda(idx) = showlambda(lambdaResults{idx},timescale1yr,...
             manualcounts,Model,filename);
     end
@@ -660,8 +663,8 @@ if exist(filename,'file'); delete(filename); end
 % Figures:
 filename = [outputdir '/timescale_prelim.jpeg'];
 if exist(filename,'file'); delete(filename); end
-for idx = 1:length(Model.dxLambda)
-    filename = [outputdir '/lambda_' num2str(Model.dxLambda(idx)) 'm_prelim.jpeg'];
+for idx = 1:length(Model.Out.dxLambda)
+    filename = [outputdir '/lambda_' num2str(Model.Out.dxLambda(idx)) 'm_prelim.jpeg'];
     if exist(filename,'file'); delete(filename); end
 end
 

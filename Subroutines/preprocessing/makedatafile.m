@@ -32,26 +32,12 @@ if isempty(species)
     for j = 1:nSpecies; species{j}=''; end
 end
 
-%% Check for unrecorded breaks in data:
+%% Check for unrecorded breaks/missing data sections in data:
 % A (likely) break in data can be observed as much larger sections without 
-% a data point than "usual". However, this check is only performed if the 
-% data points are regularily spaced. If so, we select as breaks those 
-% no-data sections which are wider than 1.8x the median value. One depth 
-% value (and a data value of nan) corresponding to this break is added to 
-% the data records.
-    
-% Test for regularly spaced data: 
-dx_old = diff(depth_in);
-regularity_test = abs(median(dx_old)-min(dx_old))/mean(dx_old);
-if regularity_test<0.01
-    [depth_in, data_in, startofbreaks, endofbreaks] = ...
-        addbreaks(depth_in,data_in,1.8*median(dx_old));
-    if ~isempty(startofbreaks)
-        disp(['Break(s) are added to datafile starting at the following depth(s): ' ...
-            num2str(startofbreaks)])
-        disp(['and ending at depth(s): ' num2str(endofbreaks)])
-    end
-end
+% a data point than "usual". Accounting for that data resolution may change
+% with depth. At each end of the missing section, a depth value (and a data 
+% value of nan) is added to the data records.
+[depth_in,data_in] = missingdata(depth_in,data_in);
 
 %% Preprocess data:
 data1 = nan(size(data_in));

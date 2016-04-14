@@ -158,12 +158,12 @@ end
 
 %% Mark the depths of marker horizons, if any:
 K = length(legendtext);
-if ~isempty(Model.dMarker)
-    for iMarkerSet = 1:length(Model.dMarker)
+if ~isempty(Model.Out.dMarker)
+    for iMarkerSet = 1:length(Model.Out.dMarker)
         % Find horizons within selected depth interval:
-        mask = Model.dMarker{iMarkerSet}>=lambda(1,1)&...
-            Model.dMarker{iMarkerSet}<=lambda(end,2);
-        dMarker = Model.dMarker{iMarkerSet}(mask);
+        mask = Model.Out.dMarker{iMarkerSet}>=lambda(1,1)&...
+            Model.Out.dMarker{iMarkerSet}<=lambda(end,2);
+        dMarker = Model.Out.dMarker{iMarkerSet}(mask);
         if ~isempty(dMarker)
             legendtext{K+1} = 'Marker horizons';
             for i = 1:length(dMarker)
@@ -202,7 +202,7 @@ if tinterval>500
     ttick = ttick_start:dt:ttick_end;
     xticklabel = cell(length(ttick),1);
     for i = 1:length(ttick) 
-        xticklabel{i} = [num2str(ttick(i)) ' ' Model.ageUnitOut];
+        xticklabel{i} = [num2str(ttick(i)) ' ' Model.Out.ageUnit];
     end
     % Depth of the tick marks:
     dtick = interp1(timescale1yr(:,2),timescale1yr(:,1),ttick);

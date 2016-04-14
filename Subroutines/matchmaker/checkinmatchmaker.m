@@ -99,9 +99,9 @@ for iOutput = 1:nOutput
     end
 
     % Marker horizons:
-    if ~isempty(Model.dMarker)
-        for i = 1:length(Model.dMarker)
-            tp = Model.dMarker{i};
+    if ~isempty(Model.Out.dMarker)
+        for i = 1:length(Model.Out.dMarker)
+            tp = Model.Out.dMarker{i};
             mp = [mp; tp(:), ones(length(tp),1)*5]; % Small blue bars
         end
     end

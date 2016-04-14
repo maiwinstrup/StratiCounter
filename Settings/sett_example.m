@@ -7,8 +7,9 @@
 
 %% Data files:
 Model.icecore = 'NEEM-2011-S1_example';
-% Data existing for core:
-Model.species = {'Cl','nssS'};
+% Two data records existing for this core: Cl and nssS. 
+% Here, we choose only to use the Cl record.
+Model.species = {'Cl'};
 Model.nSpecies = length(Model.species);
 
 % Weighting of various species:
@@ -32,7 +33,7 @@ Model.tiepoints = [];
 
 %% Data treatment:
 % Resolution of data series to be used:
-Model.dx = 10^-2; % [m/px]
+Model.dx = 10^-2; % [m/datapoint]
 Model.dx_offset = 0;
 % If using e.g. midpoints of dx intervals, the value of dx_offset should
 % be set as 0.5 (to avoid unnecessary interpolation). 
@@ -102,18 +103,18 @@ Model.update = {'ML', 'ML', 'ML', 'ML', 'ML'};
 
 %% Output of algorithm:
 % Length of interval(s) for determining average layer thicknesses:
-Model.dxLambda = [1 5]; % [m]
+Model.Out.dxLambda = [1 5]; % [m]
 % If empty, lambda values are not determined.
 
 % Specific depth sections for mean layer thickness calculations:
-Model.dMarker = [];
+Model.Out.dMarker = [];
 % Several sections can be included as follows:
-% Model.dMarker{1} = [101, 152.5, 204];
-% Model.dMarker{2} = [121, 142, 201];
+% Model.Out.dMarker{1} = [101, 152.5, 204];
+% Model.Out.dMarker{2} = [121, 142, 201];
 % Distributions are also calculated for the section from the beginning of 
 % the data series to the first marker horizon, and from the last
 % marker horizon within data series to end of the data series. 
 
 % Which timescale terminology to be used for output? 
-Model.ageUnitOut = 'AD';
+Model.Out.ageUnitOut = 'AD';
 % Options: AD, BP, b2k, layers

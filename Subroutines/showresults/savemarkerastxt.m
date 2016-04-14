@@ -18,22 +18,22 @@ if isempty(Model.tiepoints);
     constraints = [];
 else
     constraints = ['%% Tiepoints: Depth: ' num2str(Model.tiepoints(1,1)) ...
-        'm, Age: ' num2str(Model.tiepoints(1,2)) ' ' Model.ageUnitOut '\r\n'];
+        'm, Age: ' num2str(Model.tiepoints(1,2)) ' ' Model.Out.ageUnit '\r\n'];
     for i = 2:size(Model.tiepoints,1)
         constraints = [constraints '%%            Depth: ' ...
-            num2str(Model.tiepoints(i,1)) 'm, Age: ' num2str(Model.tiepoints(i,2)) ' ' Model.ageUnitOut '\r\n'];
+            num2str(Model.tiepoints(i,1)) 'm, Age: ' num2str(Model.tiepoints(i,2)) ' ' Model.Out.ageUnit '\r\n'];
     end
 end
 
 %% Confidence intervals:
 confInterval = [];
-nConf = length(Model.confInterval);
+nConf = length(Model.Out.confInterval);
 for i = 1:nConf
-    confInterval = [confInterval num2str(Model.confInterval(nConf-i+1)) ...
+    confInterval = [confInterval num2str(Model.Out.confInterval(nConf-i+1)) ...
         '%% conf (younger bound) \t'];
 end
 for i = 1:nConf
-    confInterval = [confInterval num2str(Model.confInterval(i)) ...
+    confInterval = [confInterval num2str(Model.Out.confInterval(i)) ...
         '%% conf (older bound) \t'];
 end
 confInterval = confInterval(1:end-2);

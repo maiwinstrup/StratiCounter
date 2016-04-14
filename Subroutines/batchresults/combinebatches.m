@@ -92,7 +92,7 @@ t0 = initialage(manualcounts,[LayerProbDist.d(:),LayerProbDist.mode(:)],Model);
         
 % Pixel 1 is part of "layer 0", and the corresponding age here is t0 
 % (measured in appropriate age unit). 
-switch Model.ageUnitOut
+switch Model.Out.ageUnit
     case 'AD'
         LayerProbDist.mode = t0-LayerProbDist.mode;
         LayerProbDist.mean = t0-LayerProbDist.mean;
@@ -127,7 +127,7 @@ timescale = [LayerProbDist.d, LayerProbDist.mode, LayerProbDist.prctile];
 timescale1yr(:,1) = [LayerProbDist.d(1); Layerpos.final];
 
 % Corresponding ages, incl. that of initial layer position:
-switch Model.ageUnitOut
+switch Model.Out.ageUnit
     case 'AD'
         timescale1yr(:,2) = t0-(-1:length(Layerpos.final)-1);
     otherwise
@@ -139,7 +139,7 @@ end
 % the layer boundaries.
 layerpos_px = interp1(LayerProbDist.d,1:length(LayerProbDist.d),...
     [LayerProbDist.d(1);Layerpos.final-0.5*Model.dx]); % Last pixel in layers
-switch Model.ageUnitOut
+switch Model.Out.ageUnit
     case 'AD'
         layercenter_px = round(layerpos_px-0.5*diff([1; layerpos_px]));
     otherwise 
@@ -154,9 +154,9 @@ timescale1yr(1,3:2+size(LayerProbDist.prctile,2)) = timescale1yr(1,2);
 %% Layer number distributions between marker horizons:
 % Several sets of marker horizons may exist, the probabilities of these are
 % calculated one set at a time.
-markerProb = cell(1,length(Model.dMarker));
+markerProb = cell(1,length(Model.Out.dMarker));
 zerolimit = 10^-5;
-for iMarkerSet = 1:length(Model.dMarker)
+for iMarkerSet = 1:length(Model.Out.dMarker)
     k=0;
     for iBatch = 1:nBatch
         % Number of marker horizons within batch (end of sections):
@@ -178,13 +178,13 @@ end
 % Also the section from the beginning to the first marker horizon is 
 % included, as well as the section from the last marker horizon within data 
 % section to the last data point.
-markerConf = cell(1,length(Model.dMarker));
+markerConf = cell(1,length(Model.Out.dMarker));
 
-for iMarkerSet = 1:length(Model.dMarker)
+for iMarkerSet = 1:length(Model.Out.dMarker)
     % Remove marker horizons outside interval:
-    mask = Model.dMarker{iMarkerSet}>=LayerProbDist.d(1) & ...
-        Model.dMarker{iMarkerSet}<=LayerProbDist.d(end);
-    markerhorizons = Model.dMarker{iMarkerSet}(mask); % Includes start of 
+    mask = Model.Out.dMarker{iMarkerSet}>=Model.dstart &... ; %LayerProbDist.d(1) & ...
+        Model.Out.dMarker{iMarkerSet}<=LayerProbDist.d(end);
+    markerhorizons = Model.Out.dMarker{iMarkerSet}(mask); % Includes start of 
     % data section.
     % Number of horizons within interval:
     nMarker = length(markerhorizons); 
@@ -215,9 +215,9 @@ for iMarkerSet = 1:length(Model.dMarker)
 end
 
 %% Mean layer thicknesses in equidistant intervals:
-lambda = cell(1,length(Model.dxLambda));
+lambda = cell(1,length(Model.Out.dxLambda));
 
-for idx = 1:length(Model.dxLambda)    
+for idx = 1:length(Model.Out.dxLambda)    
     % Combine results from batches:
     nMode = []; prc = []; dstart = LayerProbDist.d(1);        
     for iBatch = 1:nBatch

@@ -10,7 +10,7 @@ function [batchStart,Layer0,Template,Prior,Layerpar,logPobs,logPobsNorm,...
 batchStart = nan(nBatch,1);
 
 %% Probabilities for location and layer number of first layer boundary:
-if isempty(Model.dMarker)
+if isempty(Model.Out.dMarker)
     Layer0(1:nBatch) = struct('pos',[],'no',[],'noDx',[]);
 else
     Layer0(1:nBatch) = struct('pos',[],'no',[],'noDx',[],'noMarker',[]);
@@ -52,12 +52,12 @@ LayerDist = struct('d',[],'mode',[],'mean',[],'median',[],'prctile',[]);
 Layerpos = struct('fb',[],'fb_issues',[],'final',[]);
 % Mean layer thickness within intervals:
 Lambda = struct('d',[],'ndist',[]);
-Lambda = repmat(Lambda,length(Model.dxLambda),1);
+Lambda = repmat(Lambda,length(Model.Out.dxLambda),1);
 % Probability distributions of layering between marker horizons:
 Marker = struct('d',[],'ndist',[]);
-Marker = repmat(Marker,length(Model.dMarker),1);
+Marker = repmat(Marker,length(Model.Out.dMarker),1);
 % Gathering all in the array "Result": 
-if isempty(Model.dMarker)
+if isempty(Model.Out.dMarker)
     Result(1:nBatch) = struct('LayerProbDist',LayerDist,'Layerpos',Layerpos,...
         'Lambda',Lambda,'nIter',[]);
 else

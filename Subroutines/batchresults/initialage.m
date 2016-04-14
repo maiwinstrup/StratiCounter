@@ -41,7 +41,7 @@ else
     % No need for rounding after, since all pixels are given a value.
 
     % Age at start of data series, according to manual counts:
-    switch Model.ageUnitOut
+    switch Model.Out.ageUnit
         case 'AD'
             t0 = tmanual+tauto;
         otherwise

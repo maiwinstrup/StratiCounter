@@ -185,17 +185,17 @@ Model.batchOverlap = 5; % Measured in units of mean layer thicknesses
 
 %% Output of algorithm:
 % Percentiles for confidence intervals:
-Model.confInterval = [50 95]; 
+Model.Out.confInterval = [50 95]; 
 
 % Interval(s) for determining average layer thicknesses:
 % Regular length intervals:
-Model.dxLambda = []; % [m]
+Model.Out.dxLambda = []; % [m]
 % If empty, lambda values are not determined.
 
 % Depth sections for calculation of confidence intervals of the number of 
 % layers between these marker horizons:
-Model.dMarker = [];
+Model.Out.dMarker = [];
 
 % Which timescale terminology to be used for output? 
-Model.ageUnitOut = 'layers';
+Model.Out.ageUnit = 'layers';
 % Options: AD, BP, b2k, layers
