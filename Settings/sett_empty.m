@@ -96,6 +96,14 @@ Model.update = {'ML', 'ML', 'ML', 'ML', 'ML'};
 % 'none': No updates (i.e. maintained as layerpar0)
 % 'ML': Maximum-Likelihood updates
 
+% Option for iteration over templates: 
+% After running StratiCounter once, this option allows a new set of 
+% templates to be produced and used for re-running StratiCounter. The final
+% result will be that based on the new set of templates. 
+% Number of template iterations:
+Model.nTemplate = 1; 
+% If 1: Layer templates are based on manual counts.
+
 %% Output of algorithm:
 % Length of interval(s) for determining average layer thicknesses:
 Model.Out.dxLambda = [1 5]; % [m]

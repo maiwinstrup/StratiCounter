@@ -114,7 +114,7 @@ Model.dtstack = 1/64; %[year]
 % Per batch:
 Model.nTemplateBatch = 1; 
 % For complete data set:
-Model.nTemplateFull = 1;
+Model.nTemplate = 1;
 % If 1: Layer shapes are based on manual counts
 % If > 1: Layer shapes are based on autocounts from previous counting. 
 

@@ -1,10 +1,13 @@
-function hfig = plotlayertemplates(Template,TemplateInfo,Model,hfig,color,filename)
+function hfig = plotlayertemplates(Template,TemplateInfo,Model,hfig,...
+    color,filename,displayname)
 
-%% hfig = plotlayertemplates(Template,TemplateInfo,Model,hfig,color,filename)
+%% hfig = plotlayertemplates(Template,TemplateInfo,Model,hfig,color,...
+%    filename,displayname)
 % Plot layer templates, and save figure under filename. Color should be a
 % (Model.order+1)x3 array with color entries corresponding to mean signal 
 % (line 1) and trajectores (subsequent lines). Slightly darker colors are
-% used to plot the polynomial approximations to the templates. 
+% used to plot the polynomial approximations to the templates. Display name
+% is used to produce a legend for the plots. 
 
 % Copyright (C) 2015  Mai Winstrup
 
@@ -29,14 +32,16 @@ x = 1/(2*L):1/L:1;
 
 %% Plot mean signal and principal components:
 for j = 1:Model.nSpecies
+    
     %% Mean signal:
     subplot(2,Model.nSpecies,j); 
     if ~isempty(TemplateInfo)
         plot(x,TemplateInfo(j).meansignal,'-','color',color(1,:),'linewidth',1)
         hold on
     end
-    % Polynomial approximation:
-    plot(x,polyval(Template(j).mean,x),'-','color',color(1,:)*0.8,'linewidth',1.5)
+    % Polynomial approximation:   
+    plot(x,polyval(Template(j).mean,x),'-','color',...
+        color(1,:)*0.8,'linewidth',1.5,'Displayname',displayname);
     hold on
     % Add title:
     if strcmp(Model.icecore,'SyntheticData')
@@ -45,7 +50,11 @@ for j = 1:Model.nSpecies
         title(Model.species{j},'fontweight','bold','interpreter','none')
     end
     if j == 1; ylabel('Mean signal','fontweight','bold'); end
-    
+    % Add legend:
+    hax = gca; hline = hax.Children;
+    legend(hline(1:2:end))
+    legend('boxoff')
+        
     %% Principal components:
     subplot(2,Model.nSpecies,Model.nSpecies+j);
     if ~isempty(TemplateInfo)
@@ -56,14 +65,12 @@ for j = 1:Model.nSpecies
     end
     % Polynomial approximation:
     for i = 1:Model.order
-        plot(x,polyval(Template(j).traj(:,i),x),'-','color',color(i+1,:)*0.8,'linewidth',1.5)
+        plot(x,polyval(Template(j).traj(:,i),x),'-','color',color(i+1,:)*0.8,'linewidth',1.5,'Displayname',['PC' num2str(i) ' (' displayname ')'])
         hold on
     end
-    % Make legend:
-    for i = 1:Model.order
-        legendname{i,:} = ['PC' num2str(i)];
-    end
-    legend(legendname)
+    % Add legend:
+    hax = gca; hline = hax.Children;
+    legend(hline(1:2:end))
     legend('boxoff')
     if j == 1; ylabel('Principal Components','fontweight','bold'); end
 end

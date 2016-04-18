@@ -8,6 +8,24 @@ function Model = adjustmodel(Model)
 %% Check for settings corresponding to old versions:
 if isfield(Model,'dx_center')
     warning('"dx_center" has in current version been replaced by "dx_offset"')
+    Model.dx_offset = Model.dx_center;
+end
+
+if isfield(Model,'ageUnitOut')
+    Model.Out.ageUnit = Model.ageUnitOut;
+    warning('Model.ageUnitOut has been renamed to Model.Out.ageUnit')
+end
+if isfield(Model,'dxLambda')
+    Model.Out.dxLambda = Model.dxLambda;
+    warning('Model.dxLambda has been renamed to Model.Out.dxLambda')
+end
+if isfield(Model,'dMarker')
+    Model.Out.dMarker = Model.dMarker;
+    warning('Model.dMarker has been renamed to Model.Out.dMarker')
+end
+if isfield(Model,'nTemplateFull')
+    Model.nTemplate = Model.nTemplateFull;
+    warning('Model.nTemplateFull has been renamed to Model.nTemplate')
 end
 
 %% Check value of dx_offset:
@@ -162,3 +180,11 @@ for i = 1:Model.Out.confInterval
     quantile_perc = sort(quantile_perc);
 end
 Model.prctile = quantile_perc/100;
+
+%% Check iteration numbers:
+if Model.nIter > 6
+    disp(['Model.nIter is larger than recommended (' num2str(Model.nIter) ')'])
+end
+if Model.nTemplate > 2
+    disp(['Model.nTemplate is larger than recommended (' num2str(Model.nTemplate) ')'])
+end

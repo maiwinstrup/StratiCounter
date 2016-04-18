@@ -9,7 +9,7 @@
 Model.icecore = 'NEEM-2011-S1_example';
 % Two data records existing for this core: Cl and nssS. 
 % Here, we choose only to use the Cl record.
-Model.species = {'Cl'};
+Model.species = {'Cl','nssS'};
 Model.nSpecies = length(Model.species);
 
 % Weighting of various species:
@@ -20,7 +20,7 @@ Model.path2data = './Data/data_example.mat';
 
 %% Depth interval [m]:
 Model.dstart = 202;
-Model.dend = 210; 
+Model.dend = 209; 
 
 %% Marker horizons to be used as tiepoints?
 % No tiepoints:
@@ -100,6 +100,14 @@ Model.update = {'ML', 'ML', 'ML', 'ML', 'ML'};
 % Options:
 % 'none': No updates (i.e. maintained as layerpar0)
 % 'ML': Maximum-Likelihood updates
+
+% Option for iteration over templates: 
+% After running StratiCounter once, this option allows a new set of 
+% templates to be produced and used for re-running StratiCounter. The final
+% result will be that based on the new set of templates. 
+% Number of template iterations:
+Model.nTemplate = 1; 
+% If 1: Layer templates are based on manual counts.
 
 %% Output of algorithm:
 % Length of interval(s) for determining average layer thicknesses:

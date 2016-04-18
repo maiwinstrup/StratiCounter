@@ -1,22 +1,13 @@
-function [nBatch,batchStart,Layer0,Template,Prior,Layerpar,dDxLambda,...
+function [batchStart,Layer0,Template,Prior,Layerpar,dDxLambda,...
     logPobs,logPobsNorm,relweight,Result] = setinitialconditions(Data,...
-    Model,manualcounts,meanLambda,Template0,Layerpar0)
+    Model,counts0,Template0,Layerpar0,nBatch)
 
-%% [nBatch,batchStart,Layer0,Template,Prior,Layerpar,dDxLambda,logPobs,...
+%% [batchStart,Layer0,Template,Prior,Layerpar,dDxLambda,logPobs,...
 %    logPobsNorm,relweight,Result] = setinitialconditions(Data,Model,...
-%    manualcounts,meanLambda,Template0,Layerpar0)
+%    counts0,Template0,Layerpar0,nBatch)
 % Initialize matrices and set values corresponding to initial conditions.
 % Matrices for results are also initialized. 
 % Copyright (C) 2015  Mai Winstrup
-
-%% Estimate number of batches within depth interval:
-if ~isempty(Model.tiepoints)
-    % The number of batches corresponds to intervals between tiepoints:
-    nBatch = size(Model.tiepoints,1)-1;
-else
-    nBatch = ceil(1.1*range(Data.depth)/(meanLambda*Model.nLayerBatch));
-    % If necessary, this number is later increased. 
-end
 
 %% Initialize empty matrices:
 [batchStart,Layer0,Template,Prior,Layerpar,logPobs,logPobsNorm,...
@@ -27,14 +18,14 @@ if ~isempty(Model.tiepoints)
     % Start in pixel corresponding to the uppermost tiepoint:
     batchStart(1) = interp1(Data.depth,1:length(Data.depth),Model.tiepoints(1,1),'nearest'); 
 
-elseif isempty(manualcounts)||manualcounts(1,1)>Model.dstart+1;
+elseif isempty(counts0)||counts0(1,1)>Model.dstart+1;
     % If manual counts are not provided (for the entire interval, or for 
     % the first 1 meter of the data).
     batchStart(1) = 1;
 else
     % Depth of the first (certain) layer in the manually counted chronology:
-    firstcertainlayer = find(manualcounts(:,3)==0,1,'first');
-    dfirstcertainlayer = manualcounts(firstcertainlayer,1); % [m]
+    firstcertainlayer = find(counts0(:,3)==0,1,'first');
+    dfirstcertainlayer = counts0(firstcertainlayer,1); % [m]
     % Pixel corresponding to the start of a new layer:
     batchStart(1) = interp1(Data.depth,1:length(Data.depth),dfirstcertainlayer+Model.dx/2,'nearest'); 
 end

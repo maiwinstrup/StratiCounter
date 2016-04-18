@@ -312,6 +312,11 @@ Layerpar0.sigma = ParML.sigma;
 Layerpar0.par = ParMAP.par;
 Layerpar0.cov = ParMAP.cov; 
 Layerpar0.nvar = ParMAP.nvar; 
+
+%% Not using full covariance matrix?
+if strcmp(Model.covariance,'none')
+    Layerpar0.cov = diag(diag(Layerpar0.cov));
+end
 end
 
 %% Embedded plotting functions:

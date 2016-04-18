@@ -72,11 +72,6 @@ DataPreproc.data = makedatafile(data,depth,preprocstepsFloat,...
 Layerpar0 = calclayerpar(Model,DataPreproc,manualcounts(:,1),...
     manualcounts(:,3),Template,Runtype);
 
-%% Not using full covariance matrix?
-if strcmp(Model.covariance,'none')
-    Layerpar0.cov = diag(diag(Layerpar0.cov));
-end
-
 %% If no parameter updates: 
 % Ask user if desire to use the values from manual counts.
 noupdates = strcmp(Model.update,'none');
