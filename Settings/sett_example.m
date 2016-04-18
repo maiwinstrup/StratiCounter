@@ -7,9 +7,9 @@
 
 %% Data files:
 Model.icecore = 'NEEM-2011-S1_example';
-% Two data records existing for this core: Cl and nssS. 
+% In the datafile, two data series exist for this core: Cl and nssS. 
 % Here, we choose only to use the Cl record.
-Model.species = {'Cl','nssS'};
+Model.species = {'Cl'};
 Model.nSpecies = length(Model.species);
 
 % Weighting of various species:
