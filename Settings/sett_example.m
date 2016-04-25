@@ -26,9 +26,9 @@ Model.dend = 209;
 % No tiepoints:
 Model.tiepoints = [];
 % With tiepoints:
-% Model.tiepoints(:,1) = []; % Depth [m]
-% Model.tiepoints(:,2) = []; % Corresponding age
-% Model.ageUnitTiepoints = ''; % Age unit of tiepoints
+%Model.tiepoints(:,1) = [203 208]; % Depth [m]
+%Model.tiepoints(:,2) = [958 930]; % Corresponding age
+%Model.ageUnitTiepoints = 'AD'; % Age unit of tiepoints
 % Options: AD, BP, b2k, layers
 
 %% Data treatment:
@@ -68,7 +68,7 @@ Model.nLayerBatch = 50;
 % interval between these. 
 
 %% Provide path to manual layer counts to be used for initialization:
-Model.nameManualCounts = 'counts_example.txt'; 
+Model.nameManualCounts = 'counts_example.txt';
 Model.ageUnitManual = 'AD';
 % Format of file with manual layer counts:
 % counts(:,1): Depth
@@ -124,5 +124,5 @@ Model.Out.dMarker = [];
 % marker horizon within data series to end of the data series. 
 
 % Which timescale terminology to be used for output? 
-Model.Out.ageUnitOut = 'AD';
+Model.Out.ageUnit = 'AD';
 % Options: AD, BP, b2k, layers

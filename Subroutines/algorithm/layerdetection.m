@@ -224,8 +224,11 @@ end
 
 %% Is the possible number of layers in batch larger than anticipated? 
 % If so, increase value of nLayerMax in next iteration.
-if max(FBprob.gamma(:,end))>10^-3 % If the probability of being in 
-    % layer j=nMax at any point t is larger than this value.
+% Not performed if running in tiepoint mode (in which case the number of 
+% layers is fixed). 
+if max(FBprob.gamma(:,end))>10^-3 && isempty(Model.tiepoints) 
+    % If the probability of being in layer j=nMax at any point t is larger 
+    % than this value.
     % Number of times that all layers numbers have been circled through:
     nCircles = round(sum(FBprob.eta_bar(:,end)));
     % Largest possible end layer value:

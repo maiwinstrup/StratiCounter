@@ -333,8 +333,14 @@ for iTemplateFull = 1:Model.nTemplate
         if nLayerMax <= 50
             disp(['Note: Batch contains a limited number of layers ' ...
                 '(nLayerMax = ' num2str(nLayerMax) ')'])
-            disp(['For reliable layer parameter re-estimation it is '...
-                'recommended to use a larger batch size.'])
+            if isempty(Model.tiepoints)
+                disp(['For reliable layer parameter re-estimation it is '...
+                    'recommended to use a larger batch size.'])
+            else
+                disp(['For reliable layer parameter re-estimation it is '...
+                    'recommended to use tiepoints that are more widely spaced.'])
+                disp(['Tiepoints: ' num2str(Model.tiepoints(iBatch,1)) ' and ' num2str(Model.tiepoints(iBatch+1,1)) 'm.'])
+            end
         end
 
         % Depth scale for batch:
@@ -425,7 +431,10 @@ for iTemplateFull = 1:Model.nTemplate
                 logPobs(iBatch,iTemplateBatch,iIter+1) = logPobs_new;
 
                 % New estimate for maximum numbers of layer in batch:
-                nLayerMax = nLayerMax_new;                
+                % Not updated if running in tiepoint mode.
+                if isempty(Model.tiepoints)
+                    nLayerMax = nLayerMax_new;                
+                end
             
                 %% 2e: Stopping criteria reached?
                 % Using log(P_obs) to test for convergence:

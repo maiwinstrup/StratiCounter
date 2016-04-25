@@ -10,7 +10,6 @@ if isfield(Model,'dx_center')
     warning('"dx_center" has in current version been replaced by "dx_offset"')
     Model.dx_offset = Model.dx_center;
 end
-
 if isfield(Model,'ageUnitOut')
     Model.Out.ageUnit = Model.ageUnitOut;
     warning('Model.ageUnitOut has been renamed to Model.Out.ageUnit')
@@ -104,7 +103,24 @@ if ~isempty(Model.tiepoints)
         Model.ageUnitTiepoints = input(promt,'s');
     end
     % Convert tiepoints to integer values:
-    Model.tiepoints(:,2)=floor(Model.tiepoints(:,2));        
+    Model.tiepoints(:,2)=floor(Model.tiepoints(:,2));
+    
+    % Ensure sensible tiepoint age values and age units:
+    if sum(diff(Model.tiepoints(:,2))>0)==size(Model.tiepoints,1)-1
+        % All age differences are positive: 
+        if ~ismember(Model.ageUnitTiepoints,{'layers','BP','b2k'})
+            error(['Tiepoint ages are inconsistent with the provided '...
+                'tiepoint age units (Model.ageUnitTiepoints).'])
+        end
+    elseif sum(diff(Model.tiepoints(:,2))<0)==size(Model.tiepoints,1)-1
+        if ~strcmp(Model.ageUnitTiepoints,'AD')
+            warning(['Tie point ages are inconsistent with the provided age '...
+                'units. Tie point age units are changed to "AD".'])
+            Model.ageUnitTiepoints = 'AD';
+        end
+    else
+        error('Tiepoint ages are inconsistent with tiepoint depths')
+    end
 end
 
 %% If using 'FFT' as Model.type: 

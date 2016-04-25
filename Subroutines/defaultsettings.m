@@ -27,7 +27,8 @@ Model.tiepoints = [];
 % With tiepoints:
 % Model.tiepoints(:,1) = []; % Depth [m]
 % Model.tiepoints(:,2) = []; % Corresponding age
-% Model.ageUnitTiepoints = ''; % Age unit of tiepoints
+% Age unit of tiepoints:
+Model.ageUnitTiepoints = ''; 
 % Options: AD, BP, b2k, layers
 
 %% Data treatment:
