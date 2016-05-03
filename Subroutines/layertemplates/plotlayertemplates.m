@@ -51,9 +51,13 @@ for j = 1:Model.nSpecies
     end
     if j == 1; ylabel('Mean signal','fontweight','bold'); end
     % Add legend:
-    hax = gca; hline = hax.Children;
-    legend(hline(1:2:end))
-    legend('boxoff')
+    hax = gca;
+    version -release;
+    if str2num(ans(1:4))>=2015
+        hline = hax.Children;
+        legend(hline(1:2:end))
+        legend('boxoff')
+    end
         
     %% Principal components:
     subplot(2,Model.nSpecies,Model.nSpecies+j);

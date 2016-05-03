@@ -1,18 +1,16 @@
-function data_new = downsampling(depth,data,depth_new,method,plotlevel)
+function data_new = downsampling(depth,data,depth_new,plotlevel)
 
-%% data_new = downsampling(depth,data,depth_new,method,plotlevel)
-% Downsampling using a step function. Can be done in two ways: 
-% Method 1: Upsampling, smoothing with boxcar function, and subsequently
-% downsampling. Values calculated only for areas fully covered (the 
-% default, is faster).
-% Method 2: Data values are calculated independently for areas with more
-% than 50% coverage in original data (slow). 
-% For both menthods, data is allowed on not-equidistant depth scale.
+%% data_new = downsampling(depth,data,depth_new,plotlevel)
+% Downsampling using a step function: Data is upsampled, smoothing with 
+% boxcar function, and subsequently downsampled. 
+% Values are subsequently calculated for areas containing nan in data, such
+% that a value for these is provided if non-nan data covers more than 50% 
+% of an interval. 
+% Data on non-equidistant depth scale is allowed.
 % Copyright (C) 2015  Mai Winstrup
 
 %% Setting default values:
-if nargin < 4; method = 'method1'; end
-if nargin < 5; plotlevel = 0; end
+if nargin < 4; plotlevel = 0; end
  
 %% Case 1: Data already has the right sampling distance, and correct 
 % starting point. In thise case, we simply interpolate to make sure the 
@@ -35,53 +33,38 @@ if constantsampling_test<0.01 && samplerate_test<0.01 && diffstartpoint<10^-3;
     return
 end
 
-%% Case 2: Downsampling to equidistant depth scale:
-switch method
-    case 'method1'    
-        %% Upsampling the data to e.g. 100 points per new value of depth:
-        dx_upsample = dx_new/100;
-        depth_upsample(:,1) = floor(depth(1)/dx_upsample)*dx_upsample:...
-            dx_upsample:ceil(depth(end)/dx_upsample)*dx_upsample;
-        data_upsample = interp1q(depth,data,depth_upsample);
+%% Downsampling to equidistant depth scale:
+% Upsampling the data to 100 points per new value of depth:
+dx_upsample = dx_new/100;
+depth_upsample(:,1) = floor(depth(1)/dx_upsample)*dx_upsample:...
+    dx_upsample:ceil(depth(end)/dx_upsample)*dx_upsample;
+data_upsample = interp1q(depth,data,depth_upsample);
         
-        % Filtering using a box-car function:
-        b = 1/101*ones(1,101);
-        data_filt = filter(b,1,data_upsample);
-        data_filt = [data_filt(51:end); nan(50,1)];
-         
-        % Downsampling the filtered data using interpolation:        
-        data_new = interp1q(depth_upsample,data_filt,depth_new(:));
+% Average by filtering using a box-car function:
+b = 1/101*ones(1,101);
+data_filt = filter(b,1,data_upsample);
+data_filt = [data_filt(51:end); nan(50,1)];
         
-    case 'method2'
-        % Number of new data values:
-        N = length(depth_new);
+% Downsampling the filtered data using interpolation:        
+data_new = interp1q(depth_upsample,data_filt,depth_new(:));
+        
+% Deal with areas of nan:
+nandata_index = find(isnan(data_new));
+for i = 1:length(nandata_index)
+    % Interval boundaries:
+    dstart = depth_new(nandata_index(i))-0.5*dx_new;
+    dend = depth_new(nandata_index(i))+0.5*dx_new;
 
-        %% Averaging data within these sections:
-        % Boundaries corresponding to current dataervations:
-        depth = depth(:);
-        data = data(:);
-        dbounds = [depth(1); depth(1:end-1)+diff(depth)/2; depth(end)];
-        mask = isfinite(data);
-        data_new = nan(N,1);
-
-        for i = 1:N
-            % Interval boundaries:
-            dstart = depth_new(i)-0.5*dx_new;
-            dend = depth_new(i)+0.5*dx_new;
-        
-            % Weights of individual data points:
-            t1 = max(dbounds(1:end-1),dstart);
-            t2 = min(dend,dbounds(2:end));
-            w = max(t2-t1,0); % Coverage of selected section [m]
-    
-            % Corresponding mean value, provided more than half of section
-            % is covered by the original data:
-            coverage = sum(mask(w>0).*w(w>0)); 
-            if coverage > 0.5*dx_new
-                w = w(mask)/sum(w(mask));
-                data_new(i)=sum(w.*data(mask));
-            end
-        end
+    % Upsampled data section for this interval:
+    mask = depth_upsample >= dstart & depth_upsample <= dend;
+    datasection_upsample = data_upsample(mask);
+            
+    % Does data exist for more than 50% of the interval?
+    ndatapoints = sum(isfinite(datasection_upsample));
+    if ndatapoints>=0.5*length(datasection_upsample)
+        % Provide mean value using the 50% coverage of data:
+        data_new(nandata_index(i))=nanmean(datasection_upsample);
+    end
 end
 
 %% Plotting:
