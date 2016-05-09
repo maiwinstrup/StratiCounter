@@ -1,4 +1,4 @@
-function [Layerpar0, ParML, ParMAP, layerpar] = ...
+function [Layerpar0, ParML, ParMAP, Layerpar_individual] = ...
     calclayerpar(Model,Data,layerpos,layerunc,Template,Runtype)
 
 %% [Layerpar0,ParML,ParMAP,layerpar] = ...
@@ -34,12 +34,12 @@ end
 
 % Depth of start of layers:
 if sum(layerunc)==0
-    layerpar(1).depth = layerpos(1:end-1);
+    Layerpar_individual(1).depth = layerpos(1:end-1);
 else
-    layerpar(2).depth = layerpos1(1:end-1);
-    layerpar(3).depth = layerpos2(1:end-1);
-    [layerpar(1).depth, index] = ...
-        sort([layerpar(2).depth; layerpar(3).depth],1,'ascend');
+    Layerpar_individual(2).depth = layerpos1(1:end-1);
+    Layerpar_individual(3).depth = layerpos2(1:end-1);
+    [Layerpar_individual(1).depth, index] = ...
+        sort([Layerpar_individual(2).depth; Layerpar_individual(3).depth],1,'ascend');
     % The remaining layer parameters are sorted similarly.
 end
 
@@ -52,13 +52,13 @@ lambda = layerpos(2:end)-layerpos(1:end-1); %[m]
 lambda = lambda(isfinite(lambda));
     
 if sum(layerunc)==0
-    layerpar(1).lambda = lambda;
+    Layerpar_individual(1).lambda = lambda;
 else
     N = length(layerpos1)-1;
-    layerpar(2).lambda = lambda(1:N);
-    layerpar(3).lambda = lambda(N+1:end);
-    lambda_tot = [layerpar(2).lambda; layerpar(3).lambda];
-    layerpar(1).lambda = lambda_tot(index);
+    Layerpar_individual(2).lambda = lambda(1:N);
+    Layerpar_individual(3).lambda = lambda(N+1:end);
+    lambda_tot = [Layerpar_individual(2).lambda; Layerpar_individual(3).lambda];
+    Layerpar_individual(1).lambda = lambda_tot(index);
 end
 
 %% Converting layer boundaries to pixels: 
@@ -134,47 +134,47 @@ for j = 1:Model.nSpecies
     
     % Add to layerpar array: 
     if sum(layerunc)==0
-        layerpar(1).par(:,:,j) = par_hat;
+        Layerpar_individual(1).par(:,:,j) = par_hat;
     else
-        layerpar(2).par(:,:,j) = par_hat(:,1:N);
-        layerpar(3).par(:,:,j) = par_hat(:,N+1:end);
-        par_tot = [layerpar(2).par(:,:,j), layerpar(3).par(:,:,j)];
-        layerpar(1).par(:,:,j) = par_tot(:,index);
+        Layerpar_individual(2).par(:,:,j) = par_hat(:,1:N);
+        Layerpar_individual(3).par(:,:,j) = par_hat(:,N+1:end);
+        par_tot = [Layerpar_individual(2).par(:,:,j), Layerpar_individual(3).par(:,:,j)];
+        Layerpar_individual(1).par(:,:,j) = par_tot(:,index);
     end
 
     % Mean of white noise variance:
     if sum(layerunc)==0
-        layerpar(1).nvar(:,:,j) = nvar_hat;
+        Layerpar_individual(1).nvar(:,:,j) = nvar_hat;
     else
-        layerpar(2).nvar(:,:,j) = nvar_hat(:,1:N);
-        layerpar(3).nvar(:,:,j) = nvar_hat(:,N+1:end);
-        nvar_tot = [layerpar(2).nvar(:,:,j) layerpar(3).nvar(:,:,j)];
-        layerpar(1).nvar(:,:,j) = nvar_tot(:,index);
+        Layerpar_individual(2).nvar(:,:,j) = nvar_hat(:,1:N);
+        Layerpar_individual(3).nvar(:,:,j) = nvar_hat(:,N+1:end);
+        nvar_tot = [Layerpar_individual(2).nvar(:,:,j) Layerpar_individual(3).nvar(:,:,j)];
+        Layerpar_individual(1).nvar(:,:,j) = nvar_tot(:,index);
     end
 
     % White noise:
     if sum(layerunc)==0
-        layerpar(1).eps(:,j) = eps;
+        Layerpar_individual(1).eps(:,j) = eps;
     else
-        layerpar(2).eps(:,j) = eps(1:N);
-        layerpar(3).eps(:,j) = eps(N+3:end);
-        eps_tot = [layerpar(2).eps(:,j); layerpar(3).eps(:,j)];
-        layerpar(1).eps(:,j) = eps_tot(index);
+        Layerpar_individual(2).eps(:,j) = eps(1:N);
+        Layerpar_individual(3).eps(:,j) = eps(N+3:end);
+        eps_tot = [Layerpar_individual(2).eps(:,j); Layerpar_individual(3).eps(:,j)];
+        Layerpar_individual(1).eps(:,j) = eps_tot(index);
     end
 end
 
 %% Maximum Likelihood estimmate of annual layer parameters
 % This estimate is based on the composite set.
-mask = layerpar(1).depth>=Model.initialpar(1) & layerpar(1).depth<Model.initialpar(2);
-ParML.my = nanmean(log(layerpar(1).lambda(mask)));
-ParML.sigma = nanstd(log(layerpar(1).lambda(mask)));
+mask = Layerpar_individual(1).depth>=Model.initialpar(1) & Layerpar_individual(1).depth<Model.initialpar(2);
+ParML.my = nanmean(log(Layerpar_individual(1).lambda(mask)));
+ParML.sigma = nanstd(log(Layerpar_individual(1).lambda(mask)));
 
 ParML.cov = zeros(Model.nSpecies,Model.nSpecies);
 for j = 1:Model.nSpecies
-    ParML.par(:,j) = nanmean(layerpar(1).par(:,mask,j),2);
+    ParML.par(:,j) = nanmean(Layerpar_individual(1).par(:,mask,j),2);
     ParML.cov(Model.order*(j-1)+1:Model.order*j,Model.order*(j-1)+1:Model.order*j) = ...
-        nancov(layerpar(1).par(:,mask,j)');
-    ParML.nvar(:,j) = nanmean(layerpar(1).nvar(:,mask,j),2);
+        nancov(Layerpar_individual(1).par(:,mask,j)');
+    ParML.nvar(:,j) = nanmean(Layerpar_individual(1).nvar(:,mask,j),2);
 end
 
 %% Setting weight for the white noise component of derivative data series:

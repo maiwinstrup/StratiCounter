@@ -718,11 +718,13 @@ for iTemplateFull = 1:Model.nTemplate
     Template0_new = Template_new;
     
     % Estimate new set of Layerpar0 corresponding to the new layer
-    % templates, and the obtained timescale: 
+    % templates, and the obtained timescale for this section: 
     DataPreproc = Data; 
     DataPreproc.data = data_out; 
-    Layerpar0_new = calclayerpar(Model,DataPreproc,Layerpos.final,...
-        zeros(size(Layerpos.final,1)),Template0_new,Runtype);
+    Model_new = Model;
+    Model_new.initialpar = [Model.dstart; Model.dend];
+    Layerpar0_new = calclayerpar(Model_new,DataPreproc,Layerpos.final,...
+        zeros(size(Layerpos.final,1),1),Template0_new,Runtype);
     % Layer parameters are calculated assuming no uncertainties on the new 
     % timescale.
     

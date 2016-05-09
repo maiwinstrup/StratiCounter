@@ -4,7 +4,7 @@ function data_new = downsampling(depth,data,depth_new,plotlevel)
 % Downsampling using a step function: Data is upsampled, smoothing with 
 % boxcar function, and subsequently downsampled. 
 % Values are subsequently calculated for areas containing nan in data, such
-% that a value for these is provided if non-nan data covers more than 50% 
+% that a value for these is provided if non-nan data covers more than 33% 
 % of an interval. 
 % Data on non-equidistant depth scale is allowed.
 % Copyright (C) 2015  Mai Winstrup
@@ -59,10 +59,10 @@ for i = 1:length(nandata_index)
     mask = depth_upsample >= dstart & depth_upsample <= dend;
     datasection_upsample = data_upsample(mask);
             
-    % Does data exist for more than 50% of the interval?
+    % Does data exist for more than 33% of the interval?
     ndatapoints = sum(isfinite(datasection_upsample));
-    if ndatapoints>=0.5*length(datasection_upsample)
-        % Provide mean value using the 50% coverage of data:
+    if ndatapoints>=0.33*length(datasection_upsample)
+        % Provide mean value using the 33% coverage of data:
         data_new(nandata_index(i))=nanmean(datasection_upsample);
     end
 end

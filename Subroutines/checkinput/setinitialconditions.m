@@ -81,8 +81,8 @@ if strcmp(Model.update{1},'QB')
     % Theoretical uncertainty of the mean, as if based on a single previous
     % batch:
     % theoretical_var_of_mean = Layerpar0.sigma^2/Model.nLayerBatch;
-    Prior(1,1).v = 1; 
-    disp(['Using Prior.v = ' num2str(Prior(1,1).v)])
+    Prior(1,1).v = 0.5; 
+    disp(['Using initial prior: Prior.v = ' num2str(Prior(1,1).v)])
 end
 % Interannual variation in layer thicknesses:
 Prior(1,1).sigma = Layerpar0.sigma;
